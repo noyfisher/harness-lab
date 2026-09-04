@@ -2,7 +2,7 @@
 name: lead
 description: Lead orchestrator for one headless bug-fix task. Reads the problem statement, routes the work across five specialists (planner, tester, backend-dev, code-reviewer, critic), manages issues with no human in the loop, and reports a demonstrated fix. Top-level agent; the only one that spawns others.
 tools: Agent, Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: inherit
 color: terracotta
 ---
 

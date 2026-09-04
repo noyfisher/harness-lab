@@ -2,7 +2,7 @@
 name: critic
 description: Independent second opinion. Wildcard agent the Lead invokes when there's groupthink, repeat failures, or a decision the Lead isn't sure about. Reviews any artifact (plan, design, code, deploy) with no context from prior agents.
 tools: Read, Grep, Glob
-model: sonnet
+model: inherit
 color: ink
 ---
 

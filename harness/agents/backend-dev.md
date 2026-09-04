@@ -2,7 +2,7 @@
 name: backend-dev
 description: Implements the minimal library-code fix for one issue, working from the problem statement (/task/problem.md) and the repository at /testbed. Confirms the reproduction fails, makes the fix, runs the repro and the nearest existing tests. Works directly in /testbed.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: inherit
 color: moss
 ---
 

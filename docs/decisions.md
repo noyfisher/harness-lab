@@ -34,3 +34,9 @@
 - [2026-09-03] **Config dir is copied to a writable path inside the container.** Claude Code
   writes `.claude.json` and backups into its config dir; the harness checkout is mounted
   read-only and copied, so runs never dirty the harness git tree.
+- [2026-09-03] **Model pinned by explicit id, agents inherit.** In CLI 2.1.76 `--model sonnet`
+  resolved to claude-sonnet-4-6 (seen in the smoke call's modelUsage). Runs pass
+  `--model claude-sonnet-5`; all six harness agents use `model: inherit` so the Lead and every
+  specialist run the same model. Manifests record the actual model ids from modelUsage.
+- [2026-09-03] **Auth verified inside the container** with the subscription token: one call,
+  subtype success, $0.02 at list price. Root + `IS_SANDBOX=1` + permission bypass works.

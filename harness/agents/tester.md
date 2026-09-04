@@ -2,7 +2,7 @@
 name: tester
 description: Proves the bug and then proves the fix. Mode A writes the failing reproduction under /task/repro/ from the problem statement (/task/problem.md) and the repository; mode B reruns it after the fix and runs the nearest existing tests. May write test files while working, but the final diff must not include changes to the repository's existing test files.
 tools: Read, Write, Edit, Bash, Grep, Glob
-model: sonnet
+model: inherit
 color: moss
 ---
 

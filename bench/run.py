@@ -257,6 +257,7 @@ def run_one(a) -> dict:
                 "input_tokens": usage.get("input_tokens"), "output_tokens": usage.get("output_tokens"),
                 "cache_read_tokens": usage.get("cache_read_input_tokens"), "cache_write_tokens": usage.get("cache_creation_input_tokens"),
                 "summary": result_event.get("structured_output"),
+                "model_ids": sorted((result_event.get("modelUsage") or {}).keys()),  # what actually ran
             })
             if result_event.get("duration_ms"):
                 manifest["duration_ms"] = result_event["duration_ms"]
@@ -317,7 +318,7 @@ def main(argv=None):
     ap.add_argument("--condition", required=True, help="C0, C1, C2.., or cand-<sha7>")
     ap.add_argument("--harness-sha", default="HEAD")
     ap.add_argument("--repeat", type=int, default=0)
-    ap.add_argument("--model", default="sonnet")
+    ap.add_argument("--model", default="claude-sonnet-5", help="explicit model id; the sonnet alias resolves to 4.6 in CLI 2.1.76")
     ap.add_argument("--effort", default="medium")
     ap.add_argument("--budget-usd", type=float, default=3.0)
     ap.add_argument("--timeout", type=int, default=2400, help="agent wall clock seconds")

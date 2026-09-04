@@ -2,7 +2,7 @@
 name: code-reviewer
 description: Reviews the diff produced by backend-dev against the problem statement (/task/problem.md) and the repository. Flags correctness bugs, symptom-only fixes, scope creep, test-file edits, and leftover debug output. Read-only. First-line QA.
 tools: Read, Grep, Glob, Bash
-model: sonnet
+model: inherit
 color: ink
 ---
 

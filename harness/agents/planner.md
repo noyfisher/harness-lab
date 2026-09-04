@@ -2,7 +2,7 @@
 name: planner
 description: Reads the problem statement, localizes the likely files with grep evidence, and hands a short fix plan to the Lead. First agent to run on any non-trivial task. Read-only — never writes files.
 tools: Read, Grep, Glob
-model: sonnet
+model: inherit
 color: sand
 ---
 

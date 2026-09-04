@@ -21,7 +21,7 @@ reading (see Caveats).
 | task definitions | `SWE-bench/swe-bench-tasks` shallow clone (task dirs carry eval.sh, test.patch, gold.patch) |
 | images | `ghcr.io/epoch-research/swe-bench.eval.arm64.<instance_id>:latest` (only tag published; digest recorded per run) |
 | agent image | Epoch base + Node 22.20.0 + pinned CLI (`bench/docker/Dockerfile`) |
-| model / effort | `sonnet` / `medium` for every agent under test in every condition |
+| model / effort | `claude-sonnet-5` (explicit id; the `sonnet` alias resolves to claude-sonnet-4-6 in CLI 2.1.76) / `medium`; all six harness agents use `model: inherit` so the run flag controls every agent |
 | improver model | Opus or Fable, high effort; never used inside a counted run |
 
 ## Environment limitation (stated, not hidden)
@@ -95,7 +95,9 @@ done-condition, same JSON summary contract, same model, effort, budget, timeout,
 
 ## Compute decision rule (auth)
 
-Spike: 6 runs (3 instances x C0, C1) on the Max 20x subscription. Record `/usage` 5-hour and
+Spike: 6 runs (3 instances x C0, C1) on the Max 20x subscription. Spike instances:
+`django__django-11099` (<15 min), `pytest-dev__pytest-5262` (<15 min), `sympy__sympy-13031`
+(15 min - 1 hour); all gold-validated on arm64 before the spike. Record `/usage` 5-hour and
 weekly percentages before and after. Project the total run count against weekly capacity.
 If the heaviest benchmark week uses <= 50% of weekly capacity, the study runs on the
 subscription and no API key is created. Otherwise a Console API key capped at $600/month
