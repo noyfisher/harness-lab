@@ -1,7 +1,7 @@
 # Measurement protocol (pre-registered)
 
-Status: DRAFT, Week 1. Fields marked TBD are filled from spike measurements before any
-baseline run and then frozen. Changes after freezing go in `decisions.md` with a date and reason.
+Status: **FROZEN v1, 2026-09-04**, before any baseline run. Changes after freezing go in
+`decisions.md` with a date and reason; the spike that set these values is in `spike.md`.
 
 ## Claim being measured
 
@@ -41,8 +41,9 @@ the harness. A linux/amd64 sensitivity run is possible later (all 500 x86_64 ima
   resolve is excluded and listed in `bench/gold-results.json`.
 - Final subset: `bench/select.py --n N --seed 20260903 --gold-results bench/gold-results.json`,
   split 60/40 train/held-out, stratified by difficulty. Committed as `bench/subset.json`.
-- **N = TBD** (working assumption 30-40), **k = TBD** (working assumption 3), set from the
-  spike's per-run cost, wall time, and usage-window consumption. Note: N, not N*k, sets the
+- **N = 40** (24 train / 16 held-out), **k = 3**, set from the spike (`spike.md`): mean cost
+  $0.52 (C0) and $1.01 (C1) per run on easy instances, ~4 min wall for C1, and ~3 points of a
+  5-hour window per ~$8 list-equivalent. Note: N, not N*k, sets the
   headline CI width; k sharpens per-instance classification (the flip signal).
 
 ## Conditions
@@ -63,7 +64,8 @@ done-condition, same JSON summary contract, same model, effort, budget, timeout,
 - Hidden fields never enter the container; only `problem_statement` is written to `/task/problem.md`.
 - Git history scrubbed to one commit; `.claude/` and `.mcp.json` removed; both asserted before the agent starts.
 - One credential env var per run; manifest records `subscription` or `api_key`.
-- Wall clock: **TBD** s (assumption 2400). Budget: **TBD** USD per run (assumption 3.00), enforced by the CLI.
+- Wall clock: **2400 s**. Budget: **$4.00 per run** at list price, enforced by the CLI
+  (`budget` outcome counts as a fail). Concurrency 3 containers; batches overnight.
 - Model diff hunks touching `test_patch` files are stripped; any other test-path edit is flagged `touched_tests`.
 - Never `--bare`. The driver asserts it.
 
@@ -101,7 +103,8 @@ Spike: 6 runs (3 instances x C0, C1) on the Max 20x subscription. Spike instance
 weekly percentages before and after. Project the total run count against weekly capacity.
 If the heaviest benchmark week uses <= 50% of weekly capacity, the study runs on the
 subscription and no API key is created. Otherwise a Console API key capped at $600/month
-covers only the overflow of counted runs. Outcome: **TBD**.
+covers only the overflow of counted runs. Outcome: **subscription only** (heaviest week
+projected at <= 20% of weekly capacity; see `spike.md`). Re-checked after the C0 batch.
 
 ## Caveats (from the stats review; stated so nobody over-reads the numbers)
 

@@ -45,3 +45,8 @@
   duplicate C0 run caused by a grading infra retry. `runs.jsonl` holds protocol runs only.
 - [2026-09-04] **Grading infra failures are regraded, not re-run.** `bench/regrade.py` rescores an
   existing patch and appends a superseding manifest; the agent's cost and trace are kept.
+- [2026-09-04] **Compute: subscription only; no API key.** Spike: ~$7.9 list-equivalent moved
+  the 5-hour window 3 points and the weekly cap < 0.5 points. Projected study ~$760 over ~4
+  weeks; heaviest week <= 20% of weekly capacity. Re-check after the C0 baseline batch.
+- [2026-09-04] **Protocol frozen v1.** N=40 (24/16), k=3, claude-sonnet-5 medium, $4.00 budget,
+  2400 s wall, 3 workers, batches overnight. Harness seed = tag `harness-seed` (9ec1540).
