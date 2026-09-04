@@ -40,3 +40,8 @@
   specialist run the same model. Manifests record the actual model ids from modelUsage.
 - [2026-09-03] **Auth verified inside the container** with the subscription token: one call,
   subtype success, $0.02 at list price. Root + `IS_SANDBOX=1` + permission bypass works.
+- [2026-09-04] **Spike manifests live in `results/spike-runs.jsonl`, not `runs.jsonl`.** The spike
+  predates the protocol freeze, used k=1 on three hand-picked instances, and includes one
+  duplicate C0 run caused by a grading infra retry. `runs.jsonl` holds protocol runs only.
+- [2026-09-04] **Grading infra failures are regraded, not re-run.** `bench/regrade.py` rescores an
+  existing patch and appends a superseding manifest; the agent's cost and trace are kept.

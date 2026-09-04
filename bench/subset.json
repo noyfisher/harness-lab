@@ -1,0 +1,87 @@
+{
+ "arch": "arm64",
+ "filters": {
+  "gold_passing": 60,
+  "gold_results": "bench/gold-results.json",
+  "image_available": 420,
+  "loaded": 500,
+  "max_per_repo": 8,
+  "selected": 40
+ },
+ "heldout": [
+  "astropy__astropy-13579",
+  "astropy__astropy-14539",
+  "django__django-11149",
+  "matplotlib__matplotlib-20676",
+  "matplotlib__matplotlib-20859",
+  "mwaskom__seaborn-3069",
+  "mwaskom__seaborn-3187",
+  "pallets__flask-5014",
+  "psf__requests-1921",
+  "pytest-dev__pytest-7521",
+  "pytest-dev__pytest-7571",
+  "sphinx-doc__sphinx-7748",
+  "sphinx-doc__sphinx-8120",
+  "sphinx-doc__sphinx-8269",
+  "sympy__sympy-14248",
+  "sympy__sympy-19783"
+ ],
+ "heldout_strata": {
+  "1-4 hours": 2,
+  "15 min - 1 hour": 8,
+  "<15 min fix": 6
+ },
+ "mode": "subset",
+ "n": 40,
+ "repos": {
+  "astropy/astropy": 4,
+  "django/django": 4,
+  "matplotlib/matplotlib": 3,
+  "mwaskom/seaborn": 2,
+  "pallets/flask": 1,
+  "psf/requests": 4,
+  "pylint-dev/pylint": 3,
+  "pytest-dev/pytest": 6,
+  "scikit-learn/scikit-learn": 3,
+  "sphinx-doc/sphinx": 5,
+  "sympy/sympy": 5
+ },
+ "requested_n": 40,
+ "seed": 20260903,
+ "strata": {
+  "1-4 hours": 4,
+  "15 min - 1 hour": 21,
+  "<15 min fix": 15
+ },
+ "train": [
+  "astropy__astropy-14309",
+  "astropy__astropy-14995",
+  "django__django-15128",
+  "django__django-15732",
+  "django__django-16667",
+  "matplotlib__matplotlib-13989",
+  "psf__requests-1724",
+  "psf__requests-2317",
+  "psf__requests-6028",
+  "pylint-dev__pylint-6528",
+  "pylint-dev__pylint-6903",
+  "pylint-dev__pylint-8898",
+  "pytest-dev__pytest-7236",
+  "pytest-dev__pytest-7324",
+  "pytest-dev__pytest-7490",
+  "pytest-dev__pytest-7982",
+  "scikit-learn__scikit-learn-25232",
+  "scikit-learn__scikit-learn-25973",
+  "scikit-learn__scikit-learn-26194",
+  "sphinx-doc__sphinx-10466",
+  "sphinx-doc__sphinx-7985",
+  "sympy__sympy-19040",
+  "sympy__sympy-20428",
+  "sympy__sympy-22080"
+ ],
+ "train_strata": {
+  "1-4 hours": 2,
+  "15 min - 1 hour": 13,
+  "<15 min fix": 9
+ }
+}

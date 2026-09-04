@@ -1,0 +1,73 @@
+{
+ "batch_id": "spike-C0",
+ "condition": "C0",
+ "harness_sha": "e3fd64460b6a4e0e04f28dd23325940c79a2a777",
+ "harness_sha_ref": "HEAD",
+ "split": "instances",
+ "subset": null,
+ "k": 1,
+ "instances": [
+  "django__django-11099",
+  "pytest-dev__pytest-5262",
+  "sympy__sympy-13031"
+ ],
+ "model": "claude-sonnet-5",
+ "effort": "medium",
+ "budget_usd": 3.0,
+ "timeout": 2400,
+ "grade_timeout": 1800,
+ "network": "bridge",
+ "workers": 3,
+ "dry": false,
+ "max_infra_errors": 5,
+ "pause_minutes": 30.0,
+ "max_pause_hours": 6.0,
+ "results_file": "/Users/noyfisher/harness-lab/results/runs.jsonl",
+ "planned_jobs": 3,
+ "skipped_resume": 0,
+ "started": "2026-09-04T05:40:17Z",
+ "ended": "2026-09-04T05:47:34Z",
+ "argv": [
+  "--condition",
+  "C0",
+  "--instances",
+  "django__django-11099,pytest-dev__pytest-5262,sympy__sympy-13031",
+  "--k",
+  "1",
+  "--workers",
+  "3",
+  "--batch-id",
+  "spike-C0",
+  "--budget-usd",
+  "3.0",
+  "--timeout",
+  "2400"
+ ],
+ "record_path": "/Users/noyfisher/harness-lab/results/batches/spike-C0.json",
+ "log_path": "/Users/noyfisher/harness-lab/results/batches/spike-C0.log",
+ "result": {
+  "exit_code": 0,
+  "completed": 4,
+  "requeued": 1,
+  "unrun": 0,
+  "outcomes": {
+   "resolved": 2,
+   "error": 2
+  },
+  "resolved": 2,
+  "counted": 2,
+  "infra_failures": 2,
+  "total_cost_usd": 2.072,
+  "jobs_wall_s": 610.8,
+  "batch_wall_s": 436.4,
+  "paused_minutes": 0.0,
+  "max_consecutive_pauses": 0,
+  "interrupted": false
+ },
+ "run_ids": [
+  "C0-django__django-11099-r0-20260903T224018-90950b",
+  "C0-pytest-dev__pytest-5262-r0-20260903T224018-fac098",
+  "C0-sympy__sympy-13031-r0-20260903T224018-eb8878",
+  "C0-sympy__sympy-13031-r0-20260903T224418-1e77bd"
+ ]
+}
