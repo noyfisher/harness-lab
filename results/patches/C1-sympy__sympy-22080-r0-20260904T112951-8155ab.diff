@@ -1,0 +1,32 @@
+diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py
+index b669a2c..b01ecef 100644
+--- a/sympy/printing/pycode.py
++++ b/sympy/printing/pycode.py
+@@ -6,6 +6,7 @@
+ from collections import defaultdict
+ from itertools import chain
+ from sympy.core import S
++from sympy.core.mod import Mod
+ from .precedence import precedence
+ from .codeprinter import CodePrinter
+ 
+@@ -236,6 +237,19 @@ def _print_Mod(self, expr):
+         PREC = precedence(expr)
+         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
+ 
++    def parenthesize(self, item, level, strict=False):
++        # Mod is printed with Python's infix '%' operator (see _print_Mod
++        # above), but precedence(Mod(...)) is Function-level (since Mod is
++        # a Function subclass), which is higher than the level used when
++        # deciding whether to wrap a factor after a sign or another factor
++        # in a Mul. That mismatch let e.g. -Mod(x, y) render as the wrong
++        # "-x % y" instead of "-(x % y)". Since Mod always prints as a bare
++        # '%' expression here, always parenthesize it when it is embedded
++        # inside a larger expression.
++        if isinstance(item, Mod):
++            return "(%s)" % self._print(item)
++        return super().parenthesize(item, level, strict)
++
+     def _print_Piecewise(self, expr):
+         result = []
+         i = 0

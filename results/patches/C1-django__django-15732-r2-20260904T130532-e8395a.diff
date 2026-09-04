@@ -1,0 +1,15 @@
+diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py
+index f2ca8c8..17ab158 100644
+--- a/django/db/backends/base/schema.py
++++ b/django/db/backends/base/schema.py
+@@ -566,6 +566,10 @@ class BaseDatabaseSchemaEditor:
+             model,
+             columns,
+             exclude=meta_constraint_names | meta_index_names,
++            # A unique_together/index_together constraint is never the
++            # model's own primary key constraint, even if it shares columns
++            # with (and, on some backends, is reported alongside) the pk.
++            primary_key=False,
+             **constraint_kwargs,
+         )
+         if len(constraint_names) != 1:

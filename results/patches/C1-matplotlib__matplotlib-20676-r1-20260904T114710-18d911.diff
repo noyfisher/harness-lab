@@ -1,0 +1,21 @@
+diff --git a/lib/matplotlib/widgets.py b/lib/matplotlib/widgets.py
+index a199e45..407fcec 100644
+--- a/lib/matplotlib/widgets.py
++++ b/lib/matplotlib/widgets.py
+@@ -2156,10 +2156,16 @@ class SpanSelector(_SelectorWidget):
+             self.artists.append(self._rect)
+ 
+     def _setup_edge_handle(self, props):
++        # Avoid the placeholder positions (0, 0) used before any selection
++        # is made from expanding the Axes view limits.
++        data_lim = self.ax.dataLim.frozen()
+         self._edge_handles = ToolLineHandles(self.ax, self.extents,
+                                              direction=self.direction,
+                                              line_props=props,
+                                              useblit=self.useblit)
++        self.ax.dataLim.set(data_lim)
++        for name in self.ax._stale_viewlims:
++            self.ax._stale_viewlims[name] = True
+         self.artists.extend([line for line in self._edge_handles.artists])
+ 
+     def _press(self, event):

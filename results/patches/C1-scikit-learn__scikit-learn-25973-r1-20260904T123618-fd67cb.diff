@@ -1,0 +1,42 @@
+diff --git a/sklearn/feature_selection/_sequential.py b/sklearn/feature_selection/_sequential.py
+index e983c55..e871713 100644
+--- a/sklearn/feature_selection/_sequential.py
++++ b/sklearn/feature_selection/_sequential.py
+@@ -8,12 +8,12 @@ import numpy as np
+ import warnings
+ 
+ from ._base import SelectorMixin
+-from ..base import BaseEstimator, MetaEstimatorMixin, clone
++from ..base import BaseEstimator, MetaEstimatorMixin, clone, is_classifier
+ from ..utils._param_validation import HasMethods, Hidden, Interval, StrOptions
+ from ..utils._param_validation import RealNotInt
+ from ..utils._tags import _safe_tags
+ from ..utils.validation import check_is_fitted
+-from ..model_selection import cross_val_score
++from ..model_selection import cross_val_score, check_cv
+ from ..metrics import get_scorer_names
+ 
+ 
+@@ -261,6 +261,13 @@ class SequentialFeatureSelector(SelectorMixin, MetaEstimatorMixin, BaseEstimator
+ 
+         cloned_estimator = clone(self.estimator)
+ 
++        # `self.cv` may be a one-shot iterable (e.g. a generator of splits)
++        # that would otherwise be exhausted after the first `cross_val_score`
++        # call. Materialize the splits once here so they can be reused for
++        # every candidate feature evaluated in `_get_best_new_feature_score`.
++        cv = check_cv(self.cv, y, classifier=is_classifier(cloned_estimator))
++        self.cv_ = list(cv.split(X, y))
++
+         # the current mask corresponds to the set of features:
+         # - that we have already *selected* if we do forward selection
+         # - that we have already *excluded* if we do backward selection
+@@ -309,7 +316,7 @@ class SequentialFeatureSelector(SelectorMixin, MetaEstimatorMixin, BaseEstimator
+                 estimator,
+                 X_new,
+                 y,
+-                cv=self.cv,
++                cv=self.cv_,
+                 scoring=self.scoring,
+                 n_jobs=self.n_jobs,
+             ).mean()

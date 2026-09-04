@@ -1,0 +1,45 @@
+diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py
+index 4f0290a..6b3973f 100644
+--- a/seaborn/_core/plot.py
++++ b/seaborn/_core/plot.py
+@@ -25,7 +25,7 @@ from seaborn._marks.base import Mark
+ from seaborn._stats.base import Stat
+ from seaborn._core.data import PlotData
+ from seaborn._core.moves import Move
+-from seaborn._core.scales import Scale
++from seaborn._core.scales import Scale, Nominal
+ from seaborn._core.subplots import Subplots
+ from seaborn._core.groupby import GroupBy
+ from seaborn._core.properties import PROPERTIES, Property
+@@ -1631,10 +1631,11 @@ class Plotter:
+             ax = sub["ax"]
+             for axis in "xy":
+                 axis_key = sub[axis]
++                axis_obj = getattr(ax, f"{axis}axis")
+ 
+                 # Axis limits
+                 if axis_key in p._limits:
+-                    convert_units = getattr(ax, f"{axis}axis").convert_units
++                    convert_units = axis_obj.convert_units
+                     a, b = p._limits[axis_key]
+                     lo = a if a is None else convert_units(a)
+                     hi = b if b is None else convert_units(b)
+@@ -1643,6 +1644,18 @@ class Plotter:
+                     if isinstance(b, str):
+                         hi = cast(float, hi) + 0.5
+                     ax.set(**{f"{axis}lim": (lo, hi)})
++                elif isinstance(self._scales.get(axis_key), Nominal):
++                    # Replicate the categorical-axis conventions from the
++                    # old seaborn categorical plots: fixed limits of
++                    # (-.5, n - .5) around the category ticks, no grid on
++                    # that axis, and an inverted y axis so that categories
++                    # read top-to-bottom.
++                    n = len(axis_obj.get_majorticklocs())
++                    lo, hi = -.5, n - .5
++                    if axis == "y":
++                        lo, hi = hi, lo
++                    ax.set(**{f"{axis}lim": (lo, hi)})
++                    axis_obj.grid(False)
+ 
+         engine_default = None if p._target is not None else "tight"
+         layout_engine = p._layout_spec.get("engine", engine_default)

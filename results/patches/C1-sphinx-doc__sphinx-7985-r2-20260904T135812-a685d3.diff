@@ -1,0 +1,25 @@
+diff --git a/sphinx/builders/linkcheck.py b/sphinx/builders/linkcheck.py
+index dd53170..cfa2157 100644
+--- a/sphinx/builders/linkcheck.py
++++ b/sphinx/builders/linkcheck.py
+@@ -213,7 +213,19 @@ class CheckExternalLinksBuilder(Builder):
+             if len(uri) == 0 or uri.startswith(('#', 'mailto:', 'ftp:')):
+                 return 'unchecked', '', 0
+             elif not uri.startswith(('http:', 'https:')):
+-                return 'local', '', 0
++                if urlparse(uri).scheme:
++                    # unhandled non-http(s) URI scheme (e.g. tel:, javascript:)
++                    return 'unchecked', '', 0
++                if '#' in uri:
++                    req_url, _ = uri.split('#', 1)
++                else:
++                    req_url = uri
++                srcdir = path.dirname(self.env.doc2path(docname))
++                if path.exists(path.join(srcdir, req_url)):
++                    return 'working', '', 0
++                else:
++                    self.broken[uri] = ''
++                    return 'broken', '', 0
+             elif uri in self.good:
+                 return 'working', 'old', 0
+             elif uri in self.broken:

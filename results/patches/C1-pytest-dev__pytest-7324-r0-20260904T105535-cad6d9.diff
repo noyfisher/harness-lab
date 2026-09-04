@@ -1,0 +1,41 @@
+diff --git a/src/_pytest/mark/expression.py b/src/_pytest/mark/expression.py
+index 04c7341..1669d15 100644
+--- a/src/_pytest/mark/expression.py
++++ b/src/_pytest/mark/expression.py
+@@ -56,6 +56,15 @@ class Token:
+     pos = attr.ib(type=int)
+ 
+ 
++# Identifiers that cannot be used as the id of an ast.Name node: the
++# compiler special-cases these three keyword constants and refuses (or, on
++# a debug build, asserts) when asked to build a Name node for them, even
++# though here they are just plain identifiers to be looked up via the
++# matcher (see bpo-39159 / bpo-40870). Give them a prefix that the scanner
++# can never itself produce, and undo it in MatcherAdapter.__getitem__.
++KEYWORDS = frozenset(("True", "False", "None"))
++
++
+ class ParseError(Exception):
+     """The expression contains invalid syntax.
+ 
+@@ -161,7 +170,10 @@ def not_expr(s: Scanner) -> ast.expr:
+         return ret
+     ident = s.accept(TokenType.IDENT)
+     if ident:
+-        return ast.Name(ident.value, ast.Load())
++        name = ident.value
++        if name in KEYWORDS:
++            name = "@" + name
++        return ast.Name(name, ast.Load())
+     s.reject((TokenType.NOT, TokenType.LPAREN, TokenType.IDENT))
+ 
+ 
+@@ -172,6 +184,8 @@ class MatcherAdapter(Mapping[str, bool]):
+         self.matcher = matcher
+ 
+     def __getitem__(self, key: str) -> bool:
++        if key[:1] == "@" and key[1:] in KEYWORDS:
++            key = key[1:]
+         return self.matcher(key)
+ 
+     def __iter__(self) -> Iterator[str]:

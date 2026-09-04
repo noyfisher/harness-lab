@@ -1,0 +1,38 @@
+diff --git a/sphinx/builders/linkcheck.py b/sphinx/builders/linkcheck.py
+index dd53170..3e50644 100644
+--- a/sphinx/builders/linkcheck.py
++++ b/sphinx/builders/linkcheck.py
+@@ -213,7 +213,32 @@ class CheckExternalLinksBuilder(Builder):
+             if len(uri) == 0 or uri.startswith(('#', 'mailto:', 'ftp:')):
+                 return 'unchecked', '', 0
+             elif not uri.startswith(('http:', 'https:')):
+-                return 'local', '', 0
++                if urlparse(uri).scheme:
++                    # not http(s) but still has a URI scheme (e.g. tel:,
++                    # data:, irc:) -- not a filesystem path, so skip it
++                    return 'unchecked', '', 0
++                srcdir = path.dirname(self.env.doc2path(docname))
++                if '#' in uri:
++                    path_part = uri.split('#', 1)[0]
++                else:
++                    path_part = uri
++                if not path_part:
++                    return 'local', '', 0
++                if path_part.startswith('/') or path_part.startswith(path.sep):
++                    full_path = path.join(self.srcdir, path_part.lstrip('/').lstrip(path.sep))
++                else:
++                    full_path = path.join(srcdir, path_part)
++                if path.exists(full_path):
++                    return 'local', '', 0
++                # the target file itself does not exist; it may still be a
++                # valid reference to a document by its *built* filename
++                # (e.g. ``other.html`` for source doc ``other.rst``)
++                docname_part = path.splitext(full_path)[0]
++                to_docname = path.relpath(docname_part, self.srcdir).replace(path.sep, '/')
++                if to_docname in self.env.found_docs:
++                    return 'local', '', 0
++                self.broken[uri] = 'Not found'
++                return 'broken', 'Not found', 0
+             elif uri in self.good:
+                 return 'working', 'old', 0
+             elif uri in self.broken:

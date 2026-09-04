@@ -1,0 +1,22 @@
+diff --git a/seaborn/_core/scales.py b/seaborn/_core/scales.py
+index 55874bf..732e046 100644
+--- a/seaborn/_core/scales.py
++++ b/seaborn/_core/scales.py
+@@ -378,7 +378,16 @@ class ContinuousBase(Scale):
+             axis.set_view_interval(vmin, vmax)
+             locs = axis.major.locator()
+             locs = locs[(vmin <= locs) & (locs <= vmax)]
+-            labels = axis.major.formatter.format_ticks(locs)
++            formatter = axis.major.formatter
++            formatter.set_locs(locs)
++            if formatter.get_offset():
++                # An offset/scaling factor (e.g. "1e6") would otherwise be
++                # dropped, making the legend labels misleading; show the
++                # full, unscaled values instead.
++                formatter.set_useOffset(False)
++                formatter.set_scientific(False)
++                formatter.set_locs(locs)
++            labels = formatter.format_ticks(locs)
+             new._legend = list(locs), list(labels)
+ 
+         return new

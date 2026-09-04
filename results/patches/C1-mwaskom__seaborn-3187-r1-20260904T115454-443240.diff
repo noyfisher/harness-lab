@@ -1,0 +1,38 @@
+diff --git a/seaborn/_core/scales.py b/seaborn/_core/scales.py
+index 55874bf..876ebf7 100644
+--- a/seaborn/_core/scales.py
++++ b/seaborn/_core/scales.py
+@@ -378,7 +378,16 @@ class ContinuousBase(Scale):
+             axis.set_view_interval(vmin, vmax)
+             locs = axis.major.locator()
+             locs = locs[(vmin <= locs) & (locs <= vmax)]
+-            labels = axis.major.formatter.format_ticks(locs)
++            formatter = axis.major.formatter
++            if isinstance(formatter, ScalarFormatter):
++                # A ScalarFormatter renders labels relative to an offset/scale
++                # factor (e.g. showing "1.0" alongside a separate "1e6"
++                # annotation) that is only visible when attached to a
++                # rendered axis. Legend labels have nowhere to show that
++                # annotation, so disable it and render the true values.
++                formatter.set_useOffset(False)
++                formatter.set_scientific(False)
++            labels = formatter.format_ticks(locs)
+             new._legend = list(locs), list(labels)
+ 
+         return new
+diff --git a/seaborn/utils.py b/seaborn/utils.py
+index 2407853..c730b43 100644
+--- a/seaborn/utils.py
++++ b/seaborn/utils.py
+@@ -699,6 +699,11 @@ def locator_to_legend_entries(locator, limits, dtype):
+         formatter = mpl.ticker.LogFormatter()
+     else:
+         formatter = mpl.ticker.ScalarFormatter()
++        # Disable offset/scientific notation so labels show true values;
++        # legend entries have nowhere to show the separate offset text
++        # that a rendered axis would display alongside them.
++        formatter.set_useOffset(False)
++        formatter.set_scientific(False)
+     formatter.axis = dummy_axis()
+ 
+     # TODO: The following two lines should be replaced

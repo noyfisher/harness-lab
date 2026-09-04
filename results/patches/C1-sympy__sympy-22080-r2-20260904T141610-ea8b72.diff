@@ -1,0 +1,29 @@
+diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py
+index b669a2c..94c8a59 100644
+--- a/sympy/printing/pycode.py
++++ b/sympy/printing/pycode.py
+@@ -6,6 +6,7 @@
+ from collections import defaultdict
+ from itertools import chain
+ from sympy.core import S
++from sympy.core.mod import Mod
+ from .precedence import precedence
+ from .codeprinter import CodePrinter
+ 
+@@ -236,6 +237,16 @@ def _print_Mod(self, expr):
+         PREC = precedence(expr)
+         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
+ 
++    def parenthesize(self, item, level, strict=False):
++        # Mod is printed using the infix "%" operator, which in Python has
++        # the same precedence as "*"/"/" but, unlike them, is not sign-safe
++        # (e.g. "-x % y" != "-(x % y)"). Always parenthesize it when it
++        # appears as a sub-expression so string-concatenation with other
++        # operators stays correct.
++        if isinstance(item, Mod):
++            return "(%s)" % self._print(item)
++        return super().parenthesize(item, level, strict)
++
+     def _print_Piecewise(self, expr):
+         result = []
+         i = 0
