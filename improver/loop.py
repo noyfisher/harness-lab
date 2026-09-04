@@ -82,7 +82,7 @@ HARNESS = ROOT / "harness"
 HYPOTHESIS = HARNESS / "HYPOTHESIS.json"
 #: Repo-relative path of the hypothesis file (git pathspecs are relative to the repo root).
 HYPOTHESIS_REL = "harness/HYPOTHESIS.json"
-SCHEMA = HARNESS / "schemas" / "hypothesis.schema.json"
+SCHEMA = ROOT / "improver" / "hypothesis.schema.json"  # loop-owned; harness/ is reset to the base sha per candidate
 IMPROVE_COMMAND = ROOT / ".claude" / "commands" / "improve.md"
 RUNS = ROOT / "results" / "runs.jsonl"
 DRYRUNS = ROOT / "results" / "dryruns.jsonl"
@@ -296,7 +296,7 @@ def validate_schema(doc, schema: dict, where: str = "$") -> list[str]:
 
     ``jsonschema`` is not a dependency of this project (requirements.txt is pinned and the
     benchmark does not need it), so the keywords actually used by
-    ``harness/schemas/hypothesis.schema.json`` are checked directly: type, required,
+    ``improver/hypothesis.schema.json`` are checked directly: type, required,
     properties, additionalProperties, enum, minLength/maxLength, minItems/maxItems,
     uniqueItems, items, pattern.  Returns a list of human-readable errors ([] means valid).
     """

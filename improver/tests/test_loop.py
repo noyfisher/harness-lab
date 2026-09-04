@@ -77,7 +77,7 @@ def repo(tmp_path, monkeypatch):
     (root / "harness" / "agents" / "lead.md").write_text("---\nname: lead\n---\nOrchestrate.\n")
     (root / "harness" / "settings.json").write_text("{}\n")
     (root / "harness" / "schemas" / "hypothesis.schema.json").write_text(
-        (Path(_ROOT) / "harness" / "schemas" / "hypothesis.schema.json").read_text()
+        (Path(_ROOT) / "improver" / "hypothesis.schema.json").read_text()
     )
     (root / "bench" / "subset.json").write_text(
         json.dumps({"n": len(TRAIN) + len(HELDOUT), "train": TRAIN, "heldout": HELDOUT})

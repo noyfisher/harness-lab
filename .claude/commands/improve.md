@@ -51,7 +51,7 @@ Target the first kind. Prefer the mode that appears in the most instances.
 
 ## Record the hypothesis
 
-Write `harness/HYPOTHESIS.json` matching `harness/schemas/hypothesis.schema.json`:
+Write `harness/HYPOTHESIS.json` matching `improver/hypothesis.schema.json`:
 
 ```json
 {
