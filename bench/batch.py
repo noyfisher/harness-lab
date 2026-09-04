@@ -340,7 +340,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--workers", type=int, default=3, help="concurrent runs (protocol cap: 3)")
     ap.add_argument("--harness-sha", default="HEAD", help="resolved to a full sha once, at batch start")
     ap.add_argument("--instances", default=None, help="comma-separated ids; overrides the subset entirely")
-    ap.add_argument("--model", default="sonnet")
+    ap.add_argument("--model", default="claude-sonnet-5")
     ap.add_argument("--effort", default="medium")
     ap.add_argument("--budget-usd", type=float, default=3.0)
     ap.add_argument("--timeout", type=int, default=2400, help="agent wall clock seconds per run")
