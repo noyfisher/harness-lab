@@ -139,6 +139,10 @@ def main(argv=None) -> int:
         subset = json.load(open(ROOT / "bench" / "subset.json"))
         ids = [i for i in ids if i in set(subset[a.split])]
     out = Path(a.out) / a.condition
+    # Wipe first: a previous run over a wider split must not leave held-out dossiers behind
+    # where the improver could read them.
+    import shutil
+    shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True, exist_ok=True)
     index = [f"# Dossiers for {a.condition} ({a.split}, classes {sorted(wanted)}): {len(ids)} instances", ""]
     for iid in ids:
