@@ -368,12 +368,15 @@ def paired_compare(
     for iid in common:
         pa, ka = pi_a[iid]
         pb, kb = pi_b[iid]
+        if ka != kb:
+            # Protocol caveat 4: pass counts on different k are not on a common scale, so the
+            # instance is listed and EXCLUDED from the transition table and both paired tests.
+            k_mismatch.append(iid)
+            continue
         ca, cb = cls_a[iid], cls_b[iid]
         matrix[index[ca]][index[cb]] += 1
         diff = pb - pa
         diffs.append(diff)
-        if ka != kb:
-            k_mismatch.append(iid)
         if ca == "solid_fail" and cb == "solid_pass":
             flips_up += 1
         if ca == "solid_pass" and cb != "solid_pass":
