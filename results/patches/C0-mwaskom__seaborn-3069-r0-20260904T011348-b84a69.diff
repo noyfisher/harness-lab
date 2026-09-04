@@ -1,0 +1,44 @@
+diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py
+index 4f0290a..0ad27cc 100644
+--- a/seaborn/_core/plot.py
++++ b/seaborn/_core/plot.py
+@@ -17,6 +17,7 @@ from cycler import cycler
+ import pandas as pd
+ from pandas import DataFrame, Series, Index
+ import matplotlib as mpl
++import matplotlib.category as mcategory
+ from matplotlib.axes import Axes
+ from matplotlib.artist import Artist
+ from matplotlib.figure import Figure
+@@ -1631,10 +1632,11 @@ class Plotter:
+             ax = sub["ax"]
+             for axis in "xy":
+                 axis_key = sub[axis]
++                axis_obj = getattr(ax, f"{axis}axis")
+ 
+                 # Axis limits
+                 if axis_key in p._limits:
+-                    convert_units = getattr(ax, f"{axis}axis").convert_units
++                    convert_units = axis_obj.convert_units
+                     a, b = p._limits[axis_key]
+                     lo = a if a is None else convert_units(a)
+                     hi = b if b is None else convert_units(b)
+@@ -1643,6 +1645,18 @@ class Plotter:
+                     if isinstance(b, str):
+                         hi = cast(float, hi) + 0.5
+                     ax.set(**{f"{axis}lim": (lo, hi)})
++                elif isinstance(axis_obj.converter, mcategory.StrCategoryConverter):
++                    # Nominal scales are drawn like seaborn's categorical plots:
++                    # tight limits around the levels, with the y axis inverted.
++                    n = len(axis_obj.units._mapping)
++                    if axis == "x":
++                        ax.set_xlim(-.5, n - .5, auto=None)
++                    else:
++                        ax.set_ylim(n - .5, -.5, auto=None)
++
++                # Nominal scales do not show a grid, regardless of the active style
++                if isinstance(axis_obj.converter, mcategory.StrCategoryConverter):
++                    axis_obj.grid(False)
+ 
+         engine_default = None if p._target is not None else "tight"
+         layout_engine = p._layout_spec.get("engine", engine_default)

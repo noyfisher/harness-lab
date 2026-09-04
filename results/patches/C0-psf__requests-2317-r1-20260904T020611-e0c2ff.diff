@@ -1,0 +1,19 @@
+diff --git a/requests/sessions.py b/requests/sessions.py
+index d701ff2..5eeac83 100644
+--- a/requests/sessions.py
++++ b/requests/sessions.py
+@@ -425,7 +425,13 @@ class Session(SessionRedirectMixin):
+             If Tuple, ('cert', 'key') pair.
+         """
+ 
+-        method = builtin_str(method)
++        # Convert to native strings; decode bytes rather than repr()-ing them
++        # (only relevant on Python 3, where bytes is not the native str
++        # type), so that e.g. b'GET' becomes 'GET' instead of "b'GET'".
++        if isinstance(method, bytes) and bytes is not str:
++            method = method.decode('ascii')
++        else:
++            method = builtin_str(method)
+ 
+         # Create the Request.
+         req = Request(

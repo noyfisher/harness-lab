@@ -1,0 +1,147 @@
+diff --git a/sympy/printing/latex.py b/sympy/printing/latex.py
+index 8253b2f..3f272b6 100644
+--- a/sympy/printing/latex.py
++++ b/sympy/printing/latex.py
+@@ -1477,18 +1477,37 @@ def _print_Adjoint(self, expr):
+             return r"%s^\dagger" % self._print(mat)
+ 
+     def _print_MatAdd(self, expr):
++        from sympy.core.mul import _keep_coeff
++
+         terms = list(expr.args)
+-        tex = " + ".join(map(self._print, terms))
++        tex = ""
++        for i, term in enumerate(terms):
++            c, m = term.as_coeff_mmul() if term.is_MatMul else (S.One, term)
++            if i == 0:
++                pass
++            elif c.is_negative:
++                tex += " - "
++                term = _keep_coeff(-c, m)
++            else:
++                tex += " + "
++            tex += self._print(term)
+         return tex
+ 
+     def _print_MatMul(self, expr):
+         from sympy import Add, MatAdd, HadamardProduct
+ 
++        args = list(expr.args)
++        if args[0] == -1:
++            args = args[1:]
++            sign = "-"
++        else:
++            sign = ""
++
+         def parens(x):
+             if isinstance(x, (Add, MatAdd, HadamardProduct)):
+                 return r"\left(%s\right)" % self._print(x)
+             return self._print(x)
+-        return ' '.join(map(parens, expr.args))
++        return sign + ' '.join(map(parens, args))
+ 
+     def _print_Mod(self, expr, exp=None):
+         if exp is not None:
+diff --git a/sympy/printing/pretty/pretty.py b/sympy/printing/pretty/pretty.py
+index db24f4c..493c8db 100644
+--- a/sympy/printing/pretty/pretty.py
++++ b/sympy/printing/pretty/pretty.py
+@@ -819,9 +819,40 @@ def _print_BlockMatrix(self, B):
+         return self._print(B.blocks)
+ 
+     def _print_MatAdd(self, expr):
+-        return self._print_seq(expr.args, None, None, ' + ')
++        from sympy.core.mul import _keep_coeff
++
++        terms = list(expr.args)
++        pforms = []
++        for i, term in enumerate(terms):
++            c, m = term.as_coeff_mmul() if term.is_MatMul else (S.One, term)
++            if c.is_negative:
++                pform = self._print(_keep_coeff(-c, m))
++                if i == 0:
++                    if pform.height() > 1:
++                        pform_neg = '- '
++                    else:
++                        pform_neg = '-'
++                else:
++                    pform_neg = ' - '
++                if (pform.binding > prettyForm.NEG
++                        or pform.binding == prettyForm.ADD):
++                    pform = stringPict(*pform.parens())
++                pform = stringPict.next(pform_neg, pform)
++                pforms.append(prettyForm(binding=prettyForm.NEG, *pform))
++            else:
++                pforms.append(self._print(term))
++
++        return prettyForm.__add__(*pforms)
+ 
+     def _print_MatMul(self, expr):
++        from sympy.core.mul import _keep_coeff
++
++        c, m = expr.as_coeff_mmul()
++        sign = ""
++        if c.is_number and c < 0:
++            expr = _keep_coeff(-c, m)
++            sign = "-"
++
+         args = list(expr.args)
+         from sympy import Add, MatAdd, HadamardProduct
+         for i, a in enumerate(args):
+@@ -831,7 +862,10 @@ def _print_MatMul(self, expr):
+             else:
+                 args[i] = self._print(a)
+ 
+-        return prettyForm.__mul__(*args)
++        pform = prettyForm.__mul__(*args)
++        if sign:
++            return prettyForm(*pform.left(sign))
++        return pform
+ 
+     def _print_DotProduct(self, expr):
+         args = list(expr.args)
+diff --git a/sympy/printing/str.py b/sympy/printing/str.py
+index 0baefe0..68df9a0 100644
+--- a/sympy/printing/str.py
++++ b/sympy/printing/str.py
+@@ -304,16 +304,36 @@ def _print_Mul(self, expr):
+             return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
+ 
+     def _print_MatMul(self, expr):
+-        return '*'.join([self.parenthesize(arg, precedence(expr))
+-            for arg in expr.args])
++        c, m = expr.as_coeff_mmul()
++
++        if c.is_number and c < 0:
++            expr = _keep_coeff(-c, m)
++            sign = "-"
++        else:
++            sign = ""
++
++        return sign + '*'.join(
++            [self.parenthesize(arg, precedence(expr)) for arg in expr.args]
++        )
+ 
+     def _print_HadamardProduct(self, expr):
+         return '.*'.join([self.parenthesize(arg, precedence(expr))
+             for arg in expr.args])
+ 
+     def _print_MatAdd(self, expr):
+-        return ' + '.join([self.parenthesize(arg, precedence(expr))
+-            for arg in expr.args])
++        terms = [self._print(t) for t in expr.args]
++        l = []
++        for t in terms:
++            if t.startswith('-'):
++                sign = "-"
++                t = t[1:]
++            else:
++                sign = "+"
++            l.extend([sign, t])
++        sign = l.pop(0)
++        if sign == '+':
++            sign = ""
++        return sign + ' '.join(l)
+ 
+     def _print_NaN(self, expr):
+         return 'nan'

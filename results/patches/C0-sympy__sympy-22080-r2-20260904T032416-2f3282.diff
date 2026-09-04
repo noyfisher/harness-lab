@@ -1,0 +1,30 @@
+diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py
+index b669a2c..784736a 100644
+--- a/sympy/printing/pycode.py
++++ b/sympy/printing/pycode.py
+@@ -6,6 +6,7 @@
+ from collections import defaultdict
+ from itertools import chain
+ from sympy.core import S
++from sympy.core.mod import Mod
+ from .precedence import precedence
+ from .codeprinter import CodePrinter
+ 
+@@ -236,6 +237,17 @@ def _print_Mod(self, expr):
+         PREC = precedence(expr)
+         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
+ 
++    def parenthesize(self, item, level, strict=False):
++        # Mod is printed with the Python `%` operator, whose precedence
++        # doesn't distribute over unary minus / multiplication the way the
++        # mathematical Mod function does (e.g. `-a % b != -(a % b)` in
++        # Python). So a Mod nested inside another expression must always be
++        # wrapped in parentheses, regardless of the generic precedence
++        # comparison used for other node types.
++        if isinstance(item, Mod):
++            return '(%s)' % self._print(item)
++        return super().parenthesize(item, level, strict=strict)
++
+     def _print_Piecewise(self, expr):
+         result = []
+         i = 0

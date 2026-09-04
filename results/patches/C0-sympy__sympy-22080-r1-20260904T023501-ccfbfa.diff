@@ -1,0 +1,32 @@
+diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py
+index b669a2c..7684e95 100644
+--- a/sympy/printing/pycode.py
++++ b/sympy/printing/pycode.py
+@@ -6,7 +6,8 @@
+ from collections import defaultdict
+ from itertools import chain
+ from sympy.core import S
+-from .precedence import precedence
++from sympy.core.mod import Mod
++from .precedence import precedence, PRECEDENCE
+ from .codeprinter import CodePrinter
+ 
+ _kw_py2and3 = {
+@@ -236,6 +237,17 @@ def _print_Mod(self, expr):
+         PREC = precedence(expr)
+         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
+ 
++    def parenthesize(self, item, level, strict=False):
++        # Mod is printed with the ``%`` operator, which in Python has the
++        # same precedence as multiplication/division and binds *looser*
++        # than a leading unary minus. Because of this, a Mod term used as
++        # a factor of a Mul (e.g. ``-Mod(x, y)`` or ``2*Mod(x, y)``) must
++        # always be parenthesized, or the generated code would silently
++        # compute a different value.
++        if isinstance(item, Mod) and level <= PRECEDENCE["Mul"]:
++            return "({})".format(self._print(item))
++        return super().parenthesize(item, level, strict=strict)
++
+     def _print_Piecewise(self, expr):
+         result = []
+         i = 0

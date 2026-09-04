@@ -1,0 +1,44 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index aaf35ee..874fd58 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -846,8 +846,6 @@ class Query(BaseExpression):
+         relabelling any references to them in select columns and the where
+         clause.
+         """
+-        assert set(change_map).isdisjoint(change_map.values())
+-
+         # 1. Update references in "select" (normal columns plus aliases),
+         # "group by" and "where".
+         self.where.relabel_aliases(change_map)
+@@ -859,14 +857,23 @@ class Query(BaseExpression):
+         }
+ 
+         # 2. Rename the alias in the internal table/alias datastructures.
+-        for old_alias, new_alias in change_map.items():
+-            if old_alias not in self.alias_map:
+-                continue
+-            alias_data = self.alias_map[old_alias].relabeled_clone(change_map)
+-            self.alias_map[new_alias] = alias_data
+-            self.alias_refcount[new_alias] = self.alias_refcount[old_alias]
+-            del self.alias_refcount[old_alias]
++        # Gather the old data for every alias that's actually present in
++        # this query before mutating alias_map/alias_refcount, so that an
++        # old alias which is also the new name of another alias (e.g.
++        # change_map == {'T4': 'T5', 'T5': 'T6'}) is never read after it has
++        # already been overwritten.
++        old_aliases = {
++            old_alias: (self.alias_map[old_alias], self.alias_refcount[old_alias])
++            for old_alias in change_map if old_alias in self.alias_map
++        }
++        for old_alias in old_aliases:
+             del self.alias_map[old_alias]
++            del self.alias_refcount[old_alias]
++        for old_alias, (alias_data, refcount) in old_aliases.items():
++            new_alias = change_map[old_alias]
++            alias_data = alias_data.relabeled_clone(change_map)
++            self.alias_map[new_alias] = alias_data
++            self.alias_refcount[new_alias] = refcount
+ 
+             table_aliases = self.table_map[alias_data.table_name]
+             for pos, alias in enumerate(table_aliases):

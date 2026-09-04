@@ -1,0 +1,24 @@
+diff --git a/lib/matplotlib/widgets.py b/lib/matplotlib/widgets.py
+index a199e45..42a4358 100644
+--- a/lib/matplotlib/widgets.py
++++ b/lib/matplotlib/widgets.py
+@@ -2369,7 +2369,19 @@ class ToolLineHandles:
+         line_fun = ax.axvline if self.direction == 'horizontal' else ax.axhline
+         self._line_props = line_props
+ 
++        # axvline/axhline update the data limits and can trigger an
++        # autoscale of the Axes, even though these lines are only used to
++        # visualize the extents of the selector and do not represent data
++        # (e.g. they are initially created at position 0 before any
++        # press event). Save and restore the view so that creating the
++        # handles does not change the Axes limits.
++        stale_viewlims = dict(ax._stale_viewlims)
++        viewlim = ax.viewLim.frozen()
++        dataLim = ax.dataLim.frozen()
+         self.artists = [line_fun(p, **line_props) for p in positions]
++        ax.dataLim.set(dataLim)
++        ax.viewLim.set(viewlim)
++        ax._stale_viewlims.update(stale_viewlims)
+ 
+     @property
+     def positions(self):

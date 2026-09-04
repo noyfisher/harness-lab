@@ -1,0 +1,22 @@
+diff --git a/lib/matplotlib/widgets.py b/lib/matplotlib/widgets.py
+index a199e45..cad53bd 100644
+--- a/lib/matplotlib/widgets.py
++++ b/lib/matplotlib/widgets.py
+@@ -2141,10 +2141,16 @@ class SpanSelector(_SelectorWidget):
+         if self.direction == 'horizontal':
+             trans = ax.get_xaxis_transform()
+             w, h = 0, 1
++            rect_pos = sum(ax.get_xbound()) / 2
+         else:
+             trans = ax.get_yaxis_transform()
+             w, h = 1, 0
+-        self._rect = Rectangle((0, 0), w, h,
++            rect_pos = sum(ax.get_ybound()) / 2
++        # Initialise the (invisible) span at the middle of the current view
++        # limits, rather than at 0, so that setting up the interactive edge
++        # handles below does not spuriously expand the axes to include 0.
++        xy = (rect_pos, 0) if self.direction == 'horizontal' else (0, rect_pos)
++        self._rect = Rectangle(xy, w, h,
+                                transform=trans,
+                                visible=False,
+                                **self._rectprops)

@@ -1,0 +1,36 @@
+diff --git a/lib/matplotlib/widgets.py b/lib/matplotlib/widgets.py
+index a199e45..a02057b 100644
+--- a/lib/matplotlib/widgets.py
++++ b/lib/matplotlib/widgets.py
+@@ -2149,17 +2149,31 @@ class SpanSelector(_SelectorWidget):
+                                visible=False,
+                                **self._rectprops)
+ 
++        # The placeholder Rectangle is created at position (0, 0), which
++        # would wrongly force the Axes limits to include 0 through
++        # add_patch's dataLim update. Restore dataLim and request a fresh
++        # autoscale, since this artist is only used for display and should
++        # not affect the data limits.
++        dlim = self.ax.dataLim.frozen()
+         self.ax.add_patch(self._rect)
++        self.ax.dataLim.set(dlim)
++        self.ax._request_autoscale_view()
+         if len(self.artists) > 0:
+             self.artists[0] = self._rect
+         else:
+             self.artists.append(self._rect)
+ 
+     def _setup_edge_handle(self, props):
++        # axvline/axhline (used internally by ToolLineHandles) similarly
++        # update dataLim for the placeholder handles at extents (0, 0); undo
++        # that for the same reason as in new_axes.
++        dlim = self.ax.dataLim.frozen()
+         self._edge_handles = ToolLineHandles(self.ax, self.extents,
+                                              direction=self.direction,
+                                              line_props=props,
+                                              useblit=self.useblit)
++        self.ax.dataLim.set(dlim)
++        self.ax._request_autoscale_view()
+         self.artists.extend([line for line in self._edge_handles.artists])
+ 
+     def _press(self, event):

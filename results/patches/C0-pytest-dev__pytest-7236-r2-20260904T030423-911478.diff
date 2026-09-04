@@ -1,0 +1,16 @@
+diff --git a/src/_pytest/unittest.py b/src/_pytest/unittest.py
+index 773f545..3af0b3e 100644
+--- a/src/_pytest/unittest.py
++++ b/src/_pytest/unittest.py
+@@ -231,6 +231,11 @@ class TestCaseFunction(Function):
+                 self._testcase(result=self)
+             finally:
+                 delattr(self._testcase, self.name)
++                # if the test was skipped, unittest's own TestCase.run() never
++                # calls tearDown() at all, so don't postpone a call that
++                # would never have happened
++                if self._store.get(skipped_by_mark_key, False):
++                    self._explicit_tearDown = None
+ 
+     def _prunetraceback(self, excinfo):
+         Function._prunetraceback(self, excinfo)

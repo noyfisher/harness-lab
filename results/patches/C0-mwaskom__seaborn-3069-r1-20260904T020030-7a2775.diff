@@ -1,0 +1,42 @@
+diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py
+index 4f0290a..334f4c7 100644
+--- a/seaborn/_core/plot.py
++++ b/seaborn/_core/plot.py
+@@ -25,7 +25,7 @@ from seaborn._marks.base import Mark
+ from seaborn._stats.base import Stat
+ from seaborn._core.data import PlotData
+ from seaborn._core.moves import Move
+-from seaborn._core.scales import Scale
++from seaborn._core.scales import Scale, Nominal
+ from seaborn._core.subplots import Subplots
+ from seaborn._core.groupby import GroupBy
+ from seaborn._core.properties import PROPERTIES, Property
+@@ -1631,6 +1631,14 @@ class Plotter:
+             ax = sub["ax"]
+             for axis in "xy":
+                 axis_key = sub[axis]
++                axis_obj = getattr(ax, f"{axis}axis")
++
++                # Nominal scales should not have a grid and, like categorical
++                # plots, are drawn to +/- 0.5 around the first/last tick
++                # (with the y axis inverted so labels read top-to-bottom).
++                nominal_scale = isinstance(self._scales.get(axis_key), Nominal)
++                if nominal_scale:
++                    axis_obj.grid(False, which="both")
+ 
+                 # Axis limits
+                 if axis_key in p._limits:
+@@ -1643,6 +1651,13 @@ class Plotter:
+                     if isinstance(b, str):
+                         hi = cast(float, hi) + 0.5
+                     ax.set(**{f"{axis}lim": (lo, hi)})
++                elif nominal_scale:
++                    locs = axis_obj.get_majorticklocs()
++                    if len(locs):
++                        lo, hi = min(locs) - .5, max(locs) + .5
++                        if axis == "y":
++                            lo, hi = hi, lo
++                        ax.set(**{f"{axis}lim": (lo, hi)})
+ 
+         engine_default = None if p._target is not None else "tight"
+         layout_engine = p._layout_spec.get("engine", engine_default)

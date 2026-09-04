@@ -1,0 +1,20 @@
+diff --git a/seaborn/_core/scales.py b/seaborn/_core/scales.py
+index 55874bf..7469f10 100644
+--- a/seaborn/_core/scales.py
++++ b/seaborn/_core/scales.py
+@@ -378,7 +378,14 @@ class ContinuousBase(Scale):
+             axis.set_view_interval(vmin, vmax)
+             locs = axis.major.locator()
+             locs = locs[(vmin <= locs) & (locs <= vmax)]
+-            labels = axis.major.formatter.format_ticks(locs)
++            formatter = axis.major.formatter
++            labels = formatter.format_ticks(locs)
++            if isinstance(formatter, ScalarFormatter) and formatter.get_offset():
++                # The offset is dropped when formatting each tick individually,
++                # which produces misleading labels for large data with an
++                # offset (e.g. "3" instead of "3000000"). Fall back to the
++                # position-independent format that includes the full value.
++                labels = [formatter.format_data(loc) for loc in locs]
+             new._legend = list(locs), list(labels)
+ 
+         return new

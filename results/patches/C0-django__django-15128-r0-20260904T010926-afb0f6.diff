@@ -1,0 +1,19 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index aaf35ee..e7e75b0 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -846,7 +846,13 @@ class Query(BaseExpression):
+         relabelling any references to them in select columns and the where
+         clause.
+         """
+-        assert set(change_map).isdisjoint(change_map.values())
++        # If keys and values intersect, an alias might be renamed twice
++        # (e.g. T4 -> T5 and later T5 -> T6) which corrupts the mapping.
++        # This can only actually happen for aliases that belong to this
++        # query, so only assert disjointness for those (other keys have no
++        # effect below and are safely ignored).
++        relevant_keys = set(change_map) & set(self.alias_map)
++        assert relevant_keys.isdisjoint(change_map[key] for key in relevant_keys)
+ 
+         # 1. Update references in "select" (normal columns plus aliases),
+         # "group by" and "where".

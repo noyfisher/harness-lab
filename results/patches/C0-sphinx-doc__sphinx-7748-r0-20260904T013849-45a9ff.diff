@@ -1,0 +1,91 @@
+diff --git a/sphinx/ext/autodoc/__init__.py b/sphinx/ext/autodoc/__init__.py
+index f8e4be9..f55bce8 100644
+--- a/sphinx/ext/autodoc/__init__.py
++++ b/sphinx/ext/autodoc/__init__.py
+@@ -1037,14 +1037,14 @@ class DocstringSignatureMixin:
+     feature of reading the signature from the docstring.
+     """
+ 
+-    def _find_signature(self, encoding: str = None) -> Tuple[str, str]:
++    def _find_signature(self, encoding: str = None) -> List[Tuple[str, str]]:
+         if encoding is not None:
+             warnings.warn("The 'encoding' argument to autodoc.%s._find_signature() is "
+                           "deprecated." % self.__class__.__name__,
+                           RemovedInSphinx40Warning, stacklevel=2)
+         docstrings = self.get_doc()
+         self._new_docstrings = docstrings[:]
+-        result = None
++        results = []
+         for i, doclines in enumerate(docstrings):
+             # no lines in docstring, no match
+             if not doclines:
+@@ -1062,14 +1062,30 @@ class DocstringSignatureMixin:
+                     valid_names.extend(cls.__name__ for cls in self.object.__mro__)
+             if base not in valid_names:
+                 continue
++
++            # keep consuming leading lines as long as they also look like
++            # signatures for the same object (SWIG-style overloaded methods
++            # put one signature per line at the top of the docstring)
++            line_no = 1
++            while True:
++                results.append((args, retann))
++                if line_no >= len(doclines):
++                    break
++                match = py_ext_sig_re.match(doclines[line_no])
++                if not match:
++                    break
++                exmod, path, base, args, retann = match.groups()
++                if base not in valid_names:
++                    break
++                line_no += 1
++
+             # re-prepare docstring to ignore more leading indentation
+             tab_width = self.directive.state.document.settings.tab_width  # type: ignore
+-            self._new_docstrings[i] = prepare_docstring('\n'.join(doclines[1:]),
++            self._new_docstrings[i] = prepare_docstring('\n'.join(doclines[line_no:]),
+                                                         tabsize=tab_width)
+-            result = args, retann
+             # don't look any further
+             break
+-        return result
++        return results
+ 
+     def get_doc(self, encoding: str = None, ignore: int = None) -> List[List[str]]:
+         if encoding is not None:
+@@ -1085,9 +1101,16 @@ class DocstringSignatureMixin:
+         if self.args is None and self.env.config.autodoc_docstring_signature:  # type: ignore
+             # only act if a signature is not explicitly given already, and if
+             # the feature is enabled
+-            result = self._find_signature()
+-            if result is not None:
+-                self.args, self.retann = result
++            results = self._find_signature()
++            if results:
++                # if multiple signatures are found, output them all as
++                # separate signature lines (eg. overloaded C++ methods
++                # wrapped by SWIG)
++                sigs = []
++                for args, retann in results:
++                    self.args, self.retann = args, retann
++                    sigs.append(super().format_signature(**kwargs))  # type: ignore
++                return "\n".join(sigs)
+         return super().format_signature(**kwargs)  # type: ignore
+ 
+ 
+@@ -1100,12 +1123,12 @@ class DocstringStripSignatureMixin(DocstringSignatureMixin):
+         if self.args is None and self.env.config.autodoc_docstring_signature:  # type: ignore
+             # only act if a signature is not explicitly given already, and if
+             # the feature is enabled
+-            result = self._find_signature()
+-            if result is not None:
++            results = self._find_signature()
++            if results:
+                 # Discarding _args is a only difference with
+                 # DocstringSignatureMixin.format_signature.
+                 # Documenter.format_signature use self.args value to format.
+-                _args, self.retann = result
++                _args, self.retann = results[0]
+         return super().format_signature(**kwargs)
+ 
+ 

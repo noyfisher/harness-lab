@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harness Lab</title>
+<style>:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #fbfbfa;
+  --surface-2: #f2f2ef;
+  --text: #14140f;
+  --text-2: #52514e;
+  --text-3: #78776f;
+  --line: #dedddb;
+  --line-2: #c4c3c0;
+  --accent: #2a78d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #14140f;
+    --surface: #1c1c18;
+    --surface-2: #26261f;
+    --text: #f4f4ef;
+    --text-2: #c3c2b7;
+    --text-3: #93928a;
+    --line: #38372f;
+    --line-2: #4c4b42;
+    --accent: #3987e5;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 28px 20px 64px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+main { max-width: 1000px; margin: 0 auto; }
+h1 { font-size: 26px; line-height: 1.25; margin: 0 0 10px; }
+h2 {
+  font-size: 19px;
+  margin: 40px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+h3 { font-size: 16px; margin: 26px 0 8px; }
+p { margin: 0 0 12px; }
+a { color: var(--accent); }
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--surface-2);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.claim { font-size: 16px; color: var(--text); margin-bottom: 14px; }
+.prov, .caption, .note {
+  font-size: 13px;
+  color: var(--text-2);
+}
+.prov code { font-size: 0.85em; word-break: break-all; }
+.caption { margin: 8px 0 0; }
+.notice {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin: 18px 0;
+}
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+caption { caption-side: top; text-align: left; padding-bottom: 6px;
+  font-size: 13px; color: var(--text-2); }
+th, td {
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: top;
+}
+thead th { background: var(--surface-2); font-weight: 600; }
+tbody th { background: var(--surface); font-weight: 600; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.ci { color: var(--text-3); font-variant-numeric: tabular-nums; }
+.cls-solid_pass { color: var(--accent); font-weight: 600; }
+.cls-flaky { color: var(--text); }
+.cls-solid_fail { color: var(--text-3); }
+.na { color: var(--text-3); }
+figure { margin: 16px 0 0; }
+svg.chart {
+  display: block;
+  width: 100%;
+  max-width: 700px;
+  height: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+svg.chart .grid { stroke: var(--line); stroke-width: 1; }
+svg.chart .axis { stroke: var(--line-2); stroke-width: 1; }
+svg.chart .ax { font-size: 11px; fill: var(--text-3); }
+svg.chart .axname { font-size: 11px; fill: var(--text-2); }
+svg.chart .val { font-size: 11px; fill: var(--text-2);
+  font-variant-numeric: tabular-nums; paint-order: stroke;
+  stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+svg.chart .tick { font-size: 12px; fill: var(--text-2); }
+svg.chart .series { fill: none; stroke: var(--accent); stroke-width: 2;
+  stroke-linejoin: round; stroke-linecap: round; }
+svg.chart .whisker { stroke: var(--accent); stroke-width: 1.5; opacity: 0.55; }
+svg.chart .point { fill: var(--accent); stroke: var(--surface);
+  stroke-width: 2; }
+svg.chart .bar { fill: var(--accent); }
+details {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 10px 14px;
+  background: var(--surface);
+  margin: 12px 0;
+}
+details[open] { padding-bottom: 14px; }
+summary { cursor: pointer; font-weight: 600; }
+ol.caveats { padding-left: 22px; margin: 8px 0 0; }
+ol.caveats li { margin-bottom: 8px; color: var(--text-2); }
+footer {
+  margin-top: 48px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text-2);
+}
+@media (max-width: 640px) {
+  body { padding: 20px 12px 48px; }
+  h1 { font-size: 22px; }
+  th, td { padding: 5px 8px; }
+}</style>
+</head>
+<body>
+<main>
+<h1>Harness Lab</h1>
+<p class="claim">Does a multi-agent Claude Code harness resolve more SWE-bench Verified issues than a single-agent <code>claude -p</code> baseline running the same model, effort, budget, prompt rules and container, measured on a fixed stratified subset of the arm64-available Verified instances?</p>
+<p class="prov">Generated from <code>runs.jsonl</code> with 120 lines, sha256 <code>f9d1a1bd307c5d7b6e29993d2eded937567e7bac57a2265cf14136cdaa489522</code>. 120 runs loaded, 120 counted toward k. Bootstrap: 10000 instance resamples, seed 0, alpha 0.05.</p>
+<h2>Headline</h2>
+<div class="scroll">
+<table>
+<caption>One row per condition. Rates are the mean over instances of passes/k; N instances, not N*k runs, sets the width of the interval.</caption>
+<thead><tr>
+<th>condition</th>
+<th class="num">instances</th>
+<th class="num">k</th>
+<th class="num">pass rate (95% CI)</th>
+<th class="num">solid_pass</th>
+<th class="num">flaky</th>
+<th class="num">solid_fail</th>
+<th class="num">resolved / counted</th>
+<th class="num">cost per solve</th>
+<th class="num">mean cost per run</th>
+<th class="num">mean wall (s)</th>
+<th class="num">infra failures</th>
+</tr></thead><tbody>
+<tr>
+<th>C0</th>
+<td class="num">40</td>
+<td class="num">3</td>
+<td class="num">0.783 <span class="ci">[0.658, 0.900]</span></td>
+<td class="num">30</td>
+<td class="num">3</td>
+<td class="num">7</td>
+<td class="num">94 / 120</td>
+<td class="num">$1.00</td>
+<td class="num">$0.79</td>
+<td class="num">211.7</td>
+<td class="num">0</td>
+</tr>
+</tbody></table></div>
+<h2>Pass rate by condition</h2>
+<figure>
+<svg class="chart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 320" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Pass rate by condition with 95 percent confidence intervals">
+<title>Pass rate by condition (95% CI)</title>
+<line class="grid" x1="62.00" y1="268.00" x2="676.00" y2="268.00" />
+<text class="ax" x="53.00" y="268.00" text-anchor="end" dominant-baseline="middle">0.00</text>
+<line class="grid" x1="62.00" y1="206.50" x2="676.00" y2="206.50" />
+<text class="ax" x="53.00" y="206.50" text-anchor="end" dominant-baseline="middle">0.25</text>
+<line class="grid" x1="62.00" y1="145.00" x2="676.00" y2="145.00" />
+<text class="ax" x="53.00" y="145.00" text-anchor="end" dominant-baseline="middle">0.50</text>
+<line class="grid" x1="62.00" y1="83.50" x2="676.00" y2="83.50" />
+<text class="ax" x="53.00" y="83.50" text-anchor="end" dominant-baseline="middle">0.75</text>
+<line class="grid" x1="62.00" y1="22.00" x2="676.00" y2="22.00" />
+<text class="ax" x="53.00" y="22.00" text-anchor="end" dominant-baseline="middle">1.00</text>
+<line class="axis" x1="62.00" y1="22.00" x2="62.00" y2="268.00" />
+<line class="axis" x1="62.00" y1="268.00" x2="676.00" y2="268.00" />
+<line class="whisker" x1="369.00" y1="106.05" x2="369.00" y2="46.60" />
+<line class="whisker" x1="364.00" y1="106.05" x2="374.00" y2="106.05" />
+<line class="whisker" x1="364.00" y1="46.60" x2="374.00" y2="46.60" />
+<circle class="point" cx="369.00" cy="75.30" r="4.5" />
+<text class="val" x="369.00" y="36.60" text-anchor="middle">0.783</text>
+<text class="tick" x="369.00" y="288.00" text-anchor="middle">C0</text>
+<text class="axname" x="369.00" y="310.00" text-anchor="middle">condition</text>
+<text class="axname" x="14" y="145.00" text-anchor="middle" transform="rotate(-90 14 145.00)">mean pass@1</text>
+</svg>
+<figcaption class="caption">Mean pass@1 per condition; whiskers are the 95% bootstrap interval over instances. Overlapping intervals do not mean the paired difference is null, because the conditions share instances.</figcaption>
+</figure>
+<figure>
+<svg class="chart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 210" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Cost per solved instance by condition, US dollars">
+<title>Cost per solve by condition (USD)</title>
+<line class="grid" x1="62.00" y1="160.00" x2="676.00" y2="160.00" />
+<text class="ax" x="53.00" y="160.00" text-anchor="end" dominant-baseline="middle">$0.00</text>
+<line class="grid" x1="62.00" y1="90.00" x2="676.00" y2="90.00" />
+<text class="ax" x="53.00" y="90.00" text-anchor="end" dominant-baseline="middle">$0.62</text>
+<line class="grid" x1="62.00" y1="20.00" x2="676.00" y2="20.00" />
+<text class="ax" x="53.00" y="20.00" text-anchor="end" dominant-baseline="middle">$1.25</text>
+<line class="axis" x1="62.00" y1="160.00" x2="676.00" y2="160.00" />
+<path class="bar" d="M 343.00 160.00 L 343.00 51.71 Q 343.00 47.71 347.00 47.71 L 391.00 47.71 Q 395.00 47.71 395.00 51.71 L 395.00 160.00 Z" />
+<text class="val" x="369.00" y="40.71" text-anchor="middle">$1.00</text>
+<text class="tick" x="369.00" y="180.00" text-anchor="middle">C0</text>
+<text class="axname" x="14" y="90.00" text-anchor="middle" transform="rotate(-90 14 90.00)">USD per solve</text>
+</svg>
+<figcaption class="caption">Total condition cost divided by resolved runs; failed runs stay in the numerator by design. Client-side estimate at API list price, not a subscription cost.</figcaption>
+</figure>
+<h2>Per-instance detail</h2>
+<details>
+<summary>Per-instance results (40 instance(s))</summary>
+<p class="caption">Pass count out of k, and the resulting class, for every instance in every condition. Instances a condition never ran show n/a.</p>
+<div class="scroll"><table>
+<thead><tr><th>instance_id</th><th>repo</th>
+<th class="num">C0</th>
+</tr></thead><tbody>
+<tr><th>astropy__astropy-13579</th><td>astropy</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>astropy__astropy-14309</th><td>astropy</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>astropy__astropy-14539</th><td>astropy</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>astropy__astropy-14995</th><td>astropy</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>django__django-11149</th><td>django</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>django__django-15128</th><td>django</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>django__django-15732</th><td>django</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+</tr>
+<tr><th>django__django-16667</th><td>django</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+</tr>
+<tr><th>matplotlib__matplotlib-13989</th><td>matplotlib</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>matplotlib__matplotlib-20676</th><td>matplotlib</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+</tr>
+<tr><th>matplotlib__matplotlib-20859</th><td>matplotlib</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>mwaskom__seaborn-3069</th><td>mwaskom</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>mwaskom__seaborn-3187</th><td>mwaskom</td>
+<td class="num">1/3 <span class="cls-flaky">flaky</span></td>
+</tr>
+<tr><th>pallets__flask-5014</th><td>pallets</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>psf__requests-1724</th><td>psf</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>psf__requests-1921</th><td>psf</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>psf__requests-2317</th><td>psf</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>psf__requests-6028</th><td>psf</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>pylint-dev__pylint-6528</th><td>pylint-dev</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>pylint-dev__pylint-6903</th><td>pylint-dev</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>pylint-dev__pylint-8898</th><td>pylint-dev</td>
+<td class="num">1/3 <span class="cls-flaky">flaky</span></td>
+</tr>
+<tr><th>pytest-dev__pytest-7236</th><td>pytest-dev</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>pytest-dev__pytest-7324</th><td>pytest-dev</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>pytest-dev__pytest-7490</th><td>pytest-dev</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>pytest-dev__pytest-7521</th><td>pytest-dev</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>pytest-dev__pytest-7571</th><td>pytest-dev</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>pytest-dev__pytest-7982</th><td>pytest-dev</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>scikit-learn__scikit-learn-25232</th><td>scikit-learn</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>scikit-learn__scikit-learn-25973</th><td>scikit-learn</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>scikit-learn__scikit-learn-26194</th><td>scikit-learn</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>sphinx-doc__sphinx-10466</th><td>sphinx-doc</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>sphinx-doc__sphinx-7748</th><td>sphinx-doc</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+</tr>
+<tr><th>sphinx-doc__sphinx-7985</th><td>sphinx-doc</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+</tr>
+<tr><th>sphinx-doc__sphinx-8120</th><td>sphinx-doc</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>sphinx-doc__sphinx-8269</th><td>sphinx-doc</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>sympy__sympy-14248</th><td>sympy</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>sympy__sympy-19040</th><td>sympy</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+</tr>
+<tr><th>sympy__sympy-19783</th><td>sympy</td>
+<td class="num">2/3 <span class="cls-flaky">flaky</span></td>
+</tr>
+<tr><th>sympy__sympy-20428</th><td>sympy</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+</tr>
+<tr><th>sympy__sympy-22080</th><td>sympy</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+</tr>
+</tbody></table></div></details>
+<h2>Infrastructure failures</h2>
+<p class="note">None recorded.</p>
+<h2>How to read this</h2>
+<p>A run counts toward k only when the agent had its chance (<code>resolved</code>, <code>unresolved</code>, <code>no_diff</code>, <code>budget</code>, <code>timeout</code>). Infrastructure failures (<code>paused</code>, <code>error</code>, <code>parse_error</code>) are re-run and reported separately. Per instance and condition the class is solid_pass (k of k), solid_fail (0 of k), or flaky. The bootstrap resamples <em>instances</em>, not runs, because the k repeats of one instance are not independent observations.</p>
+<p class="caption">Caveats, copied from <code>docs/protocol.md</code> at generation time:</p>
+<ol class="caveats">
+<li>The instance bootstrap absorbs between-instance spread, so measured coverage is ~97-99%, wider than nominal for a fixed-instance claim. We state the fixed-instance claim.</li>
+<li>Overlapping per-condition CIs do not imply no paired difference; conditions share instances. Read the paired tests.</li>
+<li>Wilcoxon on 0..k pass counts is coarse at k=3 (many ties); the sign test is the assumption-light cross-check. Both are reported.</li>
+<li>Repeats are paired by index across conditions; if k ever differs for an instance the module flags <code>k_mismatch_instances</code> and that instance is excluded from the paired test.</li>
+<li><code>cost_per_solve</code> includes failed runs in the numerator by design.</li>
+<li>Infra failures are not missing at random (<code>paused</code> clusters by time of day); the infra table accompanies every headline number.</li>
+<li>Any run whose credential type differs from the rest of its condition is flagged; costs are not compared across credential types.</li>
+</ol>
+</main>
+<footer>
+<p><strong>Pinned versions</strong></p>
+<div class="scroll"><table><thead><tr>
+<th>component</th>
+<th>value</th>
+</tr></thead><tbody>
+<tr>
+<th style="white-space:normal">Claude Code CLI</th>
+<td style="white-space:normal">2.1.76, <code>DISABLE_AUTOUPDATER=1</code>, installed in the agent image via npm</td>
+</tr>
+<tr>
+<th style="white-space:normal">swebench</th>
+<td style="white-space:normal">5.0.2 (import check: <code>swebench.harness.utils.make_test_spec</code>, <code>swebench.types.TestSpec</code>, <code>swebench.harness.grading.get_logs_eval/get_eval_report</code> all resolve)</td>
+</tr>
+<tr>
+<th style="white-space:normal">task definitions</th>
+<td style="white-space:normal"><code>SWE-bench/swe-bench-tasks</code> shallow clone (task dirs carry eval.sh, test.patch, gold.patch)</td>
+</tr>
+<tr>
+<th style="white-space:normal">images</th>
+<td style="white-space:normal"><code>ghcr.io/epoch-research/swe-bench.eval.arm64.&lt;instance_id&gt;:latest</code> (only tag published; digest recorded per run)</td>
+</tr>
+<tr>
+<th style="white-space:normal">agent image</th>
+<td style="white-space:normal">Epoch base + Node 22.20.0 + pinned CLI (<code>bench/docker/Dockerfile</code>)</td>
+</tr>
+<tr>
+<th style="white-space:normal">model / effort</th>
+<td style="white-space:normal"><code>claude-sonnet-5</code> (explicit id; the <code>sonnet</code> alias resolves to claude-sonnet-4-6 in CLI 2.1.76) / <code>medium</code>; all six harness agents use <code>model: inherit</code> so the run flag controls every agent</td>
+</tr>
+<tr>
+<th style="white-space:normal">improver model</th>
+<td style="white-space:normal">Opus or Fable, high effort; never used inside a counted run</td>
+</tr>
+</tbody></table></div>
+<p>This page is generated by <code>bench/site.py</code> from the run manifest and is never hand edited. Regenerate with <code>python -m bench.site --runs results/runs.jsonl --out results/site</code>.</p>
+</footer>
+</body>
+</html>

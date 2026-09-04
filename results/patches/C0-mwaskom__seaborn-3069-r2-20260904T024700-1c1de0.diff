@@ -1,0 +1,35 @@
+diff --git a/seaborn/_core/scales.py b/seaborn/_core/scales.py
+index bbd71ec..815c709 100644
+--- a/seaborn/_core/scales.py
++++ b/seaborn/_core/scales.py
+@@ -191,6 +191,30 @@ class Nominal(Scale):
+             # we use this to (A) set the padding we want for categorial plots
+             # and (B) allow the values parameter for a Coordinate to set xlim/ylim
+             axis.set_view_interval(0, len(units_seed) - 1)
++        else:
++            # Draw the categorical axis the same way seaborn's categorical
++            # plots do: fixed to +/- 0.5 around the first/last category
++            # (regardless of the normal margin logic), no grid, and, for
++            # the y axis, inverted.
++            axis.grid(False)
++            ax = axis.axes
++            if axis is ax.yaxis:
++                ax.invert_yaxis()
++
++            # An invisible artist with sticky edges anchors the axis limits
++            # to the categorical range without adding the usual margin.
++            # The cross axis coordinate is expressed in axes-fraction units
++            # (like axvline/axhline) so it does not affect that axis's own
++            # data limits.
++            limits = -.5, len(units_seed) - .5
++            if axis is ax.xaxis:
++                edge = mpl.lines.Line2D(limits, [0, 1], transform=ax.get_xaxis_transform())
++                edge.sticky_edges.x[:] = limits
++            else:
++                edge = mpl.lines.Line2D([0, 1], limits, transform=ax.get_yaxis_transform())
++                edge.sticky_edges.y[:] = limits
++            edge.set_visible(False)
++            ax.add_line(edge)
+ 
+         new._matplotlib_scale = mpl_scale
+ 
