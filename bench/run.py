@@ -284,7 +284,7 @@ def run_one(a) -> dict:
             manifest["outcome"] = outcome if outcome != "ok" else "ungraded"
         else:
             grade_run = f"grade-{run_id}"
-            rep = grader.grade(a.instance, diff, grade_run, timeout=a.grade_timeout, pull=False)
+            rep = grader.grade(a.instance, diff, grade_run, timeout=a.grade_timeout, pull=True)  # pull if the base image is missing
             manifest["grade_run_id"] = grade_run
             manifest["resolved"] = bool(rep.get("resolved"))
             if rep.get("infra_failure"):
