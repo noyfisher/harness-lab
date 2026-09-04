@@ -16,3 +16,6 @@ bench/c0-config/.claude.json
 bench/c0-config/backups/
 # grading logs are large and reproducible from patches
 results/grading/
+
+improver/state/*.bak
+results/dryruns.jsonl
