@@ -165,6 +165,9 @@ def run_one(a) -> dict:
         raise SystemExit("docker daemon not reachable (open Docker Desktop)")
     if sh(["docker", "image", "inspect", image]).returncode != 0:
         raise SystemExit(f"agent image missing: {image}. Build with bench/docker/build.sh {a.instance}")
+    base_ref = grader.image_ref(a.instance)
+    dig = sh(["docker", "image", "inspect", "--format", "{{index .RepoDigests 0}}", base_ref]).stdout.strip()
+    manifest["image_digest"] = dig or None  # only `latest` is published; the digest pins the environment
     cred_name, cred_value = ("DRY", "dry") if a.dry else read_credentials()
     manifest["credential"] = {"CLAUDE_CODE_OAUTH_TOKEN": "subscription", "ANTHROPIC_API_KEY": "api_key", "DRY": "dry"}[cred_name]
 
@@ -301,8 +304,9 @@ def run_one(a) -> dict:
             if a.condition != "C0" and cfg_src.parent.name.startswith("hl-harness-"):
                 shutil.rmtree(cfg_src.parent, ignore_errors=True)
     manifest["wall_s"] = round(time.time() - t_start, 1)
-    RUNS.parent.mkdir(parents=True, exist_ok=True)
-    with open(RUNS, "a") as fh:
+    target = RUNS.with_name("dryruns.jsonl") if a.dry else RUNS  # dry runs never touch the counted file
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with open(target, "a") as fh:
         fh.write(json.dumps(manifest) + "\n")
     return manifest
 

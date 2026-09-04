@@ -19,3 +19,18 @@
   Opus-lead (C1o) is an optional sensitivity variant.
 - [2026-09-03] **Epoch arm64 images are publicly readable** (anonymous manifest fetch
   returned HTTP 200); no `docker login ghcr.io` required.
+- [2026-09-03] **arm64 coverage gap accepted as a stated limitation.** Epoch has arm64 images
+  for 420/500 Verified instances; xarray 0/22, matplotlib 7/34, scikit-learn 7/32. The
+  subset tilts toward pure-Python repos. x86_64 images exist for all 500; an amd64
+  sensitivity run under emulation is a possible later addition, not part of the study.
+- [2026-09-03] **Only the `latest` tag exists on Epoch images.** Runs record the image digest
+  so a re-tag cannot silently change the environment.
+- [2026-09-03] **Root inside the container with `IS_SANDBOX=1`.** The permission-bypass flag
+  is refused for root unless the sandbox marker is set; the container is throwaway.
+- [2026-09-03] **Network egress is NOT restricted in v1 benchmark runs.** The SWE-bench repos
+  are pinned 2019-2023 commits of well-known projects; exfiltration risk from repo content is
+  judged negligible for phase A. Phase B (arbitrary OSS repos) must add egress restriction
+  before any run. Tracked as an open item.
+- [2026-09-03] **Config dir is copied to a writable path inside the container.** Claude Code
+  writes `.claude.json` and backups into its config dir; the harness checkout is mounted
+  read-only and copied, so runs never dirty the harness git tree.

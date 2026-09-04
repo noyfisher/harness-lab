@@ -1,0 +1,19 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r requirements.txt
+      - run: python -m pytest bench/tests -q
+      - name: results page is generated, never hand-edited
+        run: |
+          if [ -f results/runs.jsonl ]; then
+            python -m bench.stats --runs results/runs.jsonl --json /tmp/stats.json > /tmp/report.md
+            if [ -d results/site ] && [ -f results/site/index.html ]; then
+              python -m bench.site --runs results/runs.jsonl --out /tmp/site && diff -r /tmp/site results/site
+            fi
+          fi
