@@ -480,8 +480,18 @@ def invoke_improver(a) -> dict:
     assert "--bare" not in cmd, "non-negotiable 6: --bare skips agents and subscription auth"
     assert "--dangerously-skip-permissions" not in cmd, "never on the host"
     log(f"agent: {' '.join(cmd)} (cwd {ROOT})")
+    # Authenticate the host session with the same long-lived token the containers use, so the
+    # loop does not depend on the interactive CLI login (whose access token can expire and hang -p).
+    env = dict(os.environ)
     try:
-        r = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, timeout=a.agent_timeout)
+        from bench.run import read_credentials
+        cred_name, cred_value = read_credentials()
+        env[cred_name] = cred_value
+    except SystemExit as exc:
+        return {"rc": -1, "is_error": True, "error": f"no credential for improver: {exc}",
+                "total_cost_usd": None, "num_turns": None}
+    try:
+        r = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, timeout=a.agent_timeout, env=env)
     except (OSError, subprocess.TimeoutExpired) as exc:
         return {"rc": -1, "is_error": True, "error": f"{type(exc).__name__}: {exc}",
                 "total_cost_usd": None, "num_turns": None}
@@ -498,6 +508,7 @@ def invoke_improver(a) -> dict:
         "session_id": (result or {}).get("session_id"),
         "num_turns": (result or {}).get("num_turns"),
         "total_cost_usd": (result or {}).get("total_cost_usd"),
+        "result_text": str((result or {}).get("result") or "")[:600],  # diagnostics when the agent fails at turn 1
     }
     if result is None:
         out["error"] = f"no JSON result (rc={r.returncode}): {(r.stderr or r.stdout)[-400:]}"

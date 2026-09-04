@@ -1,1 +1,27 @@
-[]
+[
+ {
+  "variant_id": "20260904T221759",
+  "branch": "cand/20260904T221759",
+  "home_branch": "main",
+  "sha": null,
+  "parent_sha": "75cd4c364beb2b5cfd905c257da9b89babcc1e94",
+  "base_condition": "C1",
+  "base_sha": "9ec1540eb4f56c40ccfafac41055e2335e2fc47e",
+  "cand_condition": null,
+  "hypothesis": null,
+  "created": "2026-09-04T22:17:59Z",
+  "status": "aborted",
+  "stage": "smoke",
+  "results": {},
+  "reason": "improver agent failed at turn 1: host CLI OAuth token expired (401); fixed by passing the long-lived token to the host session",
+  "agent": {
+   "rc": 1,
+   "is_error": true,
+   "subtype": "success",
+   "session_id": "fd4b67e8-4d51-4606-bd57-95f9abb15176",
+   "num_turns": 1,
+   "total_cost_usd": 0
+  },
+  "dry": false
+ }
+]

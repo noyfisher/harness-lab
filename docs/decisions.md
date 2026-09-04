@@ -68,3 +68,7 @@
   session.** `python -m improver.loop --iterations K` keeps disk state (`archive.json` with
   `.bak`, `best.json`, `owner-decisions.md`) and resumes from it; background processes survive
   on this machine, so the team-auto scheduled-task shim is unnecessary here.
+- [2026-09-04] **Improver host session authenticates with the long-lived token**, not the CLI
+  login. First real iteration failed at turn 1 with a 401 (host OAuth access token expired;
+  a plain `claude -p` then hung on re-auth). `loop.py` now injects the credentials-file token
+  into the improver's environment, the same credential the containers use.
