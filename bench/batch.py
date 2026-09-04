@@ -75,10 +75,19 @@ def agent_image(instance_id: str) -> str:
     return AGENT_IMAGE.format(instance=instance_id)
 
 
-def image_exists(instance_id: str) -> bool:
-    r = subprocess.run(["docker", "image", "inspect", agent_image(instance_id)],
-                       capture_output=True, text=True)
-    return r.returncode == 0
+def image_exists(instance_id: str, attempts: int = 3) -> bool:
+    """True if the agent image is present. Docker Desktop under load can fail a single inspect
+    transiently (seen once on an image that both baselines had used), so a miss is retried before
+    the preflight declares the image missing; only a persistent miss fails the batch."""
+    for i in range(attempts):
+        r = subprocess.run(["docker", "image", "inspect", agent_image(instance_id)],
+                           capture_output=True, text=True)
+        if r.returncode == 0:
+            return True
+        if "No such image" in (r.stderr or "") and i == attempts - 1:
+            return False
+        time.sleep(2 * (i + 1))
+    return False
 
 
 # --- 1. work list ---------------------------------------------------------------------------

@@ -77,3 +77,6 @@
   enters a container (run.py strips it), so it is exempt; every other harness file is still
   checked for test names and instance ids. Added `--reuse-candidate REF` so an existing
   candidate can be re-screened after an infra stop or a rule change without a new proposal.
+- [2026-09-04] **Batch preflight retries a failed image inspect.** A re-screen stopped at
+  preflight on an image that both baselines had used and that `docker images` listed; a single
+  transient Docker Desktop error under load. Persistent misses still fail the batch.
