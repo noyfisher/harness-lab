@@ -342,7 +342,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--instances", default=None, help="comma-separated ids; overrides the subset entirely")
     ap.add_argument("--model", default="claude-sonnet-5")
     ap.add_argument("--effort", default="medium")
-    ap.add_argument("--budget-usd", type=float, default=3.0)
+    ap.add_argument("--budget-usd", type=float, default=4.0)  # protocol v1
     ap.add_argument("--timeout", type=int, default=2400, help="agent wall clock seconds per run")
     ap.add_argument("--dry", action="store_true", help="dry runs; reads/writes results/dryruns.jsonl")
     ap.add_argument("--max-infra-errors", type=int, default=5,

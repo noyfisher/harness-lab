@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/noyfisher/harness-lab/harness/schemas/hypothesis.schema.json",
+  "title": "harness variant hypothesis",
+  "description": "Written to harness/HYPOTHESIS.json by the improver agent for every candidate variant, and validated mechanically by improver/loop.py before a single benchmark run is spent. Three constraints cannot be expressed in JSON Schema and are checked on the host instead: every target_files entry must exist in the working tree, every expected_flips id must be in the TRAIN split of bench/subset.json (the held-out split is never named in a hypothesis), and no changed line under harness/ may contain a hidden test name or instance id.",
+  "type": "object",
+  "properties": {
+    "hypothesis": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1200,
+      "description": "One falsifiable claim about the harness: what is changed and what that is expected to do to the train solid_fail instances. First line becomes the candidate commit subject."
+    },
+    "target_files": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^harness/",
+        "minLength": 9
+      },
+      "description": "Repo-relative paths the change touches. Must start with 'harness/' (the improver may mutate nothing else) and must already exist; a new file is added by listing the file it is derived from is NOT allowed -- create the file, then list it."
+    },
+    "expected_flips": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 5
+      },
+      "description": "SWE-bench instance ids from the TRAIN split that this change is predicted to move from solid_fail to solid_pass. A hypothesis that predicts nothing cannot be screened; naming a held-out id is a protocol violation and is rejected."
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 4000,
+      "description": "Why the traces support the hypothesis: which train failures were read, what the shared cause looked like, why this edit addresses it."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "prompt_rule",
+        "workflow",
+        "tool_grant",
+        "agent_added",
+        "agent_removed",
+        "model_or_effort",
+        "other"
+      ],
+      "description": "Coarse kind of change, so the archive can be read as a search history rather than a list of diffs."
+    }
+  },
+  "required": [
+    "hypothesis",
+    "target_files",
+    "expected_flips",
+    "rationale",
+    "category"
+  ],
+  "additionalProperties": false
+}

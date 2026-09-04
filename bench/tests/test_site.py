@@ -299,6 +299,33 @@ def test_conditions_with_different_instance_sets(tmp_path):
     assert result["data"]["paired"][0]["n_only_b"] == 1
 
 
+def test_k_mismatch_instances_are_flagged_as_excluded(tmp_path):
+    """Protocol caveat 4 is rendered verbatim on the page, so the paired
+    block has to say the same thing: the instance is listed, not counted."""
+    runs = make_fixed_runs({"a__a-1": 0, "a__a-2": 3, "a__a-3": 1}, 3, "C0")
+    runs += make_fixed_runs({"a__a-1": 3, "a__a-2": 3, "a__a-3": 1}, 3, "C1")
+    # a fourth counted run in C1 only, so k is 3 vs 4 for a__a-1
+    runs.append(dict(runs[-1], instance_id="a__a-1", repeat=3,
+                     run_id="C1-a__a-1-r3", outcome="resolved", resolved=True))
+    out = tmp_path / "site"
+    result = build(write_runs(tmp_path / "runs.jsonl", runs), out)
+    paired = result["data"]["paired"][0]
+    assert paired["k_mismatch_instances"] == ["a__a-1"]
+    assert paired["n_instances"] == 3
+    assert paired["n_paired"] == 2
+    assert paired["n_excluded"] == 1
+    assert paired["transition_table"]["total"] == 2
+    assert paired["flips_up"] == 0
+
+    page = result["html"]
+    assert "Paired on 2 of the 3 instance(s)" in page
+    assert "1 excluded for k mismatch" in page
+    assert "k differs between conditions for 1 instance(s): a__a-1" in page
+    assert "excluded from the transition table and both paired tests" in page
+    # the no-mismatch wording is untouched
+    assert "Paired on the" not in page
+
+
 def test_candidates_are_kept_out_of_the_headline(tmp_path):
     runs = make_fixed_runs(C0_SPEC, 3, "C0")
     runs += make_fixed_runs(C1_SPEC, 3, "C1")

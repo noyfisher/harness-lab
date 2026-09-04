@@ -381,6 +381,73 @@ def test_paired_compare_restricted_to_common_instances():
     assert cmp_["n_only_b"] == 1
 
 
+def test_paired_compare_excludes_k_mismatch_instances():
+    """Protocol caveat 4: an instance whose k differs between the conditions is
+    flagged and dropped from the transition table, the discordant counts and
+    both paired tests, so the result equals the comparison without it."""
+    n_instances, k, n_flip = 20, 3, 8
+    spec_a, spec_b, ids = _paired_fixture(n_instances, k, n_flip)
+    runs = make_fixed_runs(spec_a, k, "C0") + make_fixed_runs(spec_b, k, "C1")
+    # inst000 is a flip candidate (0/3 -> 3/3); a fourth counted run in C1
+    # makes it 4/4 there, so k is 3 in C0 and 4 in C1.
+    odd = ids[0]
+    runs.append(_run("C1", odd, k, "resolved", resolved=True))
+
+    cmp_ = stats.paired_compare(runs, "C0", "C1")
+    assert cmp_["k_mismatch_instances"] == [odd]
+    assert cmp_["n_excluded"] == 1
+    assert cmp_["n_instances"] == n_instances
+    assert cmp_["n_paired"] == n_instances - 1
+    # still listed with its raw counts, but not among the paired instances
+    assert cmp_["k_a"][odd] == 3 and cmp_["k_b"][odd] == 4
+    assert cmp_["pass_counts_a"][odd] == 0 and cmp_["pass_counts_b"][odd] == 4
+    assert odd not in [i["instance_id"] for i in cmp_["instances"]]
+    # dropped from every derived count
+    assert cmp_["transition_table"]["total"] == n_instances - 1
+    assert cmp_["flips_up"] == n_flip - 1
+    assert cmp_["discordant"]["b_only"] == n_flip - 1
+    assert cmp_["discordant"]["n_discordant"] == n_flip - 1
+    assert cmp_["wilcoxon"]["n_nonzero"] == n_flip - 1
+    assert cmp_["sign_test"]["n_discordant"] == n_flip - 1
+
+    # identical to the comparison with that instance removed outright
+    without = [r for r in runs if r["instance_id"] != odd]
+    ref = stats.paired_compare(without, "C0", "C1")
+    for key in ("flips_up", "regressions", "transition_table", "discordant",
+                "wilcoxon", "sign_test", "instances"):
+        assert cmp_[key] == ref[key], key
+    json.dumps(cmp_)
+
+
+def test_paired_compare_all_shared_instances_k_mismatched():
+    runs = make_fixed_runs({"a": 3, "b": 0}, 3, "C0")
+    runs += make_fixed_runs({"a": 2, "b": 0}, 2, "C1")
+    cmp_ = stats.paired_compare(runs, "C0", "C1")
+    assert cmp_["k_mismatch_instances"] == ["a", "b"]
+    assert cmp_["n_instances"] == 2
+    assert cmp_["n_paired"] == 0
+    assert cmp_["n_excluded"] == 2
+    assert cmp_["instances"] == []
+    assert cmp_["transition_table"]["total"] == 0
+    assert cmp_["flips_up"] == 0 and cmp_["regressions"] == 0
+    assert cmp_["wilcoxon"]["p_value"] is None
+    assert cmp_["wilcoxon"]["statistic"] is None
+    assert "k mismatch" in cmp_["wilcoxon"]["note"]
+    assert cmp_["sign_test"]["p_value"] == 1.0
+    json.dumps(cmp_)
+
+
+def test_report_says_k_mismatch_instances_are_excluded():
+    runs = make_fixed_runs({"a": 3, "b": 0, "c": 1}, 3, "C0")
+    runs += make_fixed_runs({"a": 3, "b": 3, "c": 1}, 3, "C1")
+    runs.append(_run("C1", "b", 3, "resolved", resolved=True))
+    text = stats.report(runs, ["C0", "C1"], n_boot=200, seed=0)
+    assert "paired: 2 (1 excluded for k mismatch)" in text
+    assert "k differs between conditions for 1 instance(s)" in text
+    assert "excluded from the transition table and both paired tests" in text
+    assert ": b" in text
+
+
 # --- infra failures --------------------------------------------------------
 
 

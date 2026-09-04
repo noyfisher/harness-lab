@@ -744,10 +744,18 @@ def _paired_block(cmp_: Mapping[str, Any]) -> str:
     out = [f"<h3>{_esc(a)} to {_esc(b)}</h3>"]
     out.append(
         f'<div class="scroll"><table>'
-        f"<caption>Paired on the {cmp_['n_instances']} instance(s) present in "
-        f"both conditions ({cmp_['n_only_a']} only in {_esc(a)}, "
-        f"{cmp_['n_only_b']} only in {_esc(b)}).</caption>"
-        "<thead><tr><th>measure</th><th class=\"num\">value</th>"
+        + (
+            f"<caption>Paired on {cmp_['n_paired']} of the "
+            f"{cmp_['n_instances']} instance(s) present in both conditions "
+            f"({cmp_['n_only_a']} only in {_esc(a)}, {cmp_['n_only_b']} only "
+            f"in {_esc(b)}; {cmp_['n_excluded']} excluded for k mismatch)."
+            "</caption>"
+            if cmp_["n_excluded"]
+            else f"<caption>Paired on the {cmp_['n_instances']} instance(s) "
+            f"present in both conditions ({cmp_['n_only_a']} only in "
+            f"{_esc(a)}, {cmp_['n_only_b']} only in {_esc(b)}).</caption>"
+        )
+        + "<thead><tr><th>measure</th><th class=\"num\">value</th>"
         "<th>reading</th></tr></thead><tbody>"
     )
     rows = [
@@ -796,9 +804,11 @@ def _paired_block(cmp_: Mapping[str, Any]) -> str:
         shown = ", ".join(_esc(i) for i in cmp_["k_mismatch_instances"][:5])
         out.append(
             f'<p class="note">k differs between conditions for '
-            f'{len(cmp_["k_mismatch_instances"])} instance(s): {shown}'
-            f'{" and more" if len(cmp_["k_mismatch_instances"]) > 5 else ""}.'
-            f"</p>"
+            f'{cmp_["n_excluded"]} instance(s): {shown}'
+            f'{" and more" if cmp_["n_excluded"] > 5 else ""}. '
+            "These are listed but excluded from the transition table and both "
+            "paired tests (protocol caveat 4)."
+            "</p>"
         )
     out.append(_transition_table(cmp_))
     return "\n".join(out)

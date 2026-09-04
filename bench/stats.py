@@ -60,6 +60,9 @@ Caveats worth stating in ``docs/protocol.md``
   conditions overlapping does not mean the paired difference is null.
 * ``total_cost_usd`` is a client-side estimate at API list price, and
   ``cost_per_solve`` divides total cost (including failed runs) by resolved runs.
+* Repeats are paired by index, so an instance whose k differs between two
+  conditions has pass counts on different scales.  It is listed in
+  ``k_mismatch_instances`` and excluded from the paired comparison (caveat 4).
 """
 
 from __future__ import annotations
@@ -343,6 +346,13 @@ def paired_compare(
     regression counts, discordant majority pairs, a Wilcoxon signed-rank test on
     per-instance pass-count differences, and an exact sign test on the
     discordant majority pairs as a second view.
+
+    An instance whose counted-run k differs between the two conditions is
+    listed in ``k_mismatch_instances`` and excluded from the transition table,
+    the flip / regression counts, the discordant pairs and both tests
+    (protocol caveat 4).  ``n_instances`` counts the instances present in both
+    conditions, ``n_paired`` those that entered the comparison and
+    ``n_excluded`` those dropped for k mismatch.
     """
     runs = list(runs)
     pi_a = per_instance(runs, cond_a)
@@ -411,7 +421,11 @@ def paired_compare(
     wilcoxon_note = ""
     d = np.asarray(diffs, dtype=float)
     if d.size == 0:
-        wilcoxon_note = "no instances present in both conditions"
+        wilcoxon_note = (
+            "all shared instances excluded for k mismatch"
+            if k_mismatch
+            else "no instances present in both conditions"
+        )
     elif not np.any(d != 0):
         # zero_method="wilcox" discards zeros and raises when all are zero;
         # an all-tied comparison is simply "no evidence of a difference".
@@ -445,6 +459,8 @@ def paired_compare(
         "n_instances": len(common),
         "n_only_a": len(set(pi_a) - set(pi_b)),
         "n_only_b": len(set(pi_b) - set(pi_a)),
+        "n_paired": len(common) - len(k_mismatch),
+        "n_excluded": len(k_mismatch),
         "k_mismatch_instances": k_mismatch,
         "instances": instances,
         "pass_counts_a": {iid: int(pi_a[iid][0]) for iid in common},
@@ -709,7 +725,14 @@ def report(
         out.append("")
         out.append(
             f"Instances in both conditions: {cmp_['n_instances']} "
-            f"({cmp_['n_only_a']} only in {a}, {cmp_['n_only_b']} only in {b})."
+            f"({cmp_['n_only_a']} only in {a}, {cmp_['n_only_b']} only in {b}); "
+            f"paired: {cmp_['n_paired']}"
+            + (
+                f" ({cmp_['n_excluded']} excluded for k mismatch)"
+                if cmp_["n_excluded"]
+                else ""
+            )
+            + "."
         )
         out.append("")
         out.append(
@@ -742,8 +765,10 @@ def report(
         if cmp_["k_mismatch_instances"]:
             out.append(
                 f"- warning: k differs between conditions for "
-                f"{len(cmp_['k_mismatch_instances'])} instance(s): "
+                f"{cmp_['n_excluded']} instance(s), excluded from the "
+                f"transition table and both paired tests (protocol caveat 4): "
                 + ", ".join(cmp_["k_mismatch_instances"][:5])
+                + (" and more" if cmp_["n_excluded"] > 5 else "")
             )
         out.append("")
         tt = cmp_["transition_table"]

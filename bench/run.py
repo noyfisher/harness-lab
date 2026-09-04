@@ -80,6 +80,9 @@ def harness_export(sha: str) -> tuple[Path, str]:
     )
     if r.returncode != 0 or not (tmp / "harness").is_dir():
         raise SystemExit(f"git archive failed for {full}: {r.stderr}")
+    # The improver's hypothesis names train instance ids; it is loop bookkeeping, not harness
+    # behaviour, and must never enter the agent container.
+    (tmp / "harness" / "HYPOTHESIS.json").unlink(missing_ok=True)
     return tmp / "harness", full
 
 

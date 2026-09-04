@@ -53,3 +53,18 @@
 - [2026-09-04] **Post-C0 re-check: weekly cap ~= $1,600 list-equivalent; subscription decision
   stands.** Weekly moved 7 points on ~$111 of mixed usage (batch + orchestration), one point over
   the literal threshold; attribution puts the batch at ~6 points. See `spike.md`.
+- [2026-09-04] **Improver loop judgment calls (improver/loop.py).** (a) Candidate branches start
+  at HEAD with only `harness/` reset to the base sha, so the driver and `/improve` stay current
+  while what is measured (`harness/` at the sha) is unchanged; asserted with
+  `git diff --quiet <base> HEAD -- harness`. (b) `results/` and `improver/state/` are exempt
+  from the clean-tree precondition (a batch may be appending). (c) Rejected candidates are
+  still committed on their branch so evidence survives and `main` ends clean. (d) The leak
+  check scans added lines only; `HYPOTHESIS.json` is exempt from the instance-id check because
+  `expected_flips` must name train ids, and `run.py` now strips that file from the export so
+  it never enters the agent container. (e) The k=1 screens are cheap filters; only the k=3
+  confirmation applies the accept rule. (f) `batch.py` default budget corrected to $4.00 to
+  match protocol v1 (both baselines already ran at $4.00).
+- [2026-09-04] **Unattended improver = a long-running host process, not a scheduled Claude
+  session.** `python -m improver.loop --iterations K` keeps disk state (`archive.json` with
+  `.bak`, `best.json`, `owner-decisions.md`) and resumes from it; background processes survive
+  on this machine, so the team-auto scheduled-task shim is unnecessary here.
