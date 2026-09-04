@@ -23,5 +23,42 @@
    "total_cost_usd": 0
   },
   "dry": false
+ },
+ {
+  "variant_id": "20260904T223407",
+  "branch": "cand/20260904T223407",
+  "home_branch": "main",
+  "sha": "de3f3343bfdf5b2ffcafb688fc27b5b401e5e012",
+  "parent_sha": "4788d75513dafa3a58a6dd58ff9790c322024e70",
+  "base_condition": "C1",
+  "base_sha": "9ec1540eb4f56c40ccfafac41055e2335e2fc47e",
+  "cand_condition": "cand-de3f334",
+  "hypothesis": {
+   "hypothesis": "Many solid_fail instances produce patches that make the reproduction pass but break hidden tests in test modules outside the nearest directory. The agent never discovers these regressions because it only runs nearest tests. Adding a step to backend-dev that searches for and runs test files across the whole repo that call or import the changed function should catch regressions early while the agent still has budget to iterate, flipping instances where the fix is close but has unintended side effects.",
+   "category": "prompt_rule",
+   "target_files": [
+    "harness/agents/backend-dev.md"
+   ],
+   "expected_flips": [
+    "django__django-15732",
+    "sympy__sympy-22080"
+   ],
+   "rationale": "In django__django-15732 (0/3), all 3 runs apply the same primary_key=False fix to schema.py and test only with tests/schema/ (all pass), but the hidden test test_remove_unique_together_on_unique_field lives in tests/migrations/test_operations.py. A grep for alter_unique_together or _delete_composed_index would find this test file; discovering the failure would show the agent that its fix must also handle fields with unique=True (not just PK), producing a more general fix. In sympy__sympy-22080 (0/3), all 3 runs fix Mod precedence in pycode.py or precedence.py and test only sympy/printing/tests/ (pass), but the hidden regression test_create_expand_pow_optimization is in sympy/codegen/tests/test_rewriting.py. A grep for parenthesize or the changed function name would find this test; discovering the regression would lead the agent to adjust its approach. Currently backend-dev step 5 says run the nearest existing tests only; the new step 6 searches the whole test tree for callers of the changed function."
+  },
+  "created": "2026-09-04T22:34:07Z",
+  "status": "rejected",
+  "stage": "smoke",
+  "results": {},
+  "reason": "rejected at validation only (hidden test name quoted in HYPOTHESIS.json rationale); the harness change itself was never screened; re-screened via --reuse-candidate",
+  "agent": {
+   "rc": 0,
+   "is_error": false,
+   "subtype": "success",
+   "session_id": "8e7e5a06-18d5-4786-a4dd-884cd4a754da",
+   "num_turns": 35,
+   "total_cost_usd": 2.00848975,
+   "result_text": "**Failure mode**: The agent runs only \"nearest\" tests (same module's `tests/` directory) and misses regressions in test files elsewhere in the repo that exercise the changed code.\n\n**Change**: Added step 6 to `harness/agents/backend-dev.md` \u2014 after nearest tests pass, grep for the changed function across all test files and run up to 3 additional test files from outside the nearest directory.\n\n**Files touched**: `harness/agents/backend-dev.md`, `harness/HYPOTHESIS.json`\n\n**Expected flips**: `django__django-15732` (would discover `migrations.test_operations` and fix for `unique=True` not just PK"
+  },
+  "dry": false
  }
 ]

@@ -72,3 +72,8 @@
   login. First real iteration failed at turn 1 with a 401 (host OAuth access token expired;
   a plain `claude -p` then hung on re-auth). `loop.py` now injects the credentials-file token
   into the improver's environment, the same credential the containers use.
+- [2026-09-04] **Leak check scoped to container-bound files.** The first real candidate was
+  rejected because its HYPOTHESIS.json rationale quoted a hidden test name. That file never
+  enters a container (run.py strips it), so it is exempt; every other harness file is still
+  checked for test names and instance ids. Added `--reuse-candidate REF` so an existing
+  candidate can be re-screened after an infra stop or a rule change without a new proposal.

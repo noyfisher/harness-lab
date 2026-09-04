@@ -421,10 +421,11 @@ def find_leaks(lines, needles) -> list[str]:
 def leak_check(base_sha: str, head_sha: str, instances_path, train_ids) -> list[str]:
     """Every leak hit in the candidate's added harness lines, HYPOTHESIS.json handled apart."""
     test_needles, id_needles = leak_needles(instances_path, train_ids)
+    # HYPOTHESIS.json is loop bookkeeping: run.py strips it from every container export, so it
+    # cannot influence the agent under test and is exempt (its rationale may cite dossier
+    # evidence). Every other harness file is checked for both test names and instance ids.
     body = added_lines(base_sha, head_sha, ["harness", f":(exclude){HYPOTHESIS_REL}"])
-    hypothesis = added_lines(base_sha, head_sha, [HYPOTHESIS_REL])
-    return (find_leaks(body, test_needles | id_needles)
-            + find_leaks(hypothesis, test_needles))
+    return find_leaks(body, test_needles | id_needles)
 
 
 # --- 5. seams (monkeypatched in tests; the only places this module spends or shells out) -----
@@ -819,7 +820,19 @@ def iterate(a) -> int:
                         EXIT_DIRTY)
         persist()
 
-        agent = stub_improver(a) if a.dry else invoke_improver(a)
+        if getattr(a, "reuse_candidate", None):
+            # Re-screen an existing candidate commit (after an infra stop or a rule change) without
+            # paying for a new proposal: stage its harness/ on top of the base and validate as usual.
+            reuse_sha = rev_parse(a.reuse_candidate)
+            if not reuse_sha:
+                return halt(f"--reuse-candidate {a.reuse_candidate!r} does not resolve", EXIT_DIRTY)
+            git_ok("checkout", reuse_sha, "--", "harness")
+            clean_harness_state(HARNESS)
+            agent = {"rc": 0, "is_error": False, "subtype": "reused", "reused_from": reuse_sha,
+                     "total_cost_usd": 0.0, "num_turns": 0}
+            record["reused_from"] = reuse_sha
+        else:
+            agent = stub_improver(a) if a.dry else invoke_improver(a)
         record["agent"] = agent
         persist()
         cost = agent.get("total_cost_usd")
@@ -987,6 +1000,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--once", action="store_true", help="exactly one iteration (the default)")
     p.add_argument("--iterations", type=int, default=1,
                    help="run up to K iterations sequentially; stops on the first non-zero exit")
+    p.add_argument("--reuse-candidate", default=None, metavar="REF",
+                   help="skip the improver: re-screen the harness/ of an existing candidate branch or sha")
     p.add_argument("--dry", action="store_true",
                    help="stub the improver agent and thread --dry into every batch; no spend")
     p.add_argument("--max-consecutive-rejects", type=int, default=4,
