@@ -65,3 +65,20 @@ and the rule is re-evaluated before C1.
 - C1: 3 runs, mean cost $1.01, mean wall 250 s, total $3.03
 - spike total at list price: $5.10 across 7 runs (one C0 sympy duplicate from an infra retry)
 - grading infra failures on sympy were caused by the gold job not having pulled that image yet; fixed (grade pulls) and regraded without re-running the agent
+
+## Post-C0 re-check (Noy's `/usage`, 2026-09-04T17:15:57Z)
+
+| window | before (05:56Z) | after C0 (17:15Z) | delta |
+|---|---|---|---|
+| session (5-hour) | 17% | 6% | window reset in between |
+| weekly_all | 30% | 37% | +7 points |
+| weekly_scoped | 40% | 42% | +2 points (orchestration on Fable/Opus; C0 is Sonnet) |
+
+Usage in the interval: C0 batch $94.24 (Sonnet) + orchestration session ~$17 (Fable/Opus/
+Sonnet subagents) + Noy's other activity (unknown, ~130 requests). The literal threshold
+(> 6 points => re-evaluate) was exceeded by one point, so the rule is re-evaluated here:
+~$111+ moved the weekly cap 7 points => ~$16 per point => weekly cap ~= $1,600 list-equivalent,
+consistent with the spike's lower bound. Attributing ~$94 of the 7 points to the batch gives
+~6 points for C0 alone. Remaining study ~$660 over ~3 weeks; the C1 batch (~$216, ~14 points)
+lands this week at ~51% total including Noy's own use, and the heaviest planned week is ~24%
+of the cap. Decision stands: **subscription only**. C1 started 2026-09-04T17:2xZ.

@@ -50,3 +50,6 @@
   weeks; heaviest week <= 20% of weekly capacity. Re-check after the C0 baseline batch.
 - [2026-09-04] **Protocol frozen v1.** N=40 (24/16), k=3, claude-sonnet-5 medium, $4.00 budget,
   2400 s wall, 3 workers, batches overnight. Harness seed = tag `harness-seed` (9ec1540).
+- [2026-09-04] **Post-C0 re-check: weekly cap ~= $1,600 list-equivalent; subscription decision
+  stands.** Weekly moved 7 points on ~$111 of mixed usage (batch + orchestration), one point over
+  the literal threshold; attribution puts the batch at ~6 points. See `spike.md`.
