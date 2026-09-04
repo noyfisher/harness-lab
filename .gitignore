@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# Host-only dataset cache; contains hidden test fields. Regenerate with bench/fetch.py.
+bench/instances.json
+bench/.cache/
+# Scratch
+*.log
+.DS_Store
+
+# Claude Code writes state into its config dir; never commit it
+harness/.claude.json
+harness/backups/
+bench/c0-config/.claude.json
+bench/c0-config/backups/
+# grading logs are large and reproducible from patches
+results/grading/

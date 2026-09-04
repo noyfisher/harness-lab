@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "swe-fix run summary",
+  "description": "The final JSON object a swe-fix run must emit. Enforced with `claude -p --json-schema`; the 0..1 range on confidence is documented here and range-checked on the host because structured outputs do not support numeric minimum/maximum.",
+  "type": "object",
+  "properties": {
+    "files_changed": {
+      "type": "array",
+      "description": "Every repo-relative path listed by `git -C /testbed diff --name-only`.",
+      "items": { "type": "string" }
+    },
+    "tests_run": {
+      "type": "array",
+      "description": "The exact commands that were run: the reproduction and the nearest existing tests.",
+      "items": { "type": "string" }
+    },
+    "reproduction": {
+      "type": "object",
+      "description": "The reproduction script under /task/repro/ and whether it passes after the fix.",
+      "properties": {
+        "script": { "type": "string", "description": "Path of the reproduction script." },
+        "passes": { "type": "boolean", "description": "True only if the script was seen to pass after the fix." }
+      },
+      "required": ["script", "passes"],
+      "additionalProperties": false
+    },
+    "confidence": {
+      "type": "number",
+      "description": "Honest estimate, from 0 to 1 inclusive, that the project's own hidden test for this issue passes."
+    },
+    "blocked": {
+      "type": "boolean",
+      "description": "True if the run stopped short of the done condition."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Root cause in one sentence; anything unverified; any blocker."
+    }
+  },
+  "required": ["files_changed", "tests_run", "reproduction", "confidence", "blocked", "notes"],
+  "additionalProperties": false
+}
