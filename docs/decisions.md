@@ -99,3 +99,9 @@
   `paused` (the batch re-queues it), and `loop.py` pauses 30 min and retries the improver
   session on rate-limit text. The 6 runs are superseded as `paused`; the candidate is
   re-screened. Lesson for the protocol: daytime screens compete with the owner's own usage.
+- [2026-09-04] **Credential exposure incident (recorded for completeness).** A diagnostic probe
+  during the Docker VM freeze raised a Python exception whose traceback included the container's
+  subscription token in the command arguments, printing it into the local Claude Code session
+  log on the owner's machine. It never entered the repo, git, or any remote. The owner was
+  advised to regenerate the token with `claude setup-token`. Probes now catch exceptions and
+  redact the credential before printing.
