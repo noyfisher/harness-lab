@@ -1,0 +1,12 @@
+diff --git a/sympy/printing/precedence.py b/sympy/printing/precedence.py
+index 47ff463..56b02fc 100644
+--- a/sympy/printing/precedence.py
++++ b/sympy/printing/precedence.py
+@@ -32,6 +32,7 @@
+     "And": PRECEDENCE["And"],
+     "Add": PRECEDENCE["Add"],
+     "Pow": PRECEDENCE["Pow"],
++    "Mod": PRECEDENCE["Add"],
+     "Relational": PRECEDENCE["Relational"],
+     "Sub": PRECEDENCE["Add"],
+     "Not": PRECEDENCE["Not"],

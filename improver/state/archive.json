@@ -139,5 +139,83 @@
   },
   "dry": false,
   "reused_from": "7f525c3f9b37d76b4135d29c70155f45afe605a4"
+ },
+ {
+  "variant_id": "20260905T001449",
+  "branch": "cand/20260905T001449",
+  "home_branch": "main",
+  "sha": "1c1a458aa54d7a1032ea50d88c464fd83cf99438",
+  "parent_sha": "34179ed698d712e97c60fb08fac054b8a44e3b7e",
+  "base_condition": "C1",
+  "base_sha": "9ec1540eb4f56c40ccfafac41055e2335e2fc47e",
+  "cand_condition": "cand-1c1a458",
+  "hypothesis": {
+   "hypothesis": "Many solid_fail instances produce patches that make the reproduction pass but break hidden tests in test modules outside the nearest directory. The agent never discovers these regressions because it only runs nearest tests. Adding a step to backend-dev that searches for and runs test files across the whole repo that call or import the changed function should catch regressions early while the agent still has budget to iterate, flipping instances where the fix is close but has unintended side effects.",
+   "category": "prompt_rule",
+   "target_files": [
+    "harness/agents/backend-dev.md"
+   ],
+   "expected_flips": [
+    "django__django-15732",
+    "sympy__sympy-22080"
+   ],
+   "rationale": "In django__django-15732 (0/3), all 3 runs apply the same primary_key=False fix to schema.py and test only with tests/schema/ (all pass), but the hidden test test_remove_unique_together_on_unique_field lives in tests/migrations/test_operations.py. A grep for alter_unique_together or _delete_composed_index would find this test file; discovering the failure would show the agent that its fix must also handle fields with unique=True (not just PK), producing a more general fix. In sympy__sympy-22080 (0/3), all 3 runs fix Mod precedence in pycode.py or precedence.py and test only sympy/printing/tests/ (pass), but the hidden regression test_create_expand_pow_optimization is in sympy/codegen/tests/test_rewriting.py. A grep for parenthesize or the changed function name would find this test; discovering the regression would lead the agent to adjust its approach. Currently backend-dev step 5 says run the nearest existing tests only; the new step 6 searches the whole test tree for callers of the changed function."
+  },
+  "created": "2026-09-05T00:14:49Z",
+  "status": "rejected",
+  "stage": "train_k1",
+  "results": {
+   "train_k1": {
+    "batch_exit": 0,
+    "batch_id": "cand-1c1a458-train1",
+    "k": 1,
+    "split": "train",
+    "base_condition": "C1",
+    "cand_condition": "cand-1c1a458",
+    "n_requested": 24,
+    "n_compared": 24,
+    "n_base_only": 0,
+    "n_cand_missing": [],
+    "k_base": [
+     3,
+     3
+    ],
+    "k_cand": [
+     1,
+     1
+    ],
+    "base_classes": {
+     "solid_pass": 17,
+     "flaky": 1,
+     "solid_fail": 6
+    },
+    "cand_classes": {
+     "solid_pass": 17,
+     "flaky": 0,
+     "solid_fail": 7
+    },
+    "flips_up": 0,
+    "regressions": 1,
+    "flaky_gains": 1,
+    "flips_up_ids": [],
+    "regression_ids": [
+     "psf__requests-6028"
+    ],
+    "flaky_gain_ids": [
+     "django__django-15128"
+    ]
+   }
+  },
+  "reason": "train k=1 screen: zero solid_fail -> pass flips",
+  "agent": {
+   "rc": 0,
+   "is_error": false,
+   "subtype": "reused",
+   "reused_from": "7f525c3f9b37d76b4135d29c70155f45afe605a4",
+   "total_cost_usd": 0.0,
+   "num_turns": 0
+  },
+  "dry": false,
+  "reused_from": "7f525c3f9b37d76b4135d29c70155f45afe605a4"
  }
 ]

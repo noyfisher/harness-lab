@@ -1,0 +1,15 @@
+diff --git a/pylint/lint/run.py b/pylint/lint/run.py
+index a7e5d55..2fb090b 100644
+--- a/pylint/lint/run.py
++++ b/pylint/lint/run.py
+@@ -76,8 +76,8 @@ def _cpu_count() -> int:
+     else:
+         cpu_count = 1
+     if cpu_share is not None:
+-        return min(cpu_share, cpu_count)
+-    return cpu_count
++        return max(min(cpu_share, cpu_count), 1)
++    return max(cpu_count, 1)
+ 
+ 
+ UNUSED_PARAM_SENTINEL = object()
