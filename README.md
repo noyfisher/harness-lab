@@ -91,7 +91,7 @@ subscription; no API key was created.
 - `docs/taxonomy.md`: the failure taxonomy read off the train-split dossiers.
 - `docs/decisions.md`: the dated decision log, including every incident and its code fix.
 - `results/site/index.html`: the generated results page, regenerated and diffed in CI so it can
-  never drift from the manifest.
+  never drift from the manifest. Live copy: https://noyfisher.github.io/harness-lab/
 
 ## Honesty statement
 
