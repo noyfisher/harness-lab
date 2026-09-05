@@ -181,12 +181,14 @@ candidate after an infra stop without paying for a new proposal.
 No invalid run remained counted. The audit trail is the `supersedes` field in
 `results/runs.jsonl` (10 lines, zero cost) and the dated entries in `docs/decisions.md`.
 
-A fifth incident, a credential printed into a local log, is **not recorded anywhere in this
-repository**, so I will not assert it. What the repo does show is the handling: one credential
-env var per run, manifests storing only the type (`subscription` or `api_key`) and never the
-value, `bench/smoke_auth.py` replacing the value with `<redacted>` in both captured streams, and
-`.gitignore` excluding `*.log` and Claude Code's config-dir state. A scan of the tracked tree for
-credential-shaped strings returns nothing.
+**Credential printed into a local log.** During the VM freeze, a diagnostic probe raised an
+exception whose traceback echoed the container's subscription token into the local session log
+on my machine (`docs/decisions.md`, 2026-09-04). It never entered the repo, git, or any remote,
+and the token was regenerated. Fix in practice: probes catch exceptions and redact the value
+before printing. What the repo enforces: one credential env var per run, manifests storing only
+the type (`subscription` or `api_key`) and never the value, `bench/smoke_auth.py` replacing the
+value with `<redacted>` in both captured streams, and `.gitignore` excluding `*.log` and Claude
+Code's config-dir state. A scan of the tracked tree for credential-shaped strings returns nothing.
 
 ## 6. Limitations
 
@@ -211,8 +213,10 @@ every claim about the harness's failure profile rests on six instances and ninet
 mode assignments made by one reader rather than a coded rubric with a second annotator.
 
 Finally, the protocol frames the claim as being about *these* 40 instances, not SWE-bench
-Verified or SWE-bench-like tasks in general. Benchmark saturation and training-data contamination
-are not addressed in the protocol and were **not measured** here.
+Verified or SWE-bench-like tasks in general. Benchmark saturation and training-data
+contamination (`docs/background.md`) mean the absolute rates say nothing about capability; both
+conditions share the same model and the same contamination exposure, so only the paired
+comparison between them is meaningful, and contamination itself was **not measured** here.
 
 ## 7. What I would do next
 
