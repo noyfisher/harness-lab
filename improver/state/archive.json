@@ -563,7 +563,7 @@
     ]
    }
   },
-  "reason": "train k=1 screen: 2 solid_pass regression(s) (sphinx-doc__sphinx-10466, sympy__sympy-19040)",
+  "reason": "train k=1 screen: 2 solid_pass regression(s) (sphinx-doc__sphinx-10466, sympy__sympy-19040) | note: sphinx-doc__sphinx-10466 was a zero-progress timeout at the usage wall (superseded as paused), so the screen had 1 flip and 1 real regression (sympy__sympy-19040); rejection stands under the k=1 rule",
   "agent": {
    "rc": 0,
    "is_error": false,
