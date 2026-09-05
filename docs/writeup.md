@@ -183,9 +183,11 @@ No invalid run remained counted. The audit trail is the `supersedes` field in
 
 **Credential printed into a local log.** During the VM freeze, a diagnostic probe raised an
 exception whose traceback echoed the container's subscription token into the local session log
-on my machine (`docs/decisions.md`, 2026-09-04). It never entered the repo, git, or any remote,
-and the token was regenerated. Fix in practice: probes catch exceptions and redact the value
-before printing. What the repo enforces: one credential env var per run, manifests storing only
+on my machine (`docs/decisions.md`, 2026-09-04). It never entered the repo, git, or any remote.
+The token is a long-lived subscription token scoped to model requests only; it is to be
+regenerated with `claude setup-token`, and the run driver reads whatever the credentials file
+holds, so rotation needs no code change. Fix in practice: probes catch exceptions and redact
+the value before printing. What the repo enforces: one credential env var per run, manifests storing only
 the type (`subscription` or `api_key`) and never the value, `bench/smoke_auth.py` replacing the
 value with `<redacted>` in both captured streams, and `.gitignore` excluding `*.log` and Claude
 Code's config-dir state. A scan of the tracked tree for credential-shaped strings returns nothing.
