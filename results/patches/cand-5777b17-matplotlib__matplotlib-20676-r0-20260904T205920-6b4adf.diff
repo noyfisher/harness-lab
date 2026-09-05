@@ -1,0 +1,20 @@
+diff --git a/lib/matplotlib/widgets.py b/lib/matplotlib/widgets.py
+index a199e45..0ce0975 100644
+--- a/lib/matplotlib/widgets.py
++++ b/lib/matplotlib/widgets.py
+@@ -2141,10 +2141,14 @@ class SpanSelector(_SelectorWidget):
+         if self.direction == 'horizontal':
+             trans = ax.get_xaxis_transform()
+             w, h = 0, 1
++            x0 = ax.get_xbound()[0]
++            y0 = 0
+         else:
+             trans = ax.get_yaxis_transform()
+             w, h = 1, 0
+-        self._rect = Rectangle((0, 0), w, h,
++            x0 = 0
++            y0 = ax.get_ybound()[0]
++        self._rect = Rectangle((x0, y0), w, h,
+                                transform=trans,
+                                visible=False,
+                                **self._rectprops)

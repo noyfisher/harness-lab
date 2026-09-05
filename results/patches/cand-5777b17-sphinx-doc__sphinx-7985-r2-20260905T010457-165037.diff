@@ -1,0 +1,52 @@
+diff --git a/sphinx/builders/linkcheck.py b/sphinx/builders/linkcheck.py
+index dd53170..0cfb8d9 100644
+--- a/sphinx/builders/linkcheck.py
++++ b/sphinx/builders/linkcheck.py
+@@ -208,12 +208,35 @@ class CheckExternalLinksBuilder(Builder):
+                 else:
+                     return 'redirected', new_url, 0
+ 
++        def check_local_uri() -> Tuple[str, str, int]:
++            # split off anchor
++            if '#' in uri:
++                req_url, _anchor = uri.split('#', 1)
++            else:
++                req_url = uri
++
++            if not req_url:
++                # an empty path refers to the current document
++                return 'working', '', 0
++
++            if req_url.startswith('/'):
++                filename = path.join(self.env.srcdir, req_url[1:])
++            else:
++                filename = path.join(path.dirname(self.env.doc2path(docname)), req_url)
++            if path.exists(filename):
++                return 'working', '', 0
++            else:
++                return 'broken', __("Local file %r not found") % req_url, 0
++
+         def check() -> Tuple[str, str, int]:
+             # check for various conditions without bothering the network
+             if len(uri) == 0 or uri.startswith(('#', 'mailto:', 'ftp:')):
+                 return 'unchecked', '', 0
+             elif not uri.startswith(('http:', 'https:')):
+-                return 'local', '', 0
++                status, info, code = check_local_uri()
++                if status == 'broken':
++                    self.broken[uri] = info
++                return status, info, code
+             elif uri in self.good:
+                 return 'working', 'old', 0
+             elif uri in self.broken:
+@@ -267,10 +290,6 @@ class CheckExternalLinksBuilder(Builder):
+             else:
+                 logger.info(darkgray('-ignored- ') + uri)
+             self.write_linkstat(linkstat)
+-        elif status == 'local':
+-            logger.info(darkgray('-local-   ') + uri)
+-            self.write_entry('local', docname, filename, lineno, uri)
+-            self.write_linkstat(linkstat)
+         elif status == 'working':
+             logger.info(darkgreen('ok        ') + uri + info)
+             self.write_linkstat(linkstat)

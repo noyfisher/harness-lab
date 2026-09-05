@@ -1,0 +1,29 @@
+diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py
+index b669a2c..614b2f8 100644
+--- a/sympy/printing/pycode.py
++++ b/sympy/printing/pycode.py
+@@ -6,7 +6,8 @@
+ from collections import defaultdict
+ from itertools import chain
+ from sympy.core import S
+-from .precedence import precedence
++from sympy.core.mod import Mod
++from .precedence import precedence, PRECEDENCE
+ from .codeprinter import CodePrinter
+ 
+ _kw_py2and3 = {
+@@ -236,6 +237,14 @@ def _print_Mod(self, expr):
+         PREC = precedence(expr)
+         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
+ 
++    def parenthesize(self, item, level, strict=False):
++        if isinstance(item, Mod):
++            item_prec = PRECEDENCE["Add"]
++            if (item_prec < level) or (not strict and item_prec <= level):
++                return "(%s)" % self._print(item)
++            return self._print(item)
++        return super().parenthesize(item, level, strict)
++
+     def _print_Piecewise(self, expr):
+         result = []
+         i = 0

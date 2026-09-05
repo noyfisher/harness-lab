@@ -1,0 +1,30 @@
+diff --git a/sympy/printing/codeprinter.py b/sympy/printing/codeprinter.py
+index ba0e746..e2829d2 100644
+--- a/sympy/printing/codeprinter.py
++++ b/sympy/printing/codeprinter.py
+@@ -6,6 +6,7 @@
+ from sympy.core.basic import Basic
+ from sympy.core.compatibility import default_sort_key
+ from sympy.core.function import Lambda
++from sympy.core.mod import Mod
+ from sympy.core.mul import _keep_coeff
+ from sympy.core.symbol import Symbol
+ from sympy.printing.str import StrPrinter
+@@ -490,6 +491,17 @@ def _print_Mul(self, expr):
+         a_str = [self.parenthesize(x, prec) for x in a]
+         b_str = [self.parenthesize(x, prec) for x in b]
+ 
++        # Mod is printed as the raw '%' operator (see e.g. PythonCodePrinter._print_Mod).
++        # Because '%' shares Python's '*' precedence (left-associative) and does not
++        # distribute over a preceding unary minus, a Mod factor must always be
++        # parenthesized when it takes part in a larger Mul.
++        for i, item in enumerate(a):
++            if isinstance(item, Mod):
++                a_str[i] = "(%s)" % a_str[i]
++        for i, item in enumerate(b):
++            if isinstance(item, Mod):
++                b_str[i] = "(%s)" % b_str[i]
++
+         # To parenthesize Pow with exp = -1 and having more than one Symbol
+         for item in pow_paren:
+             if item.base in b:

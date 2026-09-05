@@ -1,0 +1,45 @@
+diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py
+index 4f0290a..f35c6cb 100644
+--- a/seaborn/_core/plot.py
++++ b/seaborn/_core/plot.py
+@@ -1627,14 +1627,17 @@ class Plotter:
+ 
+     def _finalize_figure(self, p: Plot) -> None:
+ 
++        from seaborn._core.scales import Nominal
++
+         for sub in self._subplots:
+             ax = sub["ax"]
+             for axis in "xy":
+                 axis_key = sub[axis]
++                axis_obj = getattr(ax, f"{axis}axis")
+ 
+                 # Axis limits
+                 if axis_key in p._limits:
+-                    convert_units = getattr(ax, f"{axis}axis").convert_units
++                    convert_units = axis_obj.convert_units
+                     a, b = p._limits[axis_key]
+                     lo = a if a is None else convert_units(a)
+                     hi = b if b is None else convert_units(b)
+@@ -1643,6 +1646,21 @@ class Plotter:
+                     if isinstance(b, str):
+                         hi = cast(float, hi) + 0.5
+                     ax.set(**{f"{axis}lim": (lo, hi)})
++                elif isinstance(self._scales.get(axis_key), Nominal):
++                    # Replicate the old categorical API's axis setup: fixed
++                    # limits (no default margin) and no gridlines, inverted
++                    # on the y axis. The number of categories is only
++                    # reliably available (post unit conversion) via the
++                    # number of ticks matplotlib has set up on this axis.
++                    n = len(getattr(ax, f"get_{axis}ticks")())
++                    if n:
++                        if axis == "x":
++                            ax.set_xlim(-.5, n - .5, auto=None)
++                        else:
++                            ax.set_ylim(n - .5, -.5, auto=None)
++
++                if isinstance(self._scales.get(axis_key), Nominal):
++                    axis_obj.grid(False)
+ 
+         engine_default = None if p._target is not None else "tight"
+         layout_engine = p._layout_spec.get("engine", engine_default)

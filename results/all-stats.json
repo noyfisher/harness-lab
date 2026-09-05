@@ -1,0 +1,2983 @@
+{
+  "params": {
+    "n_boot": 10000,
+    "seed": 0,
+    "alpha": 0.05,
+    "counted_outcomes": [
+      "budget",
+      "no_diff",
+      "resolved",
+      "timeout",
+      "unresolved"
+    ],
+    "non_counted_outcomes": [
+      "error",
+      "parse_error",
+      "paused"
+    ]
+  },
+  "conditions": [
+    "C0",
+    "C1",
+    "cand-1c1a458",
+    "cand-6e9817c",
+    "cand-5777b17",
+    "cand-b64eadc"
+  ],
+  "n_runs_loaded": 433,
+  "n_runs_counted": 432,
+  "per_condition": {
+    "C0": {
+      "condition": "C0",
+      "n_instances": 40,
+      "k_min": 3,
+      "k_max": 3,
+      "n_counted_runs": 120,
+      "pass_rate": 0.7833333333333334,
+      "ci_lo": 0.6583333333333333,
+      "ci_hi": 0.9,
+      "ci_alpha": 0.05,
+      "class_counts": {
+        "solid_pass": 30,
+        "flaky": 3,
+        "solid_fail": 7
+      },
+      "per_instance": {
+        "astropy__astropy-13579": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14309": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14539": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14995": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "django__django-11149": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "django__django-15128": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "django__django-15732": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "django__django-16667": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-13989": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "matplotlib__matplotlib-20676": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-20859": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "mwaskom__seaborn-3069": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "mwaskom__seaborn-3187": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "pallets__flask-5014": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-1724": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-1921": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-2317": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-6028": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6528": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6903": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-8898": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "pytest-dev__pytest-7236": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7324": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7490": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7521": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7571": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7982": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25232": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25973": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-26194": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-10466": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-7748": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sphinx-doc__sphinx-7985": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sphinx-doc__sphinx-8120": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-8269": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-14248": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-19040": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-19783": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "sympy__sympy-20428": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-22080": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        }
+      },
+      "cost": {
+        "condition": "C0",
+        "n_counted": 120,
+        "total_cost_usd": 94.24385264999997,
+        "n_cost_reported": 120,
+        "mean_cost_per_run": 0.7853654387499998,
+        "resolved_count": 94,
+        "cost_per_solve": 1.0025941771276592,
+        "mean_wall_s": 211.7366666666666,
+        "mean_num_turns": 35.30833333333333,
+        "infra_failures": {},
+        "infra_failures_total": 0
+      }
+    },
+    "C1": {
+      "condition": "C1",
+      "n_instances": 40,
+      "k_min": 3,
+      "k_max": 3,
+      "n_counted_runs": 120,
+      "pass_rate": 0.75,
+      "ci_lo": 0.6247916666666667,
+      "ci_hi": 0.875,
+      "ci_alpha": 0.05,
+      "class_counts": {
+        "solid_pass": 28,
+        "flaky": 3,
+        "solid_fail": 9
+      },
+      "per_instance": {
+        "astropy__astropy-13579": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14309": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14539": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14995": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "django__django-11149": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "django__django-15128": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "django__django-15732": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "django__django-16667": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-13989": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "matplotlib__matplotlib-20676": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-20859": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "mwaskom__seaborn-3069": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "mwaskom__seaborn-3187": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "pallets__flask-5014": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-1724": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-1921": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-2317": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-6028": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6528": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6903": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-8898": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pytest-dev__pytest-7236": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7324": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7490": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7521": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7571": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7982": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25232": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25973": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-26194": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-10466": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-7748": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sphinx-doc__sphinx-7985": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sphinx-doc__sphinx-8120": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-8269": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-14248": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-19040": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-19783": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "sympy__sympy-20428": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-22080": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        }
+      },
+      "cost": {
+        "condition": "C1",
+        "n_counted": 120,
+        "total_cost_usd": 156.07826339999997,
+        "n_cost_reported": 120,
+        "mean_cost_per_run": 1.3006521949999998,
+        "resolved_count": 90,
+        "cost_per_solve": 1.7342029266666663,
+        "mean_wall_s": 367.0066666666669,
+        "mean_num_turns": 34.11666666666667,
+        "infra_failures": {},
+        "infra_failures_total": 0
+      }
+    },
+    "cand-1c1a458": {
+      "condition": "cand-1c1a458",
+      "n_instances": 24,
+      "k_min": 1,
+      "k_max": 1,
+      "n_counted_runs": 24,
+      "pass_rate": 0.7083333333333334,
+      "ci_lo": 0.5,
+      "ci_hi": 0.875,
+      "ci_alpha": 0.05,
+      "class_counts": {
+        "solid_pass": 17,
+        "flaky": 0,
+        "solid_fail": 7
+      },
+      "per_instance": {
+        "astropy__astropy-14309": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14995": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "django__django-15128": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "django__django-15732": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "django__django-16667": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-13989": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-1724": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-2317": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-6028": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "pylint-dev__pylint-6528": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6903": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-8898": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "pytest-dev__pytest-7236": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7324": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7490": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7982": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25232": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25973": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-26194": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-10466": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-7985": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-19040": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-20428": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-22080": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        }
+      },
+      "cost": {
+        "condition": "cand-1c1a458",
+        "n_counted": 24,
+        "total_cost_usd": 33.15380655,
+        "n_cost_reported": 24,
+        "mean_cost_per_run": 1.38140860625,
+        "resolved_count": 17,
+        "cost_per_solve": 1.9502239147058822,
+        "mean_wall_s": 416.3,
+        "mean_num_turns": 32.416666666666664,
+        "infra_failures": {},
+        "infra_failures_total": 0
+      }
+    },
+    "cand-6e9817c": {
+      "condition": "cand-6e9817c",
+      "n_instances": 24,
+      "k_min": 1,
+      "k_max": 1,
+      "n_counted_runs": 24,
+      "pass_rate": 0.7083333333333334,
+      "ci_lo": 0.5,
+      "ci_hi": 0.875,
+      "ci_alpha": 0.05,
+      "class_counts": {
+        "solid_pass": 17,
+        "flaky": 0,
+        "solid_fail": 7
+      },
+      "per_instance": {
+        "astropy__astropy-14309": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14995": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "django__django-15128": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "django__django-15732": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "django__django-16667": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-13989": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-1724": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-2317": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-6028": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6528": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6903": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-8898": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "pytest-dev__pytest-7236": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7324": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7490": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7982": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25232": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25973": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-26194": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-10466": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sphinx-doc__sphinx-7985": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-19040": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-20428": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-22080": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        }
+      },
+      "cost": {
+        "condition": "cand-6e9817c",
+        "n_counted": 24,
+        "total_cost_usd": 31.794614399999997,
+        "n_cost_reported": 24,
+        "mean_cost_per_run": 1.3247756,
+        "resolved_count": 17,
+        "cost_per_solve": 1.8702714352941174,
+        "mean_wall_s": 426.6166666666666,
+        "mean_num_turns": 29.0,
+        "infra_failures": {},
+        "infra_failures_total": 0
+      }
+    },
+    "cand-5777b17": {
+      "condition": "cand-5777b17",
+      "n_instances": 40,
+      "k_min": 3,
+      "k_max": 3,
+      "n_counted_runs": 120,
+      "pass_rate": 0.7666666666666666,
+      "ci_lo": 0.6416666666666666,
+      "ci_hi": 0.8833333333333332,
+      "ci_alpha": 0.05,
+      "class_counts": {
+        "solid_pass": 29,
+        "flaky": 3,
+        "solid_fail": 8
+      },
+      "per_instance": {
+        "astropy__astropy-13579": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14309": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14539": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14995": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "django__django-11149": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "django__django-15128": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "django__django-15732": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "django__django-16667": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-13989": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "matplotlib__matplotlib-20676": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-20859": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "mwaskom__seaborn-3069": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "mwaskom__seaborn-3187": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pallets__flask-5014": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-1724": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-1921": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-2317": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "psf__requests-6028": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6528": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6903": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-8898": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "pytest-dev__pytest-7236": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7324": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7490": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7521": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7571": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7982": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25232": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25973": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-26194": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "sphinx-doc__sphinx-10466": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-7748": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sphinx-doc__sphinx-7985": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sphinx-doc__sphinx-8120": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-8269": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-14248": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-19040": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-19783": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "sympy__sympy-20428": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-22080": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        }
+      },
+      "cost": {
+        "condition": "cand-5777b17",
+        "n_counted": 120,
+        "total_cost_usd": 205.42012709999995,
+        "n_cost_reported": 120,
+        "mean_cost_per_run": 1.7118343924999995,
+        "resolved_count": 92,
+        "cost_per_solve": 2.23282746847826,
+        "mean_wall_s": 531.8033333333337,
+        "mean_num_turns": 27.116666666666667,
+        "infra_failures": {},
+        "infra_failures_total": 0
+      }
+    },
+    "cand-b64eadc": {
+      "condition": "cand-b64eadc",
+      "n_instances": 24,
+      "k_min": 1,
+      "k_max": 1,
+      "n_counted_runs": 24,
+      "pass_rate": 0.7083333333333334,
+      "ci_lo": 0.5,
+      "ci_hi": 0.875,
+      "ci_alpha": 0.05,
+      "class_counts": {
+        "solid_pass": 17,
+        "flaky": 0,
+        "solid_fail": 7
+      },
+      "per_instance": {
+        "astropy__astropy-14309": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "astropy__astropy-14995": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "django__django-15128": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "django__django-15732": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "django__django-16667": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "matplotlib__matplotlib-13989": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-1724": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-2317": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "psf__requests-6028": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6528": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-6903": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pylint-dev__pylint-8898": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7236": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7324": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7490": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "pytest-dev__pytest-7982": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25232": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-25973": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "scikit-learn__scikit-learn-26194": {
+          "passes": 1,
+          "k": 1,
+          "class": "solid_pass"
+        },
+        "sphinx-doc__sphinx-10466": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sphinx-doc__sphinx-7985": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-19040": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-20428": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        },
+        "sympy__sympy-22080": {
+          "passes": 0,
+          "k": 1,
+          "class": "solid_fail"
+        }
+      },
+      "cost": {
+        "condition": "cand-b64eadc",
+        "n_counted": 24,
+        "total_cost_usd": 27.786768450000004,
+        "n_cost_reported": 21,
+        "mean_cost_per_run": 1.3231794500000003,
+        "resolved_count": 17,
+        "cost_per_solve": 1.6345157911764707,
+        "mean_wall_s": 881.1833333333334,
+        "mean_num_turns": 345.3333333333333,
+        "infra_failures": {},
+        "infra_failures_total": 0
+      }
+    }
+  },
+  "paired": [
+    {
+      "cond_a": "C0",
+      "cond_b": "C1",
+      "n_instances": 40,
+      "n_only_a": 0,
+      "n_only_b": 0,
+      "n_paired": 40,
+      "n_excluded": 0,
+      "k_mismatch_instances": [],
+      "instances": [
+        {
+          "instance_id": "astropy__astropy-13579",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "astropy__astropy-14309",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "astropy__astropy-14539",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "astropy__astropy-14995",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "django__django-11149",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "django__django-15128",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 2,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "flaky",
+          "diff": -1,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "django__django-15732",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "django__django-16667",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "matplotlib__matplotlib-13989",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "matplotlib__matplotlib-20676",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "matplotlib__matplotlib-20859",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "mwaskom__seaborn-3069",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "mwaskom__seaborn-3187",
+          "a_passes": 1,
+          "a_k": 3,
+          "b_passes": 2,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "flaky",
+          "diff": 1,
+          "a_majority": false,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pallets__flask-5014",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "psf__requests-1724",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "psf__requests-1921",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "psf__requests-2317",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "psf__requests-6028",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pylint-dev__pylint-6528",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pylint-dev__pylint-6903",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pylint-dev__pylint-8898",
+          "a_passes": 1,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "solid_fail",
+          "diff": -1,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7236",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7324",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7490",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7521",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7571",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7982",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "scikit-learn__scikit-learn-25232",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "scikit-learn__scikit-learn-25973",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "scikit-learn__scikit-learn-26194",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "sphinx-doc__sphinx-10466",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "sphinx-doc__sphinx-7748",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "sphinx-doc__sphinx-7985",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "sphinx-doc__sphinx-8120",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "sphinx-doc__sphinx-8269",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "sympy__sympy-14248",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_fail",
+          "diff": -3,
+          "a_majority": true,
+          "b_majority": false
+        },
+        {
+          "instance_id": "sympy__sympy-19040",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "sympy__sympy-19783",
+          "a_passes": 2,
+          "a_k": 3,
+          "b_passes": 2,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "flaky",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "sympy__sympy-20428",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "sympy__sympy-22080",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        }
+      ],
+      "pass_counts_a": {
+        "astropy__astropy-13579": 3,
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14539": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-11149": 3,
+        "django__django-15128": 3,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 3,
+        "matplotlib__matplotlib-20676": 0,
+        "matplotlib__matplotlib-20859": 3,
+        "mwaskom__seaborn-3069": 3,
+        "mwaskom__seaborn-3187": 1,
+        "pallets__flask-5014": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-1921": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7521": 3,
+        "pytest-dev__pytest-7571": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 3,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7748": 0,
+        "sphinx-doc__sphinx-7985": 0,
+        "sphinx-doc__sphinx-8120": 3,
+        "sphinx-doc__sphinx-8269": 3,
+        "sympy__sympy-14248": 3,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-19783": 2,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "pass_counts_b": {
+        "astropy__astropy-13579": 3,
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14539": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-11149": 3,
+        "django__django-15128": 2,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 3,
+        "matplotlib__matplotlib-20676": 0,
+        "matplotlib__matplotlib-20859": 3,
+        "mwaskom__seaborn-3069": 3,
+        "mwaskom__seaborn-3187": 2,
+        "pallets__flask-5014": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-1921": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 0,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7521": 3,
+        "pytest-dev__pytest-7571": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 3,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7748": 0,
+        "sphinx-doc__sphinx-7985": 0,
+        "sphinx-doc__sphinx-8120": 3,
+        "sphinx-doc__sphinx-8269": 3,
+        "sympy__sympy-14248": 0,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-19783": 2,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "k_a": {
+        "astropy__astropy-13579": 3,
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14539": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-11149": 3,
+        "django__django-15128": 3,
+        "django__django-15732": 3,
+        "django__django-16667": 3,
+        "matplotlib__matplotlib-13989": 3,
+        "matplotlib__matplotlib-20676": 3,
+        "matplotlib__matplotlib-20859": 3,
+        "mwaskom__seaborn-3069": 3,
+        "mwaskom__seaborn-3187": 3,
+        "pallets__flask-5014": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-1921": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 3,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7521": 3,
+        "pytest-dev__pytest-7571": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 3,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7748": 3,
+        "sphinx-doc__sphinx-7985": 3,
+        "sphinx-doc__sphinx-8120": 3,
+        "sphinx-doc__sphinx-8269": 3,
+        "sympy__sympy-14248": 3,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-19783": 3,
+        "sympy__sympy-20428": 3,
+        "sympy__sympy-22080": 3
+      },
+      "k_b": {
+        "astropy__astropy-13579": 3,
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14539": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-11149": 3,
+        "django__django-15128": 3,
+        "django__django-15732": 3,
+        "django__django-16667": 3,
+        "matplotlib__matplotlib-13989": 3,
+        "matplotlib__matplotlib-20676": 3,
+        "matplotlib__matplotlib-20859": 3,
+        "mwaskom__seaborn-3069": 3,
+        "mwaskom__seaborn-3187": 3,
+        "pallets__flask-5014": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-1921": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 3,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7521": 3,
+        "pytest-dev__pytest-7571": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 3,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7748": 3,
+        "sphinx-doc__sphinx-7985": 3,
+        "sphinx-doc__sphinx-8120": 3,
+        "sphinx-doc__sphinx-8269": 3,
+        "sympy__sympy-14248": 3,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-19783": 3,
+        "sympy__sympy-20428": 3,
+        "sympy__sympy-22080": 3
+      },
+      "flips_up": 0,
+      "regressions": 2,
+      "transition_table": {
+        "classes": [
+          "solid_pass",
+          "flaky",
+          "solid_fail"
+        ],
+        "matrix": [
+          [
+            28,
+            1,
+            1
+          ],
+          [
+            0,
+            2,
+            1
+          ],
+          [
+            0,
+            0,
+            7
+          ]
+        ],
+        "rows": {
+          "solid_pass": {
+            "solid_pass": 28,
+            "flaky": 1,
+            "solid_fail": 1
+          },
+          "flaky": {
+            "solid_pass": 0,
+            "flaky": 2,
+            "solid_fail": 1
+          },
+          "solid_fail": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 7
+          }
+        },
+        "total": 40
+      },
+      "discordant": {
+        "n_discordant": 2,
+        "b_only": 1,
+        "a_only": 1,
+        "both": 30,
+        "neither": 8
+      },
+      "wilcoxon": {
+        "statistic": 2.0,
+        "p_value": 0.25683925795785656,
+        "zero_method": "wilcox",
+        "n_nonzero": 4,
+        "note": ""
+      },
+      "sign_test": {
+        "p_value": 1.0,
+        "n_discordant": 2,
+        "b_better": 1,
+        "note": ""
+      }
+    },
+    {
+      "cond_a": "C1",
+      "cond_b": "cand-1c1a458",
+      "n_instances": 24,
+      "n_only_a": 16,
+      "n_only_b": 0,
+      "n_paired": 0,
+      "n_excluded": 24,
+      "k_mismatch_instances": [
+        "astropy__astropy-14309",
+        "astropy__astropy-14995",
+        "django__django-15128",
+        "django__django-15732",
+        "django__django-16667",
+        "matplotlib__matplotlib-13989",
+        "psf__requests-1724",
+        "psf__requests-2317",
+        "psf__requests-6028",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-6903",
+        "pylint-dev__pylint-8898",
+        "pytest-dev__pytest-7236",
+        "pytest-dev__pytest-7324",
+        "pytest-dev__pytest-7490",
+        "pytest-dev__pytest-7982",
+        "scikit-learn__scikit-learn-25232",
+        "scikit-learn__scikit-learn-25973",
+        "scikit-learn__scikit-learn-26194",
+        "sphinx-doc__sphinx-10466",
+        "sphinx-doc__sphinx-7985",
+        "sympy__sympy-19040",
+        "sympy__sympy-20428",
+        "sympy__sympy-22080"
+      ],
+      "instances": [],
+      "pass_counts_a": {
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-15128": 2,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 0,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 3,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7985": 0,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "pass_counts_b": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 0,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 0,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 1,
+        "sphinx-doc__sphinx-7985": 0,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "k_a": {
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-15128": 3,
+        "django__django-15732": 3,
+        "django__django-16667": 3,
+        "matplotlib__matplotlib-13989": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 3,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 3,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7985": 3,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-20428": 3,
+        "sympy__sympy-22080": 3
+      },
+      "k_b": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 1,
+        "django__django-16667": 1,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 1,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 1,
+        "sphinx-doc__sphinx-7985": 1,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 1,
+        "sympy__sympy-22080": 1
+      },
+      "flips_up": 0,
+      "regressions": 0,
+      "transition_table": {
+        "classes": [
+          "solid_pass",
+          "flaky",
+          "solid_fail"
+        ],
+        "matrix": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "rows": {
+          "solid_pass": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          },
+          "flaky": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          },
+          "solid_fail": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          }
+        },
+        "total": 0
+      },
+      "discordant": {
+        "n_discordant": 0,
+        "b_only": 0,
+        "a_only": 0,
+        "both": 0,
+        "neither": 0
+      },
+      "wilcoxon": {
+        "statistic": null,
+        "p_value": null,
+        "zero_method": "wilcox",
+        "n_nonzero": 0,
+        "note": "all shared instances excluded for k mismatch"
+      },
+      "sign_test": {
+        "p_value": 1.0,
+        "n_discordant": 0,
+        "b_better": 0,
+        "note": "no discordant majority pairs"
+      }
+    },
+    {
+      "cond_a": "cand-1c1a458",
+      "cond_b": "cand-6e9817c",
+      "n_instances": 24,
+      "n_only_a": 0,
+      "n_only_b": 0,
+      "n_paired": 24,
+      "n_excluded": 0,
+      "k_mismatch_instances": [],
+      "instances": [
+        {
+          "instance_id": "astropy__astropy-14309",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "astropy__astropy-14995",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "django__django-15128",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "django__django-15732",
+          "a_passes": 0,
+          "a_k": 1,
+          "b_passes": 0,
+          "b_k": 1,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "django__django-16667",
+          "a_passes": 0,
+          "a_k": 1,
+          "b_passes": 0,
+          "b_k": 1,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "matplotlib__matplotlib-13989",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "psf__requests-1724",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "psf__requests-2317",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "psf__requests-6028",
+          "a_passes": 0,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_fail",
+          "b_class": "solid_pass",
+          "diff": 1,
+          "a_majority": false,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pylint-dev__pylint-6528",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pylint-dev__pylint-6903",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pylint-dev__pylint-8898",
+          "a_passes": 0,
+          "a_k": 1,
+          "b_passes": 0,
+          "b_k": 1,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7236",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7324",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7490",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytest-dev__pytest-7982",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "scikit-learn__scikit-learn-25232",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "scikit-learn__scikit-learn-25973",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "scikit-learn__scikit-learn-26194",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "sphinx-doc__sphinx-10466",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 0,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_fail",
+          "diff": -1,
+          "a_majority": true,
+          "b_majority": false
+        },
+        {
+          "instance_id": "sphinx-doc__sphinx-7985",
+          "a_passes": 0,
+          "a_k": 1,
+          "b_passes": 0,
+          "b_k": 1,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "sympy__sympy-19040",
+          "a_passes": 1,
+          "a_k": 1,
+          "b_passes": 1,
+          "b_k": 1,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "sympy__sympy-20428",
+          "a_passes": 0,
+          "a_k": 1,
+          "b_passes": 0,
+          "b_k": 1,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "sympy__sympy-22080",
+          "a_passes": 0,
+          "a_k": 1,
+          "b_passes": 0,
+          "b_k": 1,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        }
+      ],
+      "pass_counts_a": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 0,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 0,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 1,
+        "sphinx-doc__sphinx-7985": 0,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "pass_counts_b": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 1,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 0,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 0,
+        "sphinx-doc__sphinx-7985": 0,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "k_a": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 1,
+        "django__django-16667": 1,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 1,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 1,
+        "sphinx-doc__sphinx-7985": 1,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 1,
+        "sympy__sympy-22080": 1
+      },
+      "k_b": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 1,
+        "django__django-16667": 1,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 1,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 1,
+        "sphinx-doc__sphinx-7985": 1,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 1,
+        "sympy__sympy-22080": 1
+      },
+      "flips_up": 1,
+      "regressions": 1,
+      "transition_table": {
+        "classes": [
+          "solid_pass",
+          "flaky",
+          "solid_fail"
+        ],
+        "matrix": [
+          [
+            16,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            6
+          ]
+        ],
+        "rows": {
+          "solid_pass": {
+            "solid_pass": 16,
+            "flaky": 0,
+            "solid_fail": 1
+          },
+          "flaky": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          },
+          "solid_fail": {
+            "solid_pass": 1,
+            "flaky": 0,
+            "solid_fail": 6
+          }
+        },
+        "total": 24
+      },
+      "discordant": {
+        "n_discordant": 2,
+        "b_only": 1,
+        "a_only": 1,
+        "both": 16,
+        "neither": 6
+      },
+      "wilcoxon": {
+        "statistic": 1.5,
+        "p_value": 1.0,
+        "zero_method": "wilcox",
+        "n_nonzero": 2,
+        "note": ""
+      },
+      "sign_test": {
+        "p_value": 1.0,
+        "n_discordant": 2,
+        "b_better": 1,
+        "note": ""
+      }
+    },
+    {
+      "cond_a": "cand-6e9817c",
+      "cond_b": "cand-5777b17",
+      "n_instances": 24,
+      "n_only_a": 0,
+      "n_only_b": 16,
+      "n_paired": 0,
+      "n_excluded": 24,
+      "k_mismatch_instances": [
+        "astropy__astropy-14309",
+        "astropy__astropy-14995",
+        "django__django-15128",
+        "django__django-15732",
+        "django__django-16667",
+        "matplotlib__matplotlib-13989",
+        "psf__requests-1724",
+        "psf__requests-2317",
+        "psf__requests-6028",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-6903",
+        "pylint-dev__pylint-8898",
+        "pytest-dev__pytest-7236",
+        "pytest-dev__pytest-7324",
+        "pytest-dev__pytest-7490",
+        "pytest-dev__pytest-7982",
+        "scikit-learn__scikit-learn-25232",
+        "scikit-learn__scikit-learn-25973",
+        "scikit-learn__scikit-learn-26194",
+        "sphinx-doc__sphinx-10466",
+        "sphinx-doc__sphinx-7985",
+        "sympy__sympy-19040",
+        "sympy__sympy-20428",
+        "sympy__sympy-22080"
+      ],
+      "instances": [],
+      "pass_counts_a": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 1,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 0,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 0,
+        "sphinx-doc__sphinx-7985": 0,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "pass_counts_b": {
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-15128": 3,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 2,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7985": 0,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "k_a": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 1,
+        "django__django-16667": 1,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 1,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 1,
+        "sphinx-doc__sphinx-7985": 1,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 1,
+        "sympy__sympy-22080": 1
+      },
+      "k_b": {
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-15128": 3,
+        "django__django-15732": 3,
+        "django__django-16667": 3,
+        "matplotlib__matplotlib-13989": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 3,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 3,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7985": 3,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-20428": 3,
+        "sympy__sympy-22080": 3
+      },
+      "flips_up": 0,
+      "regressions": 0,
+      "transition_table": {
+        "classes": [
+          "solid_pass",
+          "flaky",
+          "solid_fail"
+        ],
+        "matrix": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "rows": {
+          "solid_pass": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          },
+          "flaky": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          },
+          "solid_fail": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          }
+        },
+        "total": 0
+      },
+      "discordant": {
+        "n_discordant": 0,
+        "b_only": 0,
+        "a_only": 0,
+        "both": 0,
+        "neither": 0
+      },
+      "wilcoxon": {
+        "statistic": null,
+        "p_value": null,
+        "zero_method": "wilcox",
+        "n_nonzero": 0,
+        "note": "all shared instances excluded for k mismatch"
+      },
+      "sign_test": {
+        "p_value": 1.0,
+        "n_discordant": 0,
+        "b_better": 0,
+        "note": "no discordant majority pairs"
+      }
+    },
+    {
+      "cond_a": "cand-5777b17",
+      "cond_b": "cand-b64eadc",
+      "n_instances": 24,
+      "n_only_a": 16,
+      "n_only_b": 0,
+      "n_paired": 0,
+      "n_excluded": 24,
+      "k_mismatch_instances": [
+        "astropy__astropy-14309",
+        "astropy__astropy-14995",
+        "django__django-15128",
+        "django__django-15732",
+        "django__django-16667",
+        "matplotlib__matplotlib-13989",
+        "psf__requests-1724",
+        "psf__requests-2317",
+        "psf__requests-6028",
+        "pylint-dev__pylint-6528",
+        "pylint-dev__pylint-6903",
+        "pylint-dev__pylint-8898",
+        "pytest-dev__pytest-7236",
+        "pytest-dev__pytest-7324",
+        "pytest-dev__pytest-7490",
+        "pytest-dev__pytest-7982",
+        "scikit-learn__scikit-learn-25232",
+        "scikit-learn__scikit-learn-25973",
+        "scikit-learn__scikit-learn-26194",
+        "sphinx-doc__sphinx-10466",
+        "sphinx-doc__sphinx-7985",
+        "sympy__sympy-19040",
+        "sympy__sympy-20428",
+        "sympy__sympy-22080"
+      ],
+      "instances": [],
+      "pass_counts_a": {
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-15128": 3,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 2,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7985": 0,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "pass_counts_b": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 0,
+        "django__django-16667": 0,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 1,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 0,
+        "sphinx-doc__sphinx-7985": 0,
+        "sympy__sympy-19040": 0,
+        "sympy__sympy-20428": 0,
+        "sympy__sympy-22080": 0
+      },
+      "k_a": {
+        "astropy__astropy-14309": 3,
+        "astropy__astropy-14995": 3,
+        "django__django-15128": 3,
+        "django__django-15732": 3,
+        "django__django-16667": 3,
+        "matplotlib__matplotlib-13989": 3,
+        "psf__requests-1724": 3,
+        "psf__requests-2317": 3,
+        "psf__requests-6028": 3,
+        "pylint-dev__pylint-6528": 3,
+        "pylint-dev__pylint-6903": 3,
+        "pylint-dev__pylint-8898": 3,
+        "pytest-dev__pytest-7236": 3,
+        "pytest-dev__pytest-7324": 3,
+        "pytest-dev__pytest-7490": 3,
+        "pytest-dev__pytest-7982": 3,
+        "scikit-learn__scikit-learn-25232": 3,
+        "scikit-learn__scikit-learn-25973": 3,
+        "scikit-learn__scikit-learn-26194": 3,
+        "sphinx-doc__sphinx-10466": 3,
+        "sphinx-doc__sphinx-7985": 3,
+        "sympy__sympy-19040": 3,
+        "sympy__sympy-20428": 3,
+        "sympy__sympy-22080": 3
+      },
+      "k_b": {
+        "astropy__astropy-14309": 1,
+        "astropy__astropy-14995": 1,
+        "django__django-15128": 1,
+        "django__django-15732": 1,
+        "django__django-16667": 1,
+        "matplotlib__matplotlib-13989": 1,
+        "psf__requests-1724": 1,
+        "psf__requests-2317": 1,
+        "psf__requests-6028": 1,
+        "pylint-dev__pylint-6528": 1,
+        "pylint-dev__pylint-6903": 1,
+        "pylint-dev__pylint-8898": 1,
+        "pytest-dev__pytest-7236": 1,
+        "pytest-dev__pytest-7324": 1,
+        "pytest-dev__pytest-7490": 1,
+        "pytest-dev__pytest-7982": 1,
+        "scikit-learn__scikit-learn-25232": 1,
+        "scikit-learn__scikit-learn-25973": 1,
+        "scikit-learn__scikit-learn-26194": 1,
+        "sphinx-doc__sphinx-10466": 1,
+        "sphinx-doc__sphinx-7985": 1,
+        "sympy__sympy-19040": 1,
+        "sympy__sympy-20428": 1,
+        "sympy__sympy-22080": 1
+      },
+      "flips_up": 0,
+      "regressions": 0,
+      "transition_table": {
+        "classes": [
+          "solid_pass",
+          "flaky",
+          "solid_fail"
+        ],
+        "matrix": [
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ],
+        "rows": {
+          "solid_pass": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          },
+          "flaky": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          },
+          "solid_fail": {
+            "solid_pass": 0,
+            "flaky": 0,
+            "solid_fail": 0
+          }
+        },
+        "total": 0
+      },
+      "discordant": {
+        "n_discordant": 0,
+        "b_only": 0,
+        "a_only": 0,
+        "both": 0,
+        "neither": 0
+      },
+      "wilcoxon": {
+        "statistic": null,
+        "p_value": null,
+        "zero_method": "wilcox",
+        "n_nonzero": 0,
+        "note": "all shared instances excluded for k mismatch"
+      },
+      "sign_test": {
+        "p_value": 1.0,
+        "n_discordant": 0,
+        "b_better": 0,
+        "note": "no discordant majority pairs"
+      }
+    }
+  ]
+}

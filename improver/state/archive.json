@@ -217,5 +217,362 @@
   },
   "dry": false,
   "reused_from": "7f525c3f9b37d76b4135d29c70155f45afe605a4"
+ },
+ {
+  "variant_id": "20260905T011537",
+  "branch": "cand/20260905T011537",
+  "home_branch": "main",
+  "sha": "6e9817c95ad01fa249ca2b72100edb6039bc3b08",
+  "parent_sha": "6b7a24d92fa0c644caa746e6f94339f87686d517",
+  "base_condition": "C1",
+  "base_sha": "9ec1540eb4f56c40ccfafac41055e2335e2fc47e",
+  "cand_condition": "cand-6e9817c",
+  "hypothesis": {
+   "hypothesis": "Many solid_fail instances produce fixes at the symptom surface (a subclass method, a consumer function, a leaf printer) rather than at the root cause in a deeper layer (the base class, the domain definition, the precedence table). Adding a concrete 'trace one level deeper' sub-step to backend-dev step 2 \u2014 explicitly instructing the agent to read the base class, the input-provider, and any domain/type definitions before settling on a fix location \u2014 should redirect the agent to fix at the foundational layer where the semantic error originates, matching the gold patch location and avoiding regressions from leaf-level workarounds.",
+   "category": "prompt_rule",
+   "target_files": [
+    "harness/agents/backend-dev.md"
+   ],
+   "expected_flips": [
+    "sympy__sympy-20428",
+    "sympy__sympy-22080"
+   ],
+   "rationale": "In sympy__sympy-20428 (0/3), all 3 runs patch densearith.py or densetools.py (adding strip calls after mul_ground) because the agent stops at the function that produces the unstripped list. The gold fix is in the expression domain layer \u2014 the EX domain does not properly detect zero. The agent never reads the domain definition. With the new rule ('if a function produces wrong output, read the function that provides its input'), the agent would trace from mul_ground to the EX domain multiplication, discover that the domain's zero detection is broken, and fix there. In sympy__sympy-22080 (0/3), all 3 runs fix in pycode.py (the Python-specific subclass) or add a Mod entry to precedence.py alone, but the gold fix is in codeprinter.py (the base class) plus precedence.py. The hidden test checks C code printing (a different printer subclass), so the pycode-only fix doesn't help. With the new rule ('if you are about to patch a subclass method, read the base class'), the agent would see that the parenthesization issue is in the base CodePrinter and fix there, benefiting all code printers."
+  },
+  "created": "2026-09-05T01:15:37Z",
+  "status": "rejected",
+  "stage": "train_k1",
+  "results": {
+   "train_k1": {
+    "batch_exit": 0,
+    "batch_id": "cand-6e9817c-train1",
+    "k": 1,
+    "split": "train",
+    "base_condition": "C1",
+    "cand_condition": "cand-6e9817c",
+    "n_requested": 24,
+    "n_compared": 24,
+    "n_base_only": 0,
+    "n_cand_missing": [],
+    "k_base": [
+     3,
+     3
+    ],
+    "k_cand": [
+     1,
+     1
+    ],
+    "base_classes": {
+     "solid_pass": 17,
+     "flaky": 1,
+     "solid_fail": 6
+    },
+    "cand_classes": {
+     "solid_pass": 17,
+     "flaky": 0,
+     "solid_fail": 7
+    },
+    "flips_up": 0,
+    "regressions": 1,
+    "flaky_gains": 1,
+    "flips_up_ids": [],
+    "regression_ids": [
+     "sphinx-doc__sphinx-10466"
+    ],
+    "flaky_gain_ids": [
+     "django__django-15128"
+    ]
+   }
+  },
+  "reason": "train k=1 screen: zero solid_fail -> pass flips",
+  "agent": {
+   "rc": 0,
+   "is_error": false,
+   "subtype": "success",
+   "session_id": "6aaf64c0-904b-4830-b400-ea66219b483b",
+   "num_turns": 27,
+   "total_cost_usd": 1.8770249999999997,
+   "result_text": "**Failure mode**: The agent fixes at the symptom surface (a leaf function, a subclass method) instead of tracing to the root cause in a deeper foundational layer (the base class, the domain definition, the precedence table).\n\n**Change**: Strengthened backend-dev step 2 with a concrete \"trace one level deeper\" sub-step \u2014 explicitly instructing the agent to read the base class, the input-provider, and domain/type definitions before settling on a fix location.\n\n**Files touched**: `harness/agents/backend-dev.md`, `harness/HYPOTHESIS.json`\n\n**Expected flips**: `sympy__sympy-20428` (agent would trac"
+  },
+  "dry": false
+ },
+ {
+  "variant_id": "20260905T022623",
+  "branch": "cand/20260905T022623",
+  "home_branch": "main",
+  "sha": "5777b175bc698b61b4315ac6d68de59905f6bf7e",
+  "parent_sha": "6b7a24d92fa0c644caa746e6f94339f87686d517",
+  "base_condition": "C1",
+  "base_sha": "9ec1540eb4f56c40ccfafac41055e2335e2fc47e",
+  "cand_condition": "cand-5777b17",
+  "hypothesis": {
+   "hypothesis": "The lead classifies many tasks as XS and skips all specialists \u2014 doing the fix itself without planner, backend-dev, or code-reviewer. This produces narrow fixes that address only the specific scenario in the problem statement while missing related cases (base classes, sibling subclasses, other constraint types) that hidden tests check. Removing the XS tier so every task gets the planner (systematic localization of base classes and callers) and code-reviewer (catching narrow-scope fixes) should flip solid_fail instances where the fix is at the right function but too narrowly scoped, without regressing solid_pass instances because the planner is read-only and fast.",
+   "category": "workflow",
+   "target_files": [
+    "harness/agents/lead.md"
+   ],
+   "expected_flips": [
+    "django__django-15732",
+    "sympy__sympy-22080"
+   ],
+   "rationale": "In django__django-15732 (0/3), all 3 runs say 'specialists spawned: []' and 'completed it directly without spawning specialists'. The lead self-localizes to schema.py, adds primary_key=False, and runs only tests/schema \u2014 but the hidden test uses a field with unique=True (not PK), a related case the planner would find by grepping for all callers of the constraint-deletion function. In sympy__sympy-22080 (0/3), all 3 runs also spawn zero specialists. The lead fixes in pycode.py (Python-specific subclass) but the gold fix is in codeprinter.py (the base CodePrinter) plus precedence.py. The planner, by grepping for the Mod printing method and the parenthesize method, would find the base class and localize the fix there. Both prior rejected variants (broader-tests rule, trace-deeper rule) added extra rules to backend-dev, increasing its cognitive load on all runs and causing regressions. This change instead targets the lead's routing: it does not add rules to any specialist, it ensures they are always invoked. The overhead is low \u2014 the planner is read-only, and the extra tester in QA just reruns existing commands."
+  },
+  "created": "2026-09-05T02:26:23Z",
+  "status": "rejected",
+  "stage": "confirm_k3",
+  "results": {
+   "train_k1": {
+    "batch_exit": 0,
+    "batch_id": "cand-5777b17-train1",
+    "k": 1,
+    "split": "train",
+    "base_condition": "C1",
+    "cand_condition": "cand-5777b17",
+    "n_requested": 24,
+    "n_compared": 24,
+    "n_base_only": 0,
+    "n_cand_missing": [],
+    "k_base": [
+     3,
+     3
+    ],
+    "k_cand": [
+     1,
+     1
+    ],
+    "base_classes": {
+     "solid_pass": 17,
+     "flaky": 1,
+     "solid_fail": 6
+    },
+    "cand_classes": {
+     "solid_pass": 19,
+     "flaky": 0,
+     "solid_fail": 5
+    },
+    "flips_up": 1,
+    "regressions": 0,
+    "flaky_gains": 1,
+    "flips_up_ids": [
+     "pylint-dev__pylint-8898"
+    ],
+    "regression_ids": [],
+    "flaky_gain_ids": [
+     "django__django-15128"
+    ]
+   },
+   "heldout_k1": {
+    "batch_exit": 0,
+    "batch_id": "cand-5777b17-heldout1",
+    "k": 1,
+    "split": "heldout",
+    "base_condition": "C1",
+    "cand_condition": "cand-5777b17",
+    "n_requested": 16,
+    "n_compared": 16,
+    "n_base_only": 0,
+    "n_cand_missing": [],
+    "k_base": [
+     3,
+     3
+    ],
+    "k_cand": [
+     1,
+     1
+    ],
+    "base_classes": {
+     "solid_pass": 11,
+     "flaky": 2,
+     "solid_fail": 3
+    },
+    "cand_classes": {
+     "solid_pass": 13,
+     "flaky": 0,
+     "solid_fail": 3
+    },
+    "flips_up": 1,
+    "regressions": 0,
+    "flaky_gains": 1,
+    "flips_up_ids": [
+     "sympy__sympy-14248"
+    ],
+    "regression_ids": [],
+    "flaky_gain_ids": [
+     "sympy__sympy-19783"
+    ]
+   },
+   "confirm_k3": {
+    "batch_exit": 0,
+    "batch_id": "cand-5777b17-confirm",
+    "k": 3,
+    "train": {
+     "base_condition": "C1",
+     "cand_condition": "cand-5777b17",
+     "n_requested": 24,
+     "n_compared": 24,
+     "n_base_only": 0,
+     "n_cand_missing": [],
+     "k_base": [
+      3,
+      3
+     ],
+     "k_cand": [
+      3,
+      3
+     ],
+     "base_classes": {
+      "solid_pass": 17,
+      "flaky": 1,
+      "solid_fail": 6
+     },
+     "cand_classes": {
+      "solid_pass": 17,
+      "flaky": 2,
+      "solid_fail": 5
+     },
+     "flips_up": 0,
+     "regressions": 1,
+     "flaky_gains": 1,
+     "flips_up_ids": [],
+     "regression_ids": [
+      "scikit-learn__scikit-learn-26194"
+     ],
+     "flaky_gain_ids": [
+      "django__django-15128"
+     ]
+    },
+    "heldout": {
+     "base_condition": "C1",
+     "cand_condition": "cand-5777b17",
+     "n_requested": 16,
+     "n_compared": 16,
+     "n_base_only": 0,
+     "n_cand_missing": [],
+     "k_base": [
+      3,
+      3
+     ],
+     "k_cand": [
+      3,
+      3
+     ],
+     "base_classes": {
+      "solid_pass": 11,
+      "flaky": 2,
+      "solid_fail": 3
+     },
+     "cand_classes": {
+      "solid_pass": 12,
+      "flaky": 1,
+      "solid_fail": 3
+     },
+     "flips_up": 1,
+     "regressions": 1,
+     "flaky_gains": 1,
+     "flips_up_ids": [
+      "sympy__sympy-14248"
+     ],
+     "regression_ids": [
+      "matplotlib__matplotlib-20859"
+     ],
+     "flaky_gain_ids": [
+      "sympy__sympy-19783"
+     ]
+    }
+   }
+  },
+  "reason": "confirmation k=3: 1 held-out regression(s) (matplotlib__matplotlib-20859)",
+  "agent": {
+   "rc": 0,
+   "is_error": false,
+   "subtype": "success",
+   "session_id": "f77e1ece-654a-4a77-810d-6625c221d9ec",
+   "num_turns": 24,
+   "total_cost_usd": 2.53097525,
+   "result_text": "**Failure mode**: The lead classifies tasks as XS and skips all specialists, doing the fix itself \u2014 producing narrow fixes that miss base classes, sibling subclasses, and related constraint types the hidden tests check.\n\n**Change**: Removed the XS tier from the complexity router in `lead.md`; S is now the minimum. Added explicit rule: \"Never skip the specialist workflow.\" Simplified the plan phase to always spawn the planner.\n\n**Files touched**: `harness/agents/lead.md`, `harness/HYPOTHESIS.json`\n\n**Expected flips**: `django__django-15732` (planner would find unique=True callers, not just PK),"
+  },
+  "dry": false
+ },
+ {
+  "variant_id": "20260905T085311",
+  "branch": "cand/20260905T085311",
+  "home_branch": "main",
+  "sha": "b64eadc16960110756ebf77fae701918edceb816",
+  "parent_sha": "6b7a24d92fa0c644caa746e6f94339f87686d517",
+  "base_condition": "C1",
+  "base_sha": "9ec1540eb4f56c40ccfafac41055e2335e2fc47e",
+  "cand_condition": "cand-b64eadc",
+  "hypothesis": {
+   "hypothesis": "The lead classifies tasks as XS and then skips all specialists \u2014 doing the fix itself without planner, backend-dev, or code-reviewer \u2014 producing narrow fixes at the wrong code layer (a subclass instead of the base class, one constraint type instead of all). Adding the planner to the XS routing table (so every task gets systematic localization), reinforcing that specialists must always be spawned, and adding a hierarchy-tracing rule to the planner should redirect fixes to the correct layer. Unlike the prior XS-removal attempt, this keeps the XS tier and its lighter QA (no extra tester in mode B), avoiding the QA overhead that caused regressions at k=3.",
+   "category": "workflow",
+   "target_files": [
+    "harness/agents/lead.md",
+    "harness/agents/planner.md"
+   ],
+   "expected_flips": [
+    "sympy__sympy-22080",
+    "django__django-15732"
+   ],
+   "rationale": "In sympy__sympy-22080 (0/3), all 3 runs have 'specialists spawned: []' and the lead says 'This is XS-sized... so I completed it directly without spawning specialists.' The lead self-localizes to pycode.py (a Python-specific subclass) and fixes there, but the gold patch is in codeprinter.py (the base CodePrinter) plus precedence.py. The hidden test checks C code printing via the base class, so the subclass-only fix doesn't help. With the planner and its new hierarchy-tracing rule, the planner would grep for the print method name across the codebase, find it defined in both the subclass and the base class, and localize the fix to the base class. In django__django-15732 (0/3), all 3 runs also skip specialists ('specialists spawned: []', lead says XS-sized). The lead adds primary_key=False to the constraint filter, but the hidden test has a field with unique=True (a related constraint type), so two constraints still match and the error persists. With the planner doing systematic localization (grepping for all callers and filtering parameters), it would find both constraint types and produce a more general fix plan. The prior XS-removal attempt (cand-5777b17) was promising at k=1 (flipped pylint-8898, 0 regressions) but at k=3 regressed scikit-learn-26194 (train) and matplotlib-20859 (heldout). The likely cause: the XS removal forced S-tier QA (code-reviewer + tester mode B) on all tasks, adding budget overhead. This change keeps XS QA as code-reviewer only, adding just the planner (read-only, fast) \u2014 lower overhead, lower regression risk."
+  },
+  "created": "2026-09-05T08:53:11Z",
+  "status": "rejected",
+  "stage": "train_k1",
+  "results": {
+   "train_k1": {
+    "batch_exit": 0,
+    "batch_id": "cand-b64eadc-train1",
+    "k": 1,
+    "split": "train",
+    "base_condition": "C1",
+    "cand_condition": "cand-b64eadc",
+    "n_requested": 24,
+    "n_compared": 24,
+    "n_base_only": 0,
+    "n_cand_missing": [],
+    "k_base": [
+     3,
+     3
+    ],
+    "k_cand": [
+     1,
+     1
+    ],
+    "base_classes": {
+     "solid_pass": 17,
+     "flaky": 1,
+     "solid_fail": 6
+    },
+    "cand_classes": {
+     "solid_pass": 17,
+     "flaky": 0,
+     "solid_fail": 7
+    },
+    "flips_up": 1,
+    "regressions": 2,
+    "flaky_gains": 1,
+    "flips_up_ids": [
+     "pylint-dev__pylint-8898"
+    ],
+    "regression_ids": [
+     "sphinx-doc__sphinx-10466",
+     "sympy__sympy-19040"
+    ],
+    "flaky_gain_ids": [
+     "django__django-15128"
+    ]
+   }
+  },
+  "reason": "train k=1 screen: 2 solid_pass regression(s) (sphinx-doc__sphinx-10466, sympy__sympy-19040)",
+  "agent": {
+   "rc": 0,
+   "is_error": false,
+   "subtype": "success",
+   "session_id": "39e226b2-58bd-40cb-9464-d1530bfa5f7e",
+   "num_turns": 35,
+   "total_cost_usd": 2.50040755,
+   "result_text": "---\n\n**Failure mode:** The lead classifies tasks as XS and then does everything itself \u2014 no planner, no backend-dev, no code-reviewer \u2014 producing fixes at the wrong code layer (subclass instead of base class, one constraint type instead of all).\n\n**Change:** Add `planner` to the XS routing table (so every task gets systematic localization with a new hierarchy-tracing rule), and reinforce that specialists must always be spawned. Unlike the prior XS-removal attempt, XS QA stays as code-reviewer only (no extra tester mode B overhead).\n\n**Files touched:** `harness/agents/lead.md`, `harness/agents/"
+  },
+  "dry": false
  }
 ]

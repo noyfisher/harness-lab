@@ -145,7 +145,7 @@ footer {
 <main>
 <h1>Harness Lab</h1>
 <p class="claim">Does a multi-agent Claude Code harness resolve more SWE-bench Verified issues than a single-agent <code>claude -p</code> baseline running the same model, effort, budget, prompt rules and container, measured on a fixed stratified subset of the arm64-available Verified instances?</p>
-<p class="prov">Generated from <code>runs.jsonl</code> with 266 lines, sha256 <code>61eb0bd70deed8c59b0ab27ed6668cc1d8c14fb47aa328861cf01c8d7ce621aa</code>. 265 runs loaded, 264 counted toward k. Bootstrap: 10000 instance resamples, seed 0, alpha 0.05.</p>
+<p class="prov">Generated from <code>runs.jsonl</code> with 434 lines, sha256 <code>e35fc0e4386e19d702f94fe15b86a01ec06fdf996a9f6899295a90c68b8fb058</code>. 433 runs loaded, 432 counted toward k. Bootstrap: 10000 instance resamples, seed 0, alpha 0.05.</p>
 <h2>Headline</h2>
 <div class="scroll">
 <table>
@@ -194,7 +194,7 @@ footer {
 </tr>
 </tbody></table></div>
 <details>
-<summary>Candidate screens (2)</summary>
+<summary>Candidate screens (5)</summary>
 <p class="caption">Improver screens at reduced k. These are screening statistics, not headline results.</p>
 <div class="scroll">
 <table>
@@ -224,6 +224,48 @@ footer {
 <td class="num">$1.95</td>
 <td class="num">$1.38</td>
 <td class="num">416.3</td>
+<td class="num">0</td>
+</tr>
+<tr>
+<th>cand-5777b17</th>
+<td class="num">40</td>
+<td class="num">3</td>
+<td class="num">0.767 <span class="ci">[0.642, 0.883]</span></td>
+<td class="num">29</td>
+<td class="num">3</td>
+<td class="num">8</td>
+<td class="num">92 / 120</td>
+<td class="num">$2.23</td>
+<td class="num">$1.71</td>
+<td class="num">531.8</td>
+<td class="num">0</td>
+</tr>
+<tr>
+<th>cand-6e9817c</th>
+<td class="num">24</td>
+<td class="num">1</td>
+<td class="num">0.708 <span class="ci">[0.500, 0.875]</span></td>
+<td class="num">17</td>
+<td class="num">0</td>
+<td class="num">7</td>
+<td class="num">17 / 24</td>
+<td class="num">$1.87</td>
+<td class="num">$1.32</td>
+<td class="num">426.6</td>
+<td class="num">0</td>
+</tr>
+<tr>
+<th>cand-b64eadc</th>
+<td class="num">24</td>
+<td class="num">1</td>
+<td class="num">0.708 <span class="ci">[0.500, 0.875]</span></td>
+<td class="num">17</td>
+<td class="num">0</td>
+<td class="num">7</td>
+<td class="num">17 / 24</td>
+<td class="num">$1.63</td>
+<td class="num">$1.32</td>
+<td class="num">881.2</td>
 <td class="num">0</td>
 </tr>
 <tr>
@@ -339,11 +381,17 @@ footer {
 <th class="num">C0</th>
 <th class="num">C1</th>
 <th class="num">cand-1c1a458</th>
+<th class="num">cand-5777b17</th>
+<th class="num">cand-6e9817c</th>
+<th class="num">cand-b64eadc</th>
 <th class="num">cand-f852723</th>
 </tr></thead><tbody>
 <tr><th>astropy__astropy-13579</th><td>astropy</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -351,11 +399,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>astropy__astropy-14539</th><td>astropy</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -363,11 +417,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>django__django-11149</th><td>django</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -375,11 +435,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">2/3 <span class="cls-flaky">flaky</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>django__django-15732</th><td>django</td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -387,11 +453,17 @@ footer {
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>matplotlib__matplotlib-13989</th><td>matplotlib</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -399,11 +471,17 @@ footer {
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num na">n/a</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num na">n/a</td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>matplotlib__matplotlib-20859</th><td>matplotlib</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num">2/3 <span class="cls-flaky">flaky</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -411,11 +489,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>mwaskom__seaborn-3187</th><td>mwaskom</td>
 <td class="num">1/3 <span class="cls-flaky">flaky</span></td>
 <td class="num">2/3 <span class="cls-flaky">flaky</span></td>
+<td class="num na">n/a</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -423,11 +507,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>psf__requests-1724</th><td>psf</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -435,11 +525,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>psf__requests-2317</th><td>psf</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -447,11 +543,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>pylint-dev__pylint-6528</th><td>pylint-dev</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -459,17 +561,26 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>pylint-dev__pylint-8898</th><td>pylint-dev</td>
 <td class="num">1/3 <span class="cls-flaky">flaky</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">1/3 <span class="cls-flaky">flaky</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>pytest-dev__pytest-7236</th><td>pytest-dev</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -477,11 +588,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>pytest-dev__pytest-7490</th><td>pytest-dev</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -489,11 +606,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>pytest-dev__pytest-7571</th><td>pytest-dev</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -501,11 +624,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>scikit-learn__scikit-learn-25232</th><td>scikit-learn</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -513,11 +642,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>scikit-learn__scikit-learn-26194</th><td>scikit-learn</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">2/3 <span class="cls-flaky">flaky</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
 </tr>
@@ -525,11 +660,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>sphinx-doc__sphinx-7748</th><td>sphinx-doc</td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num na">n/a</td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -537,11 +678,17 @@ footer {
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>sphinx-doc__sphinx-8120</th><td>sphinx-doc</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -549,11 +696,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>sympy__sympy-14248</th><td>sympy</td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -561,11 +714,17 @@ footer {
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
 <td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">1/1 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>sympy__sympy-19783</th><td>sympy</td>
 <td class="num">2/3 <span class="cls-flaky">flaky</span></td>
 <td class="num">2/3 <span class="cls-flaky">flaky</span></td>
+<td class="num na">n/a</td>
+<td class="num">3/3 <span class="cls-solid_pass">solid_pass</span></td>
+<td class="num na">n/a</td>
 <td class="num na">n/a</td>
 <td class="num na">n/a</td>
 </tr>
@@ -573,11 +732,17 @@ footer {
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num na">n/a</td>
 </tr>
 <tr><th>sympy__sympy-22080</th><td>sympy</td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/3 <span class="cls-solid_fail">solid_fail</span></td>
+<td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num">0/1 <span class="cls-solid_fail">solid_fail</span></td>
 <td class="num na">n/a</td>
 </tr>

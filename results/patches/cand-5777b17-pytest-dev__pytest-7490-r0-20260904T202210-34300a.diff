@@ -1,0 +1,18 @@
+diff --git a/src/_pytest/skipping.py b/src/_pytest/skipping.py
+index 335e109..8066aee 100644
+--- a/src/_pytest/skipping.py
++++ b/src/_pytest/skipping.py
+@@ -262,6 +262,13 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]):
+     outcome = yield
+     rep = outcome.get_result()
+     xfailed = item._store.get(xfailed_key, None)
++    # dynamic xfail marker may have been added by the test itself during
++    # its run (e.g. via ``request.node.add_marker``), so re-evaluate.
++    if xfailed is None and call.when == "call":
++        try:
++            item._store[xfailed_key] = xfailed = evaluate_xfail_marks(item)
++        except Exception:
++            pass
+     # unittest special case, see setting of unexpectedsuccess_key
+     if unexpectedsuccess_key in item._store and rep.when == "call":
+         reason = item._store[unexpectedsuccess_key]

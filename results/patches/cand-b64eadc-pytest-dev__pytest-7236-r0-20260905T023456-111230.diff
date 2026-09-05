@@ -1,0 +1,27 @@
+diff --git a/src/_pytest/unittest.py b/src/_pytest/unittest.py
+index 773f545..072bf7f 100644
+--- a/src/_pytest/unittest.py
++++ b/src/_pytest/unittest.py
+@@ -107,6 +107,11 @@ def _make_xunit_fixture(obj, setup_name, teardown_name, scope, pass_self):
+     return fixture
+ 
+ 
++def _is_skipped(obj) -> bool:
++    """Return True if the given object has been marked with @unittest.skip"""
++    return bool(getattr(obj, "__unittest_skip__", False))
++
++
+ class TestCaseFunction(Function):
+     nofuncargs = True
+     _excinfo = None
+@@ -220,7 +225,9 @@ class TestCaseFunction(Function):
+             # arguably we could always postpone tearDown(), but this changes the moment where the
+             # TestCase instance interacts with the results object, so better to only do it
+             # when absolutely needed
+-            if self.config.getoption("usepdb"):
++            if self.config.getoption("usepdb") and not (
++                _is_skipped(self.obj) or _is_skipped(self._testcase)
++            ):
+                 self._explicit_tearDown = self._testcase.tearDown
+                 setattr(self._testcase, "tearDown", lambda *args: None)
+ 

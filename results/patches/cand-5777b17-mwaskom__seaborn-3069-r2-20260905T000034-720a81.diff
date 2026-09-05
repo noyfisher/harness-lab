@@ -1,0 +1,34 @@
+diff --git a/seaborn/_core/plot.py b/seaborn/_core/plot.py
+index 4f0290a..ae1f1b6 100644
+--- a/seaborn/_core/plot.py
++++ b/seaborn/_core/plot.py
+@@ -25,7 +25,7 @@ from seaborn._marks.base import Mark
+ from seaborn._stats.base import Stat
+ from seaborn._core.data import PlotData
+ from seaborn._core.moves import Move
+-from seaborn._core.scales import Scale
++from seaborn._core.scales import Scale, Nominal
+ from seaborn._core.subplots import Subplots
+ from seaborn._core.groupby import GroupBy
+ from seaborn._core.properties import PROPERTIES, Property
+@@ -1631,6 +1631,20 @@ class Plotter:
+             ax = sub["ax"]
+             for axis in "xy":
+                 axis_key = sub[axis]
++                axis_obj = getattr(ax, f"{axis}axis")
++
++                # Axes with a Nominal scale should be treated like the categorical
++                # axis in seaborn's older Axes-level functions (categorical.py):
++                # no autoscale margin, no grid, and (for y) inverted so that the
++                # first category is drawn at the top. This must happen after the
++                # layers have been plotted (see categorical.py._adjust_cat_axis).
++                if isinstance(self._scales.get(axis_key), Nominal):
++                    axis_obj.grid(False)
++                    n = len(getattr(ax, f"get_{axis}ticks")())
++                    if axis == "x":
++                        ax.set_xlim(-.5, n - .5, auto=None)
++                    else:
++                        ax.set_ylim(n - .5, -.5, auto=None)
+ 
+                 # Axis limits
+                 if axis_key in p._limits:

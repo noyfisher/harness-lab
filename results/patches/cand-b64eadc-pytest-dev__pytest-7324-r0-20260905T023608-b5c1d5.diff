@@ -1,0 +1,42 @@
+diff --git a/src/_pytest/mark/expression.py b/src/_pytest/mark/expression.py
+index 04c7341..bd82898 100644
+--- a/src/_pytest/mark/expression.py
++++ b/src/_pytest/mark/expression.py
+@@ -39,6 +39,13 @@ __all__ = [
+ ]
+ 
+ 
++#: Identifiers which Python's ast.Name node cannot represent (compile()
++#: rejects them, see bpo-40870). They are encoded with IDENT_PREFIX so they
++#: can still be looked up via the matcher like any other ident.
++KEYWORDS = frozenset(("True", "False", "None"))
++IDENT_PREFIX = "$"
++
++
+ class TokenType(enum.Enum):
+     LPAREN = "left parenthesis"
+     RPAREN = "right parenthesis"
+@@ -161,6 +168,14 @@ def not_expr(s: Scanner) -> ast.expr:
+         return ret
+     ident = s.accept(TokenType.IDENT)
+     if ident:
++        if ident.value in KEYWORDS:
++            # Python disallows using "True", "False" and "None" as an
++            # identifier in an ast.Name node (CPython enforces this at
++            # compile() time, aborting with a C assert on debug builds).
++            # Encode these idents so they can still be looked up via the
++            # matcher like any other ident; MatcherAdapter decodes them
++            # back before calling the real matcher.
++            return ast.Name(IDENT_PREFIX + ident.value, ast.Load())
+         return ast.Name(ident.value, ast.Load())
+     s.reject((TokenType.NOT, TokenType.LPAREN, TokenType.IDENT))
+ 
+@@ -172,6 +187,8 @@ class MatcherAdapter(Mapping[str, bool]):
+         self.matcher = matcher
+ 
+     def __getitem__(self, key: str) -> bool:
++        if key.startswith(IDENT_PREFIX):
++            key = key[len(IDENT_PREFIX) :]
+         return self.matcher(key)
+ 
+     def __iter__(self) -> Iterator[str]:

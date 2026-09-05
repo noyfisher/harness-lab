@@ -1,0 +1,90 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index aaf35ee..80956b1 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -599,26 +599,34 @@ class Query(BaseExpression):
+         # Now, add the joins from rhs query into the new query (skipping base
+         # table).
+         rhs_tables = list(rhs.alias_map)[1:]
+-        for alias in rhs_tables:
+-            join = rhs.alias_map[alias]
+-            # If the left side of the join was already relabeled, use the
+-            # updated alias.
+-            join = join.relabeled_clone(change_map)
+-            new_alias = self.join(join, reuse=reuse)
+-            if join.join_type == INNER:
+-                rhs_votes.add(new_alias)
+-            # We can't reuse the same join again in the query. If we have two
+-            # distinct joins for the same connection in rhs query, then the
+-            # combined query must have two joins, too.
+-            reuse.discard(new_alias)
+-            if alias != new_alias:
+-                change_map[alias] = new_alias
+-            if not rhs.alias_refcount[alias]:
+-                # The alias was unused in the rhs query. Unref it so that it
+-                # will be unused in the new query, too. We have to add and
+-                # unref the alias so that join promotion has information of
+-                # the join type for the unused alias.
+-                self.unref_alias(new_alias)
++        # Newly minted aliases for the relabelled rhs joins must not collide
++        # with any alias that rhs itself still uses, including ones not yet
++        # processed by this loop, or a chained rename (e.g. {'T4': 'T5',
++        # 'T5': 'T6'}) can be produced, which change_aliases() rejects.
++        self._avoid_aliases = frozenset(rhs_tables)
++        try:
++            for alias in rhs_tables:
++                join = rhs.alias_map[alias]
++                # If the left side of the join was already relabeled, use the
++                # updated alias.
++                join = join.relabeled_clone(change_map)
++                new_alias = self.join(join, reuse=reuse)
++                if join.join_type == INNER:
++                    rhs_votes.add(new_alias)
++                # We can't reuse the same join again in the query. If we have two
++                # distinct joins for the same connection in rhs query, then the
++                # combined query must have two joins, too.
++                reuse.discard(new_alias)
++                if alias != new_alias:
++                    change_map[alias] = new_alias
++                if not rhs.alias_refcount[alias]:
++                    # The alias was unused in the rhs query. Unref it so that it
++                    # will be unused in the new query, too. We have to add and
++                    # unref the alias so that join promotion has information of
++                    # the join type for the unused alias.
++                    self.unref_alias(new_alias)
++        finally:
++            del self._avoid_aliases
+         joinpromoter.add_votes(rhs_votes)
+         joinpromoter.update_join_types(self)
+ 
+@@ -761,7 +769,12 @@ class Query(BaseExpression):
+ 
+         # Create a new alias for this table.
+         if alias_list:
+-            alias = '%s%d' % (self.alias_prefix, len(self.alias_map) + 1)
++            avoid_aliases = getattr(self, '_avoid_aliases', None)
++            n = len(self.alias_map) + 1
++            alias = '%s%d' % (self.alias_prefix, n)
++            while alias in self.alias_map or (avoid_aliases and alias in avoid_aliases):
++                n += 1
++                alias = '%s%d' % (self.alias_prefix, n)
+             alias_list.append(alias)
+         else:
+             # The first occurrence of a table uses the table name directly.
+@@ -961,9 +974,16 @@ class Query(BaseExpression):
+         sure chains like t1 LOUTER t2 INNER t3 aren't generated. All new
+         joins are created as LOUTER if the join is nullable.
+         """
++        # An alias that coincidentally shares its name with another,
++        # not-yet-relabelled alias of the query currently being merged in
++        # (see combine()) can't be reused unless it's the very alias the
++        # incoming join already uses, or a chained rename (e.g. {'T4': 'T5',
++        # 'T5': 'T6'}) can be produced, which change_aliases() rejects.
++        avoid_aliases = getattr(self, '_avoid_aliases', None)
+         reuse_aliases = [
+             a for a, j in self.alias_map.items()
+             if (reuse is None or a in reuse) and j.equals(join)
++            and not (avoid_aliases and a != join.table_alias and a in avoid_aliases)
+         ]
+         if reuse_aliases:
+             if join.table_alias in reuse_aliases:

@@ -1,0 +1,61 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index aaf35ee..f7faacc 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -846,8 +846,6 @@ class Query(BaseExpression):
+         relabelling any references to them in select columns and the where
+         clause.
+         """
+-        assert set(change_map).isdisjoint(change_map.values())
+-
+         # 1. Update references in "select" (normal columns plus aliases),
+         # "group by" and "where".
+         self.where.relabel_aliases(change_map)
+@@ -859,20 +857,36 @@ class Query(BaseExpression):
+         }
+ 
+         # 2. Rename the alias in the internal table/alias datastructures.
++        # Snapshot old data before mutating, since change_map may contain
++        # intersecting old/new aliases (e.g. {'T4': 'T5', 'T5': 'T6'}).
++        old_aliases = {
++            alias: self.alias_map[alias] for alias in change_map if alias in self.alias_map
++        }
++        old_refcounts = {alias: self.alias_refcount[alias] for alias in old_aliases}
++        # table_map's lists may be shared with other queries (Query.clone()
++        # only shallow-copies table_map), so an alias might already be gone
++        # from its table's list by the time we get here. Record positions
++        # only for aliases that are still present, and do so before any
++        # mutation to avoid the position search being confused by renames
++        # made earlier in this same loop.
++        old_positions = {
++            alias: self.table_map[old_aliases[alias].table_name].index(alias)
++            for alias in old_aliases
++            if alias in self.table_map[old_aliases[alias].table_name]
++        }
+         for old_alias, new_alias in change_map.items():
+-            if old_alias not in self.alias_map:
++            if old_alias not in old_aliases:
+                 continue
+-            alias_data = self.alias_map[old_alias].relabeled_clone(change_map)
++            alias_data = old_aliases[old_alias].relabeled_clone(change_map)
+             self.alias_map[new_alias] = alias_data
+-            self.alias_refcount[new_alias] = self.alias_refcount[old_alias]
+-            del self.alias_refcount[old_alias]
+-            del self.alias_map[old_alias]
+-
+-            table_aliases = self.table_map[alias_data.table_name]
+-            for pos, alias in enumerate(table_aliases):
+-                if alias == old_alias:
+-                    table_aliases[pos] = new_alias
+-                    break
++            self.alias_refcount[new_alias] = old_refcounts[old_alias]
++
++            if old_alias in old_positions:
++                self.table_map[alias_data.table_name][old_positions[old_alias]] = new_alias
++        for old_alias in old_aliases:
++            if old_alias not in change_map.values():
++                del self.alias_refcount[old_alias]
++                del self.alias_map[old_alias]
+         self.external_aliases = {
+             # Table is aliased or it's being changed and thus is aliased.
+             change_map.get(alias, alias): (aliased or alias in change_map)

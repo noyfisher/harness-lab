@@ -1,0 +1,33 @@
+diff --git a/sphinx/builders/linkcheck.py b/sphinx/builders/linkcheck.py
+index dd53170..6e93728 100644
+--- a/sphinx/builders/linkcheck.py
++++ b/sphinx/builders/linkcheck.py
+@@ -213,7 +213,27 @@ class CheckExternalLinksBuilder(Builder):
+             if len(uri) == 0 or uri.startswith(('#', 'mailto:', 'ftp:')):
+                 return 'unchecked', '', 0
+             elif not uri.startswith(('http:', 'https:')):
+-                return 'local', '', 0
++                if uri.startswith('//') or re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*:', uri):
++                    # not a local file reference (e.g. a protocol-relative
++                    # URL, or a URI with a scheme we don't otherwise
++                    # recognize such as tel: or irc:) -- nothing to check
++                    return 'local', '', 0
++                if '#' in uri:
++                    path_part = uri.split('#', 1)[0]
++                else:
++                    path_part = uri
++                rel_path, filename = self.env.relfn2path(path_part, docname)
++                if path.exists(filename):
++                    return 'local', '', 0
++                # the target may be a link to another document's built
++                # page (e.g. "other.html") rather than to a file that
++                # exists in the source tree; check the corresponding
++                # source file(s) before declaring it broken
++                base, _ = path.splitext(rel_path)
++                for suffix in self.config.source_suffix:
++                    if path.exists(path.join(self.srcdir, base + suffix)):
++                        return 'local', '', 0
++                return 'broken', __('Local file %s does not exist') % path_part, 0
+             elif uri in self.good:
+                 return 'working', 'old', 0
+             elif uri in self.broken:
