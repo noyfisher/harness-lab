@@ -1,0 +1,17 @@
+diff --git a/django/db/backends/base/schema.py b/django/db/backends/base/schema.py
+index f2ca8c8..59d80bf 100644
+--- a/django/db/backends/base/schema.py
++++ b/django/db/backends/base/schema.py
+@@ -562,6 +562,12 @@ class BaseDatabaseSchemaEditor:
+         }
+         meta_index_names = {constraint.name for constraint in model._meta.indexes}
+         columns = [model._meta.get_field(field).column for field in fields]
++        if constraint_kwargs.get("unique") is True:
++            # PostgreSQL and MySQL introspection reports the primary key
++            # constraint as unique=True too, so a unique_together declared
++            # on the primary key column(s) would otherwise spuriously match
++            # both constraints.
++            constraint_kwargs.setdefault("primary_key", False)
+         constraint_names = self._constraint_names(
+             model,
+             columns,

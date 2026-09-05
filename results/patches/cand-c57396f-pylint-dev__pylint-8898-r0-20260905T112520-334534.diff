@@ -1,0 +1,56 @@
+diff --git a/pylint/config/argument.py b/pylint/config/argument.py
+index 30a5fd1..5ba4f23 100644
+--- a/pylint/config/argument.py
++++ b/pylint/config/argument.py
+@@ -13,7 +13,7 @@ import argparse
+ import os
+ import pathlib
+ import re
+-from collections.abc import Callable
++from collections.abc import Callable, Iterator
+ from glob import glob
+ from typing import Any, Literal, Pattern, Sequence, Tuple, Union
+ 
+@@ -114,15 +114,40 @@ def _regex_transformer(value: str) -> Pattern[str]:
+ def _regexp_csv_transfomer(value: str) -> Sequence[Pattern[str]]:
+     """Transforms a comma separated list of regular expressions."""
+     patterns: list[Pattern[str]] = []
+-    for pattern in _csv_transformer(value):
++    for pattern in _check_regexp_csv(value):
+         patterns.append(_regex_transformer(pattern))
+     return patterns
+ 
+ 
++def _check_regexp_csv(value: str) -> Iterator[str]:
++    """Split a comma-separated list of regexes, avoiding splitting inside
++    parentheses, brackets or braces (e.g. a ``{m,n}`` quantifier or a
++    ``[a,b]`` character class), since such commas are part of the regex
++    itself and not a separator between patterns.
++    """
++    open_braces = "([{"
++    close_braces = ")]}"
++    depth = 0
++    current = ""
++    for char in value:
++        if char in open_braces:
++            depth += 1
++        elif char in close_braces:
++            depth = max(depth - 1, 0)
++        if char == "," and depth == 0:
++            if current.strip():
++                yield current.strip()
++            current = ""
++        else:
++            current += char
++    if current.strip():
++        yield current.strip()
++
++
+ def _regexp_paths_csv_transfomer(value: str) -> Sequence[Pattern[str]]:
+     """Transforms a comma separated list of regular expressions paths."""
+     patterns: list[Pattern[str]] = []
+-    for pattern in _csv_transformer(value):
++    for pattern in _check_regexp_csv(value):
+         patterns.append(
+             re.compile(
+                 str(pathlib.PureWindowsPath(pattern)).replace("\\", "\\\\")

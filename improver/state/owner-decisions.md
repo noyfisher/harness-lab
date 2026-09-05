@@ -12,3 +12,7 @@ consequence. When decided, mark DECIDED with date and outcome; never delete.
   - **DECIDED 2026-09-05 (Noy):** revise `.claude/commands/improve.md` to steer toward subtraction
     and budget reallocation (no more additive rules), run 2 more iterations with the cap raised to 7
     for this run only, then write up regardless of outcome.
+  - **Follow-through 2026-09-05:** two more iterations ran with the revised prompt (three-agent
+    subtraction; Lead-owns-localization + always-delegate). Both rejected at the train screen with
+    zero solid_fail flips and zero regressions. Per the decision, the loop is now closed and the
+    study moves to the writeup. Final tally: 6 real hypotheses, 0 accepted.
