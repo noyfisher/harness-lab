@@ -461,8 +461,26 @@ def generate_dossiers(base_condition: str, runs_path=None) -> int:
     return _dossier.main(args)
 
 
+RATE_RE = re.compile(r"hit your limit|rate.?limit|usage limit|429|overloaded|limit reached", re.I)
+
+
 def invoke_improver(a) -> dict:
-    """Run the improver agent on the HOST.  It only edits files; every check happens here."""
+    """Run the improver agent on the HOST, pausing and retrying when the subscription window is exhausted."""
+    retries = int(getattr(a, 'agent_pause_retries', 6))
+    minutes = float(getattr(a, 'agent_pause_minutes', 30))
+    for attempt in range(retries + 1):
+        out = _invoke_improver_once(a)
+        text = f"{out.get('result_text', '')} {out.get('error', '')}"
+        if out.get('is_error') and RATE_RE.search(text) and attempt < retries:
+            log(f"usage wall ({text.strip()[:80]}); pausing {minutes:.0f} min before retrying the improver ({attempt + 1}/{retries})")
+            time.sleep(minutes * 60)
+            continue
+        return out
+    return out
+
+
+def _invoke_improver_once(a) -> dict:
+    """One improver invocation.  It only edits files; every check happens in the caller."""
     base = load_best().get("condition", "C1")
     try:
         generate_dossiers(base)
@@ -1000,6 +1018,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--once", action="store_true", help="exactly one iteration (the default)")
     p.add_argument("--iterations", type=int, default=1,
                    help="run up to K iterations sequentially; stops on the first non-zero exit")
+    p.add_argument("--agent-pause-minutes", type=float, default=30.0,
+                   help="sleep this long when the improver session hits the usage wall, then retry")
+    p.add_argument("--agent-pause-retries", type=int, default=6)
     p.add_argument("--reuse-candidate", default=None, metavar="REF",
                    help="skip the improver: re-screen the harness/ of an existing candidate branch or sha")
     p.add_argument("--dry", action="store_true",

@@ -574,5 +574,109 @@
    "result_text": "---\n\n**Failure mode:** The lead classifies tasks as XS and then does everything itself \u2014 no planner, no backend-dev, no code-reviewer \u2014 producing fixes at the wrong code layer (subclass instead of base class, one constraint type instead of all).\n\n**Change:** Add `planner` to the XS routing table (so every task gets systematic localization with a new hierarchy-tracing rule), and reinforce that specialists must always be spawned. Unlike the prior XS-removal attempt, XS QA stays as code-reviewer only (no extra tester mode B overhead).\n\n**Files touched:** `harness/agents/lead.md`, `harness/agents/"
   },
   "dry": false
+ },
+ {
+  "variant_id": "20260905T111730",
+  "branch": "cand/20260905T111730",
+  "home_branch": "main",
+  "sha": "4c62dcabd4bc061726736a7a4ac8291a06c2b833",
+  "parent_sha": "f52690f40cc060ffe4beb22f18bb5021abaebb4f",
+  "base_condition": "C1",
+  "base_sha": "9ec1540eb4f56c40ccfafac41055e2335e2fc47e",
+  "cand_condition": "cand-4c62dca",
+  "hypothesis": {
+   "hypothesis": "The Lead classifies many tasks as XS and bypasses all specialists, editing library code itself instead of delegating to backend-dev. This produces narrow, wrong-layer fixes (subclass instead of base class, one constraint type instead of all). Collapsing the six-agent workflow to three agents (Lead + backend-dev + code-reviewer) by removing the complexity router and references to planner/tester/critic eliminates the XS bypass so backend-dev always handles the fix. Unlike the prior forced-specialist variant (cand-5777b17), this is strictly cheaper per run because it removes three agent types rather than adding process, avoiding the budget-driven regressions that killed that variant at k=3.",
+   "category": "workflow",
+   "target_files": [
+    "harness/agents/lead.md"
+   ],
+   "expected_flips": [
+    "pylint-dev__pylint-8898",
+    "sympy__sympy-22080"
+   ],
+   "rationale": "In sympy__sympy-22080 (0/3), all 3 runs have 'specialists spawned: []' and the Lead says it completed it directly as XS. The Lead fixes in the Python-specific subclass printer rather than the base class CodePrinter. Backend-dev's own instructions say 'Follow the call to its definition; check the other callers of whatever you are about to change' \u2014 if followed, this discovers the base class. In pylint-dev__pylint-8898 (0/3), the forced-specialist variant (cand-5777b17) already flipped this at k=1 (backend-dev explored the code more broadly); it regressed at k=3 due to overhead from the extra planner+tester spawns. The current change removes those agents entirely, so the per-task cost is lower than even the current XS path (which occasionally spawns tester), while ensuring backend-dev always handles the fix. The solid_pass tasks should not regress because the simplified workflow (Lead + backend-dev + code-reviewer) is cheaper than the current S/M paths and comparable in cost to the current XS path."
+  },
+  "created": "2026-09-05T11:17:30Z",
+  "status": "screening",
+  "stage": "train_k1",
+  "results": {
+   "train_k1": {
+    "batch_exit": 0,
+    "batch_id": "cand-4c62dca-train1",
+    "k": 1,
+    "split": "train",
+    "base_condition": "C1",
+    "cand_condition": "cand-4c62dca",
+    "n_requested": 24,
+    "n_compared": 24,
+    "n_base_only": 0,
+    "n_cand_missing": [],
+    "k_base": [
+     3,
+     3
+    ],
+    "k_cand": [
+     1,
+     1
+    ],
+    "base_classes": {
+     "solid_pass": 17,
+     "flaky": 1,
+     "solid_fail": 6
+    },
+    "cand_classes": {
+     "solid_pass": 17,
+     "flaky": 0,
+     "solid_fail": 7
+    },
+    "flips_up": 0,
+    "regressions": 1,
+    "flaky_gains": 1,
+    "flips_up_ids": [],
+    "regression_ids": [
+     "sympy__sympy-19040"
+    ],
+    "flaky_gain_ids": [
+     "django__django-15128"
+    ]
+   }
+  },
+  "reason": "screen invalid: 6 of 24 train runs were zero-progress timeouts at the usage wall (now superseded as paused); re-screened via --reuse-candidate",
+  "agent": {
+   "rc": 0,
+   "is_error": false,
+   "subtype": "success",
+   "session_id": "c6e9b66d-4178-40c7-9680-3efff3486f02",
+   "num_turns": 35,
+   "total_cost_usd": 1.9496614999999997,
+   "result_text": "---\n\n**Failure mode**: The Lead classifies tasks as XS and does the fix itself, bypassing backend-dev entirely \u2014 producing narrow, wrong-layer fixes (subclass instead of base class, one constraint type instead of all).\n\n**Change**: Collapse the six-agent workflow to three agents (Lead + backend-dev + code-reviewer) by removing the complexity router and all references to planner/tester/critic. The Lead can no longer classify a task as XS and skip specialists; backend-dev always handles the fix.\n\n**Files touched**: `harness/agents/lead.md`, `harness/HYPOTHESIS.json`\n\n**Expected flips**: `pylint-"
+  },
+  "dry": false
+ },
+ {
+  "variant_id": "20260905T142401",
+  "branch": "cand/20260905T142401",
+  "home_branch": "main",
+  "sha": null,
+  "parent_sha": "f52690f40cc060ffe4beb22f18bb5021abaebb4f",
+  "base_condition": "C1",
+  "base_sha": "9ec1540eb4f56c40ccfafac41055e2335e2fc47e",
+  "cand_condition": null,
+  "hypothesis": null,
+  "created": "2026-09-05T14:24:01Z",
+  "status": "aborted",
+  "stage": "smoke",
+  "results": {},
+  "reason": "improver session hit the subscription usage wall ('You've hit your limit'); loop now pauses and retries on this",
+  "agent": {
+   "rc": 1,
+   "is_error": true,
+   "subtype": "success",
+   "session_id": "039805fd-a25a-4e4b-9467-9f4663809f0a",
+   "num_turns": 1,
+   "total_cost_usd": 0,
+   "result_text": "You've hit your limit \u00b7 resets 8:50am (America/Los_Angeles)"
+  },
+  "dry": false
  }
 ]

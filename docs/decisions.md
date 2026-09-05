@@ -92,3 +92,10 @@
   instance at k=3 and the one confirmed candidate regressed a held-out task at 1.3x the seed's
   cost. `improve.md` now tells the improver what the archive shows and restricts this iteration
   to subtraction, budget reallocation, or handoff quality. Cap raised to 7 for this run only.
+- [2026-09-05] **Usage-wall handling tightened.** Iteration 5's train screen had 6 zero-cost,
+  zero-turn timeouts (the CLI waited on the exhausted 5-hour window until the wall clock fired)
+  and iteration 6's improver session failed with "You've hit your limit". Both are
+  infrastructure: `run.py` now classifies a timeout with no result event and no spend as
+  `paused` (the batch re-queues it), and `loop.py` pauses 30 min and retries the improver
+  session on rate-limit text. The 6 runs are superseded as `paused`; the candidate is
+  re-screened. Lesson for the protocol: daytime screens compete with the owner's own usage.

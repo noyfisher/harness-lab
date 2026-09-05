@@ -1,0 +1,43 @@
+diff --git a/pylint/config/utils.py b/pylint/config/utils.py
+index 91e4ff8..6e01aac 100644
+--- a/pylint/config/utils.py
++++ b/pylint/config/utils.py
+@@ -134,7 +134,9 @@ def _convert_option_to_argument(
+ def _parse_rich_type_value(value: Any) -> str:
+     """Parse rich (toml) types into strings."""
+     if isinstance(value, (list, tuple)):
+-        return ",".join(_parse_rich_type_value(i) for i in value)
++        return ",".join(
++            _parse_rich_type_value(i).replace(",", "\\,") for i in value
++        )
+     if isinstance(value, re.Pattern):
+         return str(value.pattern)
+     if isinstance(value, dict):
+diff --git a/pylint/utils/utils.py b/pylint/utils/utils.py
+index fa7f7b9..937dea0 100644
+--- a/pylint/utils/utils.py
++++ b/pylint/utils/utils.py
+@@ -213,6 +213,10 @@ def _splitstrip(string: str, sep: str = ",") -> list[str]:
+     """Return a list of stripped string by splitting the string given as
+     argument on `sep` (',' by default), empty strings are discarded.
+ 
++    A separator preceded by a backslash is treated as a literal character
++    instead of a field separator, allowing values (e.g. regular expressions)
++    that need to contain the separator to escape it as `\\,`.
++
+     >>> _splitstrip('a, b, c   ,  4,,')
+     ['a', 'b', 'c', '4']
+     >>> _splitstrip('a')
+@@ -229,7 +233,11 @@ def _splitstrip(string: str, sep: str = ",") -> list[str]:
+     :rtype: str or unicode
+     :return: the unquoted string (or the input string if it wasn't quoted)
+     """
+-    return [word.strip() for word in string.split(sep) if word.strip()]
++    return [
++        word.strip().replace("\\" + sep, sep)
++        for word in re.split(rf"(?<!\\){re.escape(sep)}", string)
++        if word.strip()
++    ]
+ 
+ 
+ def _unquote(string: str) -> str:

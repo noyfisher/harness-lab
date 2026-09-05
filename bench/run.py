@@ -119,6 +119,10 @@ RATE_RE = re.compile(r"rate.?limit|usage limit|429|overloaded|limit reached", re
 def classify_result(result: dict | None, rc: int, timed_out: bool, stderr: str) -> tuple[str, str]:
     """Map the claude -p result to (outcome, note). Outcome is refined later by grading."""
     if timed_out:
+        # A timeout with no result event and no spend means the session never got API progress
+        # (usage wall, backoff loop). That is infrastructure, so the batch pauses and re-queues it.
+        if result is None:
+            return "paused", "wall-clock alarm with no API progress (usage wall?)"
         return "timeout", "wall-clock alarm"
     if result is None:
         text = (stderr or "")[-500:]
