@@ -80,3 +80,9 @@
 - [2026-09-04] **Batch preflight retries a failed image inspect.** A re-screen stopped at
   preflight on an image that both baselines had used and that `docker images` listed; a single
   transient Docker Desktop error under load. Persistent misses still fail the batch.
+- [2026-09-05] **Docker VM freeze, not a harness bug.** The first candidate screen produced
+  sessions that ended at turn 1 with "Unknown skill: swe-fix" and zero cost. Root cause: the
+  Docker Desktop VM had frozen (no VM log lines for an hour; API 500s; containers unkillable);
+  a forceful restart fixed it, and both the seed and candidate exports load the command in a
+  healthy container. `run.py` now classifies any one-turn zero-cost session as `error`
+  (infrastructure) so it can never count as a failure of the agent.

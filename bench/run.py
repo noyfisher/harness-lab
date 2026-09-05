@@ -129,6 +129,11 @@ def classify_result(result: dict | None, rc: int, timed_out: bool, stderr: str) 
     err_text = json.dumps(result)[:2000]
     if "budget" in subtype:
         return "budget", subtype
+    # A session that ends after one turn at zero cost did no work (e.g. "Unknown skill" when a
+    # degraded Docker VM failed to materialize the config dir). That is infrastructure, not a
+    # counted failure of the agent.
+    if (result.get("num_turns") or 0) <= 1 and not (result.get("total_cost_usd") or 0):
+        return "error", f"zero-cost session: {str(result.get('result'))[:160]}"
     if result.get("is_error") or subtype.startswith("error"):
         if RATE_RE.search(err_text):
             return "paused", subtype
