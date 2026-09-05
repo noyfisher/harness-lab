@@ -86,3 +86,9 @@
   a forceful restart fixed it, and both the seed and candidate exports load the command in a
   healthy container. `run.py` now classifies any one-turn zero-cost session as `error`
   (infrastructure) so it can never count as a failure of the agent.
+- [2026-09-05] **Loop wedged after 4 consecutive rejects; owner decision: revise the improver
+  prompt, 2 more iterations, then write up.** All four hypotheses added process (broader tests,
+  root-layer localization, forced specialists, both combined); none flipped an always-fail train
+  instance at k=3 and the one confirmed candidate regressed a held-out task at 1.3x the seed's
+  cost. `improve.md` now tells the improver what the archive shows and restricts this iteration
+  to subtraction, budget reallocation, or handoff quality. Cap raised to 7 for this run only.

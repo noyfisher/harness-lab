@@ -33,6 +33,32 @@ Write down, for yourself, the failure mode you see most often across the dossier
 - task difficulty the harness cannot fix (genuinely ambiguous issues, environment limits).
 Target the first kind. Prefer the mode that appears in the most instances.
 
+## What the archive already shows (read this before choosing)
+
+Every variant so far ADDED process: a broader-tests rule, a root-layer localization rule,
+forcing the specialist workflow, and both of the last two combined. All four were rejected.
+The one that reached three repeats (forcing specialists) solved the same set of tasks as the
+seed at 1.3x its cost and regressed a held-out task. Meanwhile the single-agent baseline C0,
+which has no team at all, beats the seed harness on pass rate and costs 40% less per solve.
+The evidence points at the structure itself, not at missing rules.
+
+So for this iteration, do NOT propose another rule that adds a step, a check, or a mandatory
+specialist. Choose from the levers the archive has not touched:
+
+- **Subtraction.** Remove agents or handoffs. Examples: the Lead fixes the bug itself and spawns
+  only `code-reviewer` for one adversarial pass; or `planner` and `critic` are dropped and the
+  Lead delegates once to `backend-dev` with the full problem statement; or the harness collapses
+  to a single-agent flow that keeps only the reproduce-first and nearest-tests rules.
+- **Budget reallocation.** Spend the team's extra tokens differently: two independent attempts
+  at the fix by the same agent with different localizations, then keep the one whose repro AND
+  nearest tests pass; or one attempt plus a verifier whose only job is to try to break the fix
+  with a second, different failing case.
+- **Handoff quality.** If you keep a specialist, cut what it receives to the problem statement,
+  the localization evidence, and the exact done-condition; drop everything else it is told.
+
+Use the `agent_removed` or `workflow` category for these. A change that is a re-wording of a
+rejected idea will be recognized and is a wasted iteration.
+
 ## Make exactly one change
 
 - One idea, expressed as edits to one or more files under `harness/`. A new agent file counts as
