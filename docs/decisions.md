@@ -105,3 +105,12 @@
   log on the owner's machine. It never entered the repo, git, or any remote. The owner was
   advised to regenerate the token with `claude setup-token`. Probes now catch exceptions and
   redact the credential before printing.
+- [2026-09-11] **C1o sensitivity variant started (owner decision, over phase B).** Tag
+  `harness-c1o` (d7bc81f) = seed harness with `lead.md` on `claude-opus-5` and the five
+  specialists pinned to `claude-sonnet-5` by explicit id (the Lead is the top-level session, so
+  the run passes `--model claude-opus-5`; specialists must not inherit it). Budget stays at
+  $4.00 per run for parity with C1: a one-turn container call showed claude-opus-5 and
+  claude-sonnet-5 priced within 2% of each other per cache-creation token in the CLI's estimate,
+  so the cap is not model-tier-biased. Batch: `--condition C1o --harness-sha harness-c1o
+  --split all --k 3 --workers 2`, workers reduced from 3 because Opus runs draw on the scoped
+  weekly cap that the owner's own Opus/Fable sessions share.
