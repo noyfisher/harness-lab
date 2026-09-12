@@ -128,3 +128,10 @@
   every Verified result is already committed. The owner's own old containers are untouched.
   Live candidate count set to 60 (not 90): the spike's 5-of-6 gold keep rate makes 60 enough
   for a 40-instance subset, and Live images are 1.7 to 3.7 GB each.
+- [2026-09-12] **Disk incident during Live gold validation.** Pulling all 60 candidate images
+  filled the host: Docker's disk image grew from 107 GB to ~291 GB and the host hit ENOSPC (the
+  gold run then failed writing its results file and the daemon degraded). Cause: Live images
+  expand to roughly 4x their Hub download size on disk, and 60 of them exceeded the 176 GB that
+  was free. Recovery: restart Docker Desktop, remove all Live images, prune. Corrected plan:
+  gold-validate in waves of 12 with a per-wave cleanup of images that fail gold, keep only the
+  40 selected images plus their agent images, and gate every pull on 60 GB of host headroom.
