@@ -1,0 +1,26 @@
+diff --git a/sympy/polys/densetools.py b/sympy/polys/densetools.py
+index f057824..eff1c25 100644
+--- a/sympy/polys/densetools.py
++++ b/sympy/polys/densetools.py
+@@ -1198,6 +1198,11 @@ def dup_clear_denoms(f, K0, K1=None, convert=False):
+     if not K1.is_one(common):
+         f = dup_mul_ground(f, common, K0)
+ 
++    # Multiplying the coefficients can make the leading coefficient zero
++    # (e.g. in EX where the coefficients are unevaluated expressions), so
++    # the result has to be stripped to stay a canonical representation.
++    f = dup_strip(f)
++
+     if not convert:
+         return common, f
+     else:
+@@ -1252,6 +1257,9 @@ def dmp_clear_denoms(f, u, K0, K1=None, convert=False):
+     if not K1.is_one(common):
+         f = dmp_mul_ground(f, common, u, K0)
+ 
++    # See the comment in dup_clear_denoms.
++    f = dmp_strip(f, u)
++
+     if not convert:
+         return common, f
+     else:

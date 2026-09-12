@@ -118,3 +118,7 @@
   in at 0.900 [0.808, 0.975] vs C1 0.750 (5 flips, 0 regressions, p=0.018), but it mixes a stronger
   model into the harness, so the effect is confounded with model tier. C0o de-confounds it. Not
   pre-registered; labeled as an extension in every table. Weekly cap at 40% before the run.
+- [2026-09-12] **C0o result closes the model-tier question.** Single agent on Opus 5: 0.875
+  [0.775, 0.975], $0.62/solve, 0 flaky. Paired C0o -> C1o: 0 flips, 1 regression, p=0.28. The
+  Opus-lead harness's gain over the Sonnet harness was the model, not the orchestration. At both
+  tiers the single agent is the cheaper condition with equal or better pass rate.

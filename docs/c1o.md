@@ -45,3 +45,27 @@ Cost split inside C1o (from trace result events): mean $1.57 per run = $0.69 Opu
 C1o's remaining solid_fail: sympy__sympy-19783, sympy__sympy-20428, sympy__sympy-22080. It solved four of the five instances no earlier condition ever solved.
 
 **Confound to resolve before any claim:** C1o mixes a stronger model into the harness, so the effect could be "Opus is better" rather than "an Opus orchestrator helps". The de-confounding run is C0o: the plain single agent on claude-opus-5 with the same rules, budget, and environment. Not pre-registered; added post hoc and labeled as such.
+
+## C0o results (2026-09-12, batch `C0o-sensitivity`, 120 runs, 0 infra failures, $64.91 list)
+
+| condition | pass rate (95% CI) | solid_pass / flaky / solid_fail | cost per solve | mean cost per run | mean wall |
+|---|---|---|---:|---:|---:|
+| C0 single agent, Sonnet 5 | 0.783 [0.658, 0.900] | 30 / 3 / 7 | $1.00 | $0.79 | 212 s |
+| C0o single agent, Opus 5 | 0.875 [0.775, 0.975] | 35 / 0 / 5 | $0.62 | $0.54 | 207 s |
+| C1 seed harness, all Sonnet 5 | 0.750 [0.625, 0.875] | 28 / 3 / 9 | $1.73 | $1.30 | 367 s |
+| C1o seed harness, Lead on Opus 5 | 0.900 [0.808, 0.975] | 34 / 3 / 3 | $1.75 | $1.57 | 532 s |
+
+Paired, 40 instances each (source: `results/tier-stats.json` and `bench.stats.paired_compare`):
+
+| comparison | flips_up | regressions | Wilcoxon p | sign p | reading |
+|---|---:|---:|---:|---:|---|
+| C0 -> C0o | 3 | 0 | 0.068 | 0.219 | Opus 5 alone solves more than Sonnet 5 alone, at lower cost |
+| C0o -> C1o | 0 | 1 | 0.276 | 0.500 | the harness adds nothing at the Opus tier; one solid pass became flaky |
+| C1 -> C1o | 5 | 0 | 0.018 | 0.070 | the harness improves when its Lead is Opus, because Opus is better |
+| C0 -> C1o | 3 | 0 | 0.039 | 0.070 | same three flips as C0 -> C0o: the model, not the structure |
+
+**Decision per the rule stated above:** the C1o gain is model tier. C1o flips nothing that C0o
+does not already solve, regresses one instance, and costs 2.8x per solve. At both model tiers the
+single agent matches or beats the team harness on pass rate and is the cheaper condition. The
+best configuration measured is the plain single agent on Opus 5: 0.875 at $0.62 per solve, with
+zero flaky instances, and the fastest mean wall of any condition.

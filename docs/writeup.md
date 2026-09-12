@@ -14,7 +14,10 @@ always-pass instances stopped being always-pass, Wilcoxon p = 0.2568, sign test 
 solved instance was $1.00 for C0 and $1.73 for C1: the structure cost about 1.7x per solve and
 bought nothing. The improver proposed six real hypotheses; zero were accepted. One reached the
 k=3 confirmation and was rejected there, having solved the same tasks as the seed at 1.3x the
-cost while regressing a held-out instance.
+cost while regressing a held-out instance. A post-hoc model-tier check (section 3b) repeated the
+comparison with Opus 5: the harness with an Opus Lead reached 0.900, but a plain Opus single agent
+reached 0.875 at a third of the cost per solve and the paired difference between them is null.
+At both tiers the structure adds cost, not solves.
 
 I am Noy Fisher; I designed and ran this study, using Claude Code as the tool to build the
 driver, the stats module, and the improver loop. The point of the repository is that the answer
@@ -118,6 +121,34 @@ Every counted run ran on a Max 20x subscription; no API key was ever created
 (`docs/decisions.md`). Per-run cost figures are the CLI's client-side `total_cost_usd` estimate
 at API list price: not what the study actually cost, and useful only as a relative measure
 between conditions.
+
+## 3b. Model-tier sensitivity (post hoc, added 2026-09-12)
+
+The protocol named an optional variant, C1o, the seed harness with its Lead on Opus 5 and the
+specialists pinned to Sonnet 5. It was run after the improver phase closed, and because it mixes
+a stronger model into the harness, a second post-hoc condition was added to de-confound it: C0o,
+the plain single agent on Opus 5 with the same rules, budget, and environment as C0. Neither was
+pre-registered as a headline comparison, and both are labeled as extensions (source:
+`docs/c1o.md`, `results/tier-stats.json`).
+
+| condition | pass rate (95% CI) | solid_pass / flaky / solid_fail | cost per solve | mean cost per run | mean wall (s) |
+|---|---|---|---:|---:|---:|
+| C0 single agent, Sonnet 5 | 0.783 [0.658, 0.900] | 30 / 3 / 7 | $1.00 | $0.79 | 211.7 |
+| C0o single agent, Opus 5 | 0.875 [0.775, 0.975] | 35 / 0 / 5 | $0.62 | $0.54 | 206.9 |
+| C1 seed harness, all Sonnet 5 | 0.750 [0.625, 0.875] | 28 / 3 / 9 | $1.73 | $1.30 | 367.0 |
+| C1o seed harness, Lead on Opus 5 | 0.900 [0.808, 0.975] | 34 / 3 / 3 | $1.75 | $1.57 | 532.3 |
+
+Paired on the same 40 instances: C1 to C1o has 5 flips up, 0 regressions, Wilcoxon p = 0.018,
+so an Opus Lead does lift the harness. But C0o to C1o has 0 flips up, 1 regression (a solid pass
+became flaky), p = 0.276: the harness with an Opus Lead solves nothing the Opus single agent does
+not already solve, and costs 2.8x per solve. C0 to C0o has the same three flips as C0 to C1o.
+The lift was the model, not the orchestration. Inside C1o the Lead was 44% of spend.
+
+The best configuration measured in this study is therefore the plain single agent on Opus 5:
+0.875 at $0.62 per solve, no flaky instances, and the fastest mean wall time of any condition.
+That is also cheaper per run than the Sonnet single agent, because Opus 5 finished in fewer
+turns at a comparable per-token list price in the CLI's estimate. Both Opus batches ran clean:
+240 runs, no infrastructure failures, no budget hits, $253.50 at list price combined.
 
 ## 4. What the improver found
 
@@ -228,8 +259,11 @@ restricted in the run container: v1 left egress open because the SWE-bench repos
 commits of well-known projects, and `docs/decisions.md` tracks that as an open item for arbitrary
 repositories.
 
-Three measurements would sharpen the answer: a linux/amd64 sensitivity run, since x86_64 images
-exist for all 500 instances and would remove the coverage tilt; the C1o variant with an Opus lead
-and Sonnet specialists, to separate "multi-agent does not help" from "multi-agent does not help
-when the orchestrator is the same tier as the workers"; and a larger N, since 40 instances leave
-an interval wide enough to hide any effect smaller than the one this study can find.
+The Opus-lead variant has since been run (section 3b) and did not change the answer. Two
+measurements would still sharpen it: a linux/amd64 sensitivity run, since x86_64 images exist for
+all 500 instances and would remove the coverage tilt; and a larger N, since 40 instances leave an
+interval wide enough to hide any effect smaller than the one this study can find. The more
+useful next study is a different substrate: SWE-bench Verified was retired by OpenAI in February
+2026 for flawed tests and contamination, and a benchmark with headroom, such as the frozen
+SWE-bench-Live lite split or Terminal-Bench 4.0 through Harbor, is where a structural effect
+could still appear if one exists (`docs/background.md`).

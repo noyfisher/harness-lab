@@ -14,13 +14,17 @@ All rows: `claude-sonnet-5` at medium effort, k = 3, 40 instances, bootstrap ove
 
 | condition | what it is | pass rate (95% CI) | solid_pass / flaky / solid_fail | cost per solve |
 |---|---|---|---:|---:|
-| C0 | single agent, rules only | 0.783 [0.658, 0.900] | 30 / 3 / 7 | $1.00 |
-| C1 | seeded six-agent harness | 0.750 [0.625, 0.875] | 28 / 3 / 9 | $1.73 |
+| C0 | single agent, rules only, Sonnet 5 | 0.783 [0.658, 0.900] | 30 / 3 / 7 | $1.00 |
+| C1 | seeded six-agent harness, Sonnet 5 | 0.750 [0.625, 0.875] | 28 / 3 / 9 | $1.73 |
 | cand-5777b17 | best improver candidate (forced delegation) | 0.767 [0.642, 0.883] | 29 / 3 / 8 | $2.23 |
+| C0o | single agent, Opus 5 (post-hoc extension) | 0.875 [0.775, 0.975] | 35 / 0 / 5 | $0.62 |
+| C1o | six-agent harness, Opus 5 Lead (post-hoc extension) | 0.900 [0.808, 0.975] | 34 / 3 / 3 | $1.75 |
 
 Paired C0 to C1 on all 40 instances: 0 flips up, 2 regressions, Wilcoxon p = 0.2568, sign test
 p = 1.0. Six improver hypotheses were proposed and zero were accepted
-(`improver/state/archive.json`).
+(`improver/state/archive.json`). Paired C0o to C1o: 0 flips up, 1 regression, p = 0.276; the
+Opus-lead harness solves nothing the Opus single agent does not, at 2.8x the cost per solve
+(`docs/c1o.md`).
 
 ## How it works
 

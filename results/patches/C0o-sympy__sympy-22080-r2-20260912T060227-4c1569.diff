@@ -1,0 +1,33 @@
+diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py
+index b669a2c..51ce1c4 100644
+--- a/sympy/printing/pycode.py
++++ b/sympy/printing/pycode.py
+@@ -6,7 +6,8 @@
+ from collections import defaultdict
+ from itertools import chain
+ from sympy.core import S
+-from .precedence import precedence
++from sympy.core.mod import Mod
++from .precedence import precedence, PRECEDENCE
+ from .codeprinter import CodePrinter
+ 
+ _kw_py2and3 = {
+@@ -232,6 +233,18 @@ def _print_NegativeInfinity(self, expr):
+     def _print_ComplexInfinity(self, expr):
+         return self._print_NaN(expr)
+ 
++    def parenthesize(self, item, level, strict=False):
++        if isinstance(item, Mod):
++            # Mod is printed using the Python ``%`` operator, which has the
++            # precedence of a multiplication and binds less tightly than a
++            # unary minus, rather than the function-like precedence SymPy
++            # assigns to Mod.
++            prec = PRECEDENCE["Add"]
++            if (prec < level) or ((not strict) and prec <= level):
++                return "(%s)" % self._print(item)
++            return self._print(item)
++        return super().parenthesize(item, level, strict=strict)
++
+     def _print_Mod(self, expr):
+         PREC = precedence(expr)
+         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
