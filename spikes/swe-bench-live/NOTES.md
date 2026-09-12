@@ -27,9 +27,26 @@ Question: can this rig run SWE-bench-Live's frozen `lite` split on Apple Silicon
 - Leaderboard rule: the agent may see only `problem_statement` and the image; submissions must
   include rollout trajectories. This matches the study's existing guards and trace archive.
 
-## Gold validation on arm64 (amd64 emulation)
+## Gold validation on arm64 (amd64 emulation), 2026-09-12
 
-(pending)
+Six lite instances, six repos, harness run with `DOCKER_DEFAULT_PLATFORM=linux/amd64`, 2 workers.
+Whole run 14 minutes including five image pulls (1.7 to 3.7 GB each).
+
+| instance | gold | notes |
+|---|---|---|
+| yt-dlp__yt-dlp-11425 | resolved | first report 2 min after start, pull included |
+| pydata__xarray-9974 | resolved | |
+| mikedh__trimesh-2354 | resolved | |
+| joke2k__faker-2190 | resolved | |
+| matplotlib__matplotlib-29007 | NOT resolved | F2P 2/2 pass; P2P fails `test_backend_inline.py::test_ipynb` and `test_backend_nbagg.py::test_ipynb` (notebook-kernel tests; environment, not the patch). Excluded by the gold filter, as in the Verified study. |
+| deepset-ai__haystack-8981 | error, then rerun | the harness's own registry check said "not found" although `docker pull` succeeds and Hub lists tags `latest`, `0430`; rerun after a manual pull (result below) |
+
+Reading: the Live harness works end to end on this Mac under emulation. Gold grading time is
+minutes per instance, dominated by the test suite, not the emulation. The gold filter will drop
+instances with environment-bound tests exactly as it did for Verified (60/60 there; expect a
+lower keep rate here, so draw 90 to 100 candidates for a 40 to 60 subset).
+
+Haystack rerun: (pending)
 
 ## What would change in the rig
 
