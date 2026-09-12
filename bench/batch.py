@@ -43,6 +43,7 @@ DRYRUNS = ROOT / "results" / "dryruns.jsonl"
 BATCH_DIR = ROOT / "results" / "batches"
 SUBSET = ROOT / "bench" / "subset.json"
 AGENT_IMAGE = "harness-lab/agent.arm64.{instance}"
+AGENT_IMAGE_LIVE = "harness-lab/agent.amd64.{instance}"  # SWE-bench-Live runs under amd64 emulation
 
 EXIT_OK = 0
 EXIT_PREFLIGHT = 1
@@ -71,16 +72,16 @@ def docker_available() -> bool:
     return subprocess.run(["docker", "ps"], capture_output=True, text=True).returncode == 0
 
 
-def agent_image(instance_id: str) -> str:
-    return AGENT_IMAGE.format(instance=instance_id)
+def agent_image(instance_id: str, bench: str = "verified") -> str:
+    return (AGENT_IMAGE_LIVE if bench == "live" else AGENT_IMAGE).format(instance=instance_id)
 
 
-def image_exists(instance_id: str, attempts: int = 3) -> bool:
+def image_exists(instance_id: str, attempts: int = 3, bench: str = "verified") -> bool:
     """True if the agent image is present. Docker Desktop under load can fail a single inspect
     transiently (seen once on an image that both baselines had used), so a miss is retried before
     the preflight declares the image missing; only a persistent miss fails the batch."""
     for i in range(attempts):
-        r = subprocess.run(["docker", "image", "inspect", agent_image(instance_id)],
+        r = subprocess.run(["docker", "image", "inspect", agent_image(instance_id, bench)],
                            capture_output=True, text=True)
         if r.returncode == 0:
             return True
@@ -138,14 +139,16 @@ def completed_keys(path) -> set[tuple[str, str, int]]:
 # --- 3. preflight ---------------------------------------------------------------------------
 
 
-def preflight(instances) -> tuple[bool, str]:
+def preflight(instances, bench: str = "verified") -> tuple[bool, str]:
     """Docker reachable and every agent image present.  Nothing runs until this passes."""
     if not docker_available():
         return False, "[batch] preflight FAILED: docker daemon not reachable (open Docker Desktop)"
-    missing = [iid for iid in sorted(set(instances)) if not image_exists(iid)]
+    # verified keeps the one-argument call so test doubles that mimic the old signature still work
+    missing = [iid for iid in sorted(set(instances))
+               if not (image_exists(iid) if bench == "verified" else image_exists(iid, bench=bench))]
     if missing:
         lines = [f"[batch] preflight FAILED: {len(missing)} agent image(s) missing; nothing was run."]
-        lines += [f"    {agent_image(iid)}" for iid in missing]
+        lines += [f"    {agent_image(iid, bench)}" for iid in missing]
         lines.append(f"    build with: bench/docker/build.sh {' '.join(missing)}")
         return False, "\n".join(lines)
     return True, f"[batch] preflight ok: docker up, {len(set(instances))} agent image(s) present"
@@ -159,7 +162,7 @@ def make_ns(a, condition: str, instance: str, repeat: int, sha: str) -> argparse
     return argparse.Namespace(
         instance=instance, condition=condition, harness_sha=sha, repeat=repeat,
         model=a.model, effort=a.effort, budget_usd=a.budget_usd, timeout=a.timeout,
-        dry=a.dry, **FIXED_JOB_FIELDS,
+        dry=a.dry, bench=getattr(a, "bench", "verified"), **FIXED_JOB_FIELDS,
     )
 
 
@@ -342,6 +345,8 @@ def print_summary(batch_id: str, cfg: dict, res: dict) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="python -m bench.batch", description=__doc__.split("\n")[0])
+    ap.add_argument("--bench", choices=["verified", "live"], default="verified",
+                    help="verified (Epoch arm64, results/runs.jsonl) or live (SWE-bench-Live amd64, results/live/runs.jsonl)")
     ap.add_argument("--condition", required=True, help="C0, C1, C2.., or cand-<sha7>")
     ap.add_argument("--subset", default=None, help="subset.json (default bench/subset.json)")
     ap.add_argument("--split", default="all", choices=("all", "train", "heldout"))
@@ -402,7 +407,10 @@ def main(argv=None) -> int:
 
     # --- work list (repeat-major) + resume ---
     items = work_list(a.condition, instances, a.k)
-    results_path = DRYRUNS if a.dry else RUNS
+    if getattr(a, "bench", "verified") == "live":
+        results_path = ROOT / "results" / "live" / ("dryruns.jsonl" if a.dry else "runs.jsonl")
+    else:
+        results_path = DRYRUNS if a.dry else RUNS
     done_keys = completed_keys(results_path)
     todo = [it for it in items if it not in done_keys]
     skipped = len(items) - len(todo)
@@ -414,7 +422,7 @@ def main(argv=None) -> int:
     log_path = BATCH_DIR / f"{batch_id}.log"
     record_path = BATCH_DIR / f"{batch_id}.json"
     cfg = {
-        "batch_id": batch_id, "condition": a.condition, "harness_sha": sha,
+        "batch_id": batch_id, "bench": getattr(a, "bench", "verified"), "condition": a.condition, "harness_sha": sha,
         "harness_sha_ref": a.harness_sha, "split": split_label, "subset": subset_used,
         "k": a.k, "instances": instances, "model": a.model, "effort": a.effort,
         "budget_usd": a.budget_usd, "timeout": a.timeout, "grade_timeout": FIXED_JOB_FIELDS["grade_timeout"],
@@ -435,7 +443,7 @@ def main(argv=None) -> int:
                "jobs_wall_s": 0.0, "batch_wall_s": 0.0, "paused_minutes": 0.0,
                "max_consecutive_pauses": 0, "interrupted": False, "manifests": []}
     else:
-        ok, msg = preflight([iid for _, iid, _ in todo])
+        ok, msg = preflight([iid for _, iid, _ in todo], getattr(a, "bench", "verified"))
         print(msg)
         if not ok:
             cfg["ended"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())

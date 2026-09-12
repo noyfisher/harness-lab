@@ -161,9 +161,25 @@ claude --version
 def run_one(a) -> dict:
     t_start = time.time()
     run_id = f"{a.condition}-{a.instance}-r{a.repeat}-{time.strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4().hex[:6]}"
-    task = load_task(grader.TASKS_REPO / "tasks" / a.instance)
-    image = f"harness-lab/agent.arm64.{a.instance}"
+    bench = getattr(a, "bench", "verified")
+    if bench == "live":
+        # SWE-bench-Live: amd64-only images under emulation, results kept apart from the Verified study.
+        from bench import live
+        task = live.load_instance(a.instance)
+        image = f"harness-lab/agent.amd64.{a.instance}"
+        platform = "linux/amd64"
+        base_ref = live.image_ref(a.instance)
+        runs_path, patches_dir, traces_dir = (ROOT / "results" / "live" / "runs.jsonl",
+                                              ROOT / "results" / "live" / "patches",
+                                              ROOT / "results" / "live" / "traces")
+    else:
+        task = load_task(grader.TASKS_REPO / "tasks" / a.instance)
+        image = f"harness-lab/agent.arm64.{a.instance}"
+        platform = "linux/arm64"
+        base_ref = grader.image_ref(a.instance)
+        runs_path, patches_dir, traces_dir = RUNS, PATCHES, TRACES
     manifest = {
+        "bench": bench,
         "run_id": run_id, "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "condition": a.condition,
         "harness_sha": None, "cli_version": None, "model": a.model, "effort": a.effort, "credential": None,
         "instance_id": a.instance, "repeat": a.repeat, "outcome": None, "resolved": None,
@@ -176,8 +192,7 @@ def run_one(a) -> dict:
     if sh(["docker", "ps"]).returncode != 0:
         raise SystemExit("docker daemon not reachable (open Docker Desktop)")
     if sh(["docker", "image", "inspect", image]).returncode != 0:
-        raise SystemExit(f"agent image missing: {image}. Build with bench/docker/build.sh {a.instance}")
-    base_ref = grader.image_ref(a.instance)
+        raise SystemExit(f"agent image missing: {image}. Build with bench/docker/build{'-live' if bench == 'live' else ''}.sh {a.instance}")
     dig = sh(["docker", "image", "inspect", "--format", "{{index .RepoDigests 0}}", base_ref]).stdout.strip()
     manifest["image_digest"] = dig or None  # only `latest` is published; the digest pins the environment
     cred_name, cred_value = ("DRY", "dry") if a.dry else read_credentials()
@@ -208,7 +223,7 @@ def run_one(a) -> dict:
         # --- container ---
         env_args = ["-e", f"{cred_name}={cred_value}", "-e", "CLAUDE_CONFIG_DIR=/harness", "-e", "IS_SANDBOX=1",
                     "-e", "DISABLE_AUTOUPDATER=1", "-e", "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1", "-e", "HOME=/root"]
-        r = sh(["docker", "run", "-d", "--name", cname, "--platform", "linux/arm64", "--network", a.network,
+        r = sh(["docker", "run", "-d", "--name", cname, "--platform", platform, "--network", a.network,
                 "-v", f"{cfg_src}:/harness-src:ro", "-v", f"{task_dir}:/task", *env_args, image, "sleep", "infinity"], timeout=300)
         if r.returncode != 0:
             raise RuntimeError(f"docker run failed: {r.stderr.strip()}")
@@ -236,7 +251,7 @@ def run_one(a) -> dict:
             quoted = " ".join("'" + c.replace("'", "'\"'\"'") + "'" for c in claude_cmd)
             inner = f'cd /testbed && {quoted} "$(cat /task/prompt.md)"'
         t0 = time.time()
-        TRACES.mkdir(parents=True, exist_ok=True)
+        traces_dir.mkdir(parents=True, exist_ok=True)
         raw_trace = tmp_root / "trace.jsonl"
         with open(raw_trace, "wb") as out, open(tmp_root / "stderr.txt", "wb") as err:
             try:
@@ -282,8 +297,8 @@ def run_one(a) -> dict:
         raw_diff = r.stdout or ""
         diff, stripped, touched = filter_patch(raw_diff, task["test_patch"])
         manifest["stripped_test_hunks"], manifest["touched_tests"] = stripped, touched
-        PATCHES.mkdir(parents=True, exist_ok=True)
-        patch_path = PATCHES / f"{run_id}.diff"
+        patches_dir.mkdir(parents=True, exist_ok=True)
+        patch_path = patches_dir / f"{run_id}.diff"
         patch_path.write_text(diff)
         manifest["patch_path"] = str(patch_path.relative_to(ROOT))
 
@@ -296,7 +311,10 @@ def run_one(a) -> dict:
             manifest["outcome"] = outcome if outcome != "ok" else "ungraded"
         else:
             grade_run = f"grade-{run_id}"
-            rep = grader.grade(a.instance, diff, grade_run, timeout=a.grade_timeout, pull=True)  # pull if the base image is missing
+            if bench == "live":
+                rep = live.grade_live(a.instance, diff, grade_run, timeout=a.grade_timeout)
+            else:
+                rep = grader.grade(a.instance, diff, grade_run, timeout=a.grade_timeout, pull=True)  # pull if the base image is missing
             manifest["grade_run_id"] = grade_run
             manifest["resolved"] = bool(rep.get("resolved"))
             if rep.get("infra_failure"):
@@ -317,7 +335,7 @@ def run_one(a) -> dict:
             if not a.condition.startswith("C0") and cfg_src.parent.name.startswith("hl-harness-"):
                 shutil.rmtree(cfg_src.parent, ignore_errors=True)
     manifest["wall_s"] = round(time.time() - t_start, 1)
-    target = RUNS.with_name("dryruns.jsonl") if a.dry else RUNS  # dry runs never touch the counted file
+    target = runs_path.with_name("dryruns.jsonl") if a.dry else runs_path  # dry runs never touch the counted file
     target.parent.mkdir(parents=True, exist_ok=True)
     with open(target, "a") as fh:
         fh.write(json.dumps(manifest) + "\n")
@@ -327,6 +345,8 @@ def run_one(a) -> dict:
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--instance", required=True)
+    ap.add_argument("--bench", choices=["verified", "live"], default="verified",
+                    help="verified: Epoch arm64 images + swe-bench-tasks; live: SWE-bench-Live amd64 images, results under results/live/")
     ap.add_argument("--condition", required=True, help="C0, C1, C2.., or cand-<sha7>")
     ap.add_argument("--harness-sha", default="HEAD")
     ap.add_argument("--repeat", type=int, default=0)

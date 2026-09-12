@@ -24,3 +24,7 @@ results/dryruns.jsonl
 spikes/**/.venv/
 spikes/swe-bench-live/SWE-bench-Live/
 spikes/**/gold-spike/
+
+# SWE-bench-Live host-only data (hidden fields); regenerate with `python -m bench.live fetch`
+bench/live-instances.json
+results/live/grading/
