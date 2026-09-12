@@ -46,7 +46,7 @@ minutes per instance, dominated by the test suite, not the emulation. The gold f
 instances with environment-bound tests exactly as it did for Verified (60/60 there; expect a
 lower keep rate here, so draw 90 to 100 candidates for a 40 to 60 subset).
 
-Haystack rerun: (pending)
+Haystack rerun: resolved=True (F2P 5 pass / 0 fail; P2P 0 fail). Gold tally: 5 of 6 resolved; the one true exclusion is matplotlib's notebook-bound tests.
 
 ## What would change in the rig
 
