@@ -122,3 +122,9 @@
   [0.775, 0.975], $0.62/solve, 0 flaky. Paired C0o -> C1o: 0 flips, 1 regression, p=0.28. The
   Opus-lead harness's gain over the Sonnet harness was the model, not the orchestration. At both
   tiers the single agent is the cheaper condition with equal or better pass rate.
+- [2026-09-12] **Verified-study images removed from Docker to make room for SWE-bench-Live.**
+  The 43 `harness-lab/agent.arm64.*` agent images and the Epoch arm64 base images are deleted
+  locally; both are reproducible from `bench/docker/Dockerfile` and the public registry, and
+  every Verified result is already committed. The owner's own old containers are untouched.
+  Live candidate count set to 60 (not 90): the spike's 5-of-6 gold keep rate makes 60 enough
+  for a 40-instance subset, and Live images are 1.7 to 3.7 GB each.

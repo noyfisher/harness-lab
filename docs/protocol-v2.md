@@ -35,7 +35,7 @@ strongest configurations measured in phase A, and the tier question was already 
 
 ## Subset
 
-- Candidates: `bench/select_live.py --candidates 90 --seed 20260912` from image-available lite
+- Candidates: `bench/select_live.py --candidates 60 --seed 20260912` from image-available lite
   instances, stratified by a size bucket derived from the gold patch's changed lines (small <= 15,
   medium 16 to 60, large > 60), at most 6 per repo.
 - Gold validation: every candidate's gold patch graded on this machine under emulation; any that
