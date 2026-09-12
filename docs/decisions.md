@@ -135,3 +135,9 @@
   was free. Recovery: restart Docker Desktop, remove all Live images, prune. Corrected plan:
   gold-validate in waves of 12 with a per-wave cleanup of images that fail gold, keep only the
   40 selected images plus their agent images, and gate every pull on 60 GB of host headroom.
+- [2026-09-12] **Docker credential helper bypassed for pulls.** After the disk incident, every
+  `docker pull` hung before any network activity while the daemon itself answered; the cause was
+  `docker-credential-desktop` (invoked on each pull) hanging against a wedged Docker Desktop
+  backend, which also idle-restarted the VM. `~/.docker/config.json` had no stored logins, so
+  `credsStore` was set to empty (backup at `config.json.bak-20260912`); public pulls need no
+  helper. Restore the original file to re-enable Docker Hub login through Desktop.
