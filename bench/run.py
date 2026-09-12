@@ -185,7 +185,7 @@ def run_one(a) -> dict:
 
     # --- config dir + prompt ---
     tmp_root = Path(tempfile.mkdtemp(prefix="hl-run-"))
-    if a.condition == "C0":
+    if a.condition.startswith("C0"):  # C0 and model-tier variants such as C0o share the plain baseline config
         cfg_src = C0_CONFIG
         prompt = C0_PROMPT.read_text()
     else:
@@ -314,7 +314,7 @@ def run_one(a) -> dict:
         sh(["docker", "rm", "-f", cname])
         if not a.keep_tmp:
             shutil.rmtree(tmp_root, ignore_errors=True)
-            if a.condition != "C0" and cfg_src.parent.name.startswith("hl-harness-"):
+            if not a.condition.startswith("C0") and cfg_src.parent.name.startswith("hl-harness-"):
                 shutil.rmtree(cfg_src.parent, ignore_errors=True)
     manifest["wall_s"] = round(time.time() - t_start, 1)
     target = RUNS.with_name("dryruns.jsonl") if a.dry else RUNS  # dry runs never touch the counted file

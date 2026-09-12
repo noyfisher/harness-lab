@@ -1,0 +1,31 @@
+diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py
+index b669a2c..ff7ab3d 100644
+--- a/sympy/printing/pycode.py
++++ b/sympy/printing/pycode.py
+@@ -6,7 +6,8 @@
+ from collections import defaultdict
+ from itertools import chain
+ from sympy.core import S
+-from .precedence import precedence
++from sympy.core.mod import Mod
++from .precedence import precedence, PRECEDENCE
+ from .codeprinter import CodePrinter
+ 
+ _kw_py2and3 = {
+@@ -236,6 +237,16 @@ def _print_Mod(self, expr):
+         PREC = precedence(expr)
+         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
+ 
++    def parenthesize(self, item, level, strict=False):
++        # In Python, the % (Mod) operator binds less tightly than unary
++        # minus, so a Mod printed as ``a % b`` needs Add-level precedence
++        # when deciding whether the surrounding context must bracket it.
++        if isinstance(item, Mod):
++            PREC = PRECEDENCE["Add"]
++            if (PREC < level) or ((not strict) and PREC <= level):
++                return "({})".format(self._print(item))
++        return super().parenthesize(item, level, strict=strict)
++
+     def _print_Piecewise(self, expr):
+         result = []
+         i = 0

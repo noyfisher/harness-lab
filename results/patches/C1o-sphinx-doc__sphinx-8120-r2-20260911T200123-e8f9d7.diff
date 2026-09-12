@@ -1,0 +1,26 @@
+diff --git a/CHANGES b/CHANGES
+index 9ef4dd2..eb352e6 100644
+--- a/CHANGES
++++ b/CHANGES
+@@ -46,6 +46,8 @@ Bugs fixed
+   singlehtml and so on)
+ * #8239: Failed to refer a token in productionlist if it is indented
+ * #8268: linkcheck: Report HTTP errors when ``linkcheck_anchors`` is ``True``
++* #6641: i18n: Sphinx's own message catalog takes precedence over the user's
++  one in locale_dirs
+ 
+ Testing
+ --------
+diff --git a/sphinx/application.py b/sphinx/application.py
+index 385b74d..95d1848 100644
+--- a/sphinx/application.py
++++ b/sphinx/application.py
+@@ -293,7 +293,7 @@ class Sphinx:
+                 if catalog.domain == 'sphinx' and catalog.is_outdated():
+                     catalog.write_mo(self.config.language)
+ 
+-            locale_dirs = [None, path.join(package_dir, 'locale')] + list(repo.locale_dirs)
++            locale_dirs = list(repo.locale_dirs) + [None, path.join(package_dir, 'locale')]
+             self.translator, has_translation = locale.init(locale_dirs, self.config.language)
+             if has_translation or self.config.language == 'en':
+                 # "en" never needs to be translated

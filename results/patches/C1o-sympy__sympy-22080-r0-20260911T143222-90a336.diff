@@ -1,0 +1,37 @@
+diff --git a/sympy/printing/pycode.py b/sympy/printing/pycode.py
+index b669a2c..887a1ad 100644
+--- a/sympy/printing/pycode.py
++++ b/sympy/printing/pycode.py
+@@ -6,7 +6,8 @@
+ from collections import defaultdict
+ from itertools import chain
+ from sympy.core import S
+-from .precedence import precedence
++from sympy.core.mod import Mod
++from .precedence import precedence, PRECEDENCE
+ from .codeprinter import CodePrinter
+ 
+ _kw_py2and3 = {
+@@ -236,6 +237,22 @@ def _print_Mod(self, expr):
+         PREC = precedence(expr)
+         return ('{} % {}'.format(*map(lambda x: self.parenthesize(x, PREC), expr.args)))
+ 
++    def parenthesize(self, item, level, strict=False):
++        if isinstance(item, Mod) and type(self)._print_Mod is AbstractPythonCodePrinter._print_Mod:
++            # Mod is printed above with the ``%`` operator, which binds
++            # like ``*`` in Python, not like a function call. Add's level
++            # is used rather than Mul's because _print_Mul() parenthesizes
++            # the factors of a negative Mul at precedence(Mul) == Add
++            # before prefixing them with ``-``, and ``-x % y`` means
++            # ``(-x) % y`` in Python. Printers that render Mod as a
++            # function call instead (NumPyPrinter) are excluded above.
++            prec = PRECEDENCE["Add"]
++            if (prec < level) or ((not strict) and prec <= level):
++                return "(%s)" % self._print(item)
++            else:
++                return self._print(item)
++        return super().parenthesize(item, level, strict=strict)
++
+     def _print_Piecewise(self, expr):
+         result = []
+         i = 0

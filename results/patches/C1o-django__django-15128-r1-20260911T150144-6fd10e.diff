@@ -1,0 +1,32 @@
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index aaf35ee..46650e7 100644
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -846,6 +846,27 @@ class Query(BaseExpression):
+         relabelling any references to them in select columns and the where
+         clause.
+         """
++        # The alias rename below (step 2) mutates self.alias_map/table_map
++        # in place, one old_alias at a time. If change_map's keys and values
++        # were allowed to intersect (e.g. {'T4': 'T5', 'T5': 'T6'}) a table
++        # could be renamed twice (T4 -> T5 -> T6) or have its data
++        # overwritten by another entry being relabelled into the same slot,
++        # even though the map, read as a whole, describes a well defined,
++        # simultaneous substitution. So, if the keys and values of
++        # change_map aren't disjoint, first relabel the conflicting old
++        # aliases to unused temporary aliases, and only then apply the
++        # requested mapping, which is now guaranteed to be conflict-free.
++        if set(change_map).intersection(change_map.values()):
++            used_aliases = set(self.alias_map) | set(change_map) | set(change_map.values())
++            temp_map = {}
++            for old_alias in change_map:
++                temp_alias = '__temp__%s' % old_alias
++                while temp_alias in used_aliases:
++                    temp_alias += '_'
++                used_aliases.add(temp_alias)
++                temp_map[old_alias] = temp_alias
++            self.change_aliases(temp_map)
++            change_map = {temp_map[old_alias]: new_alias for old_alias, new_alias in change_map.items()}
+         assert set(change_map).isdisjoint(change_map.values())
+ 
+         # 1. Update references in "select" (normal columns plus aliases),
