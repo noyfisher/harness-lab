@@ -489,6 +489,9 @@ def _sh(cmd: list[str], timeout: float | None = None) -> subprocess.CompletedPro
     return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
 
 
+PULL_ERRORS: dict[str, str] = {}  # instance_id -> last docker pull error line
+
+
 def ensure_image(instance_id: str, pull: bool = True) -> bool:
     """Make the Live image present locally.  Pre-pulling is mandatory before grading.
 
@@ -502,8 +505,21 @@ def ensure_image(instance_id: str, pull: bool = True) -> bool:
         return True
     if not pull:
         return False
-    r = _sh(["docker", "pull", "--platform", "linux/amd64", ref], timeout=1800)
-    return r.returncode == 0
+    # Docker Hub's anonymous registry allows ~100 manifest fetches per hour per IP; a burst of
+    # pulls can hit 429. Retry with backoff and surface the last error instead of a bare False.
+    last = ""
+    for attempt, delay in enumerate((0, 45, 120, 300)):
+        if delay:
+            time.sleep(delay)
+        r = _sh(["docker", "pull", "--platform", "linux/amd64", ref], timeout=1800)
+        if r.returncode == 0:
+            return True
+        last = ((r.stderr or "") + (r.stdout or "")).strip().splitlines()[-1:] or [""]
+        last = last[0][:200]
+        if "toomanyrequests" not in last.lower() and "429" not in last and attempt >= 1:
+            break  # not a rate limit; one retry was enough to rule out a blip
+    PULL_ERRORS[instance_id] = last
+    return False
 
 
 # --------------------------------------------------------------------------- #
@@ -714,6 +730,9 @@ def gold_validate(
     missing = [i for i, ok in pulled.items() if not ok]
     if missing:
         print(f"[live] WARNING: {len(missing)} images could not be pulled: {', '.join(missing[:10])}")
+        for iid in missing[:5]:
+            if PULL_ERRORS.get(iid):
+                print(f"[live]   {iid}: {PULL_ERRORS[iid]}")
 
     cmd = _harness_cmd(ids, "gold", out_dir, workers=workers)
     print(f"[live] gold harness: {len(ids)} instances, {workers} workers -> {log_path}", flush=True)
