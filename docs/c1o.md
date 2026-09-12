@@ -15,3 +15,18 @@ workers? Same subset, k=3, $4.00 budget, 2400 s wall, 2 workers.
 ## Usage after
 
 (TBD)
+
+## Results (2026-09-12, batch `C1o-sensitivity`, 120 runs, 0 infra failures, $188.59 list)
+
+| condition | pass rate (95% CI) | solid_pass / flaky / solid_fail | cost per solve | mean cost per run | mean wall |
+|---|---|---|---:|---:|---:|
+| C0 single agent, Sonnet 5 | 0.783 [0.658, 0.900] | 30 / 3 / 7 | $1.00 | $0.79 | 212 s |
+| C1 seed harness, all Sonnet 5 | 0.750 [0.625, 0.875] | 28 / 3 / 9 | $1.73 | $1.30 | 367 s |
+| C1o seed harness, Lead on Opus 5 | 0.900 [0.808, 0.975] | 34 / 3 / 3 | $1.75 | $1.57 | 532 s |
+
+Paired C1 -> C1o: flips_up 5, regressions 0, Wilcoxon p = 0.018, sign test p = 0.070.
+Paired C0 -> C1o: flips_up 3, regressions 0, Wilcoxon p = 0.03881295437592857.
+Cost split inside C1o (from trace result events): mean $1.57 per run = $0.69 Opus (the Lead) + $0.89 Sonnet (specialists); the Lead is 44% of spend. No budget hits (max $3.97), no timeouts.
+C1o's remaining solid_fail: sympy__sympy-19783, sympy__sympy-20428, sympy__sympy-22080. It solved four of the five instances no earlier condition ever solved.
+
+**Confound to resolve before any claim:** C1o mixes a stronger model into the harness, so the effect could be "Opus is better" rather than "an Opus orchestrator helps". The de-confounding run is C0o: the plain single agent on claude-opus-5 with the same rules, budget, and environment. Not pre-registered; added post hoc and labeled as such.
