@@ -19,3 +19,8 @@ results/grading/
 
 improver/state/*.bak
 results/dryruns.jsonl
+
+# Spikes: local venvs and upstream clones are never committed
+spikes/**/.venv/
+spikes/swe-bench-live/SWE-bench-Live/
+spikes/**/gold-spike/

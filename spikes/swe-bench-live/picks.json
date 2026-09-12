@@ -1,0 +1,50 @@
+[
+ {
+  "instance_id": "yt-dlp__yt-dlp-11425",
+  "repo": "yt-dlp/yt-dlp",
+  "image": "starryzhang/sweb.eval.x86_64.yt-dlp_1776_yt-dlp-11425",
+  "archs": [
+   "(single-arch manifest)"
+  ]
+ },
+ {
+  "instance_id": "pydata__xarray-9974",
+  "repo": "pydata/xarray",
+  "image": "starryzhang/sweb.eval.x86_64.pydata_1776_xarray-9974",
+  "archs": [
+   "(single-arch manifest)"
+  ]
+ },
+ {
+  "instance_id": "deepset-ai__haystack-8981",
+  "repo": "deepset-ai/haystack",
+  "image": "starryzhang/sweb.eval.x86_64.deepset-ai_1776_haystack-8981",
+  "archs": [
+   "(single-arch manifest)"
+  ]
+ },
+ {
+  "instance_id": "matplotlib__matplotlib-29007",
+  "repo": "matplotlib/matplotlib",
+  "image": "starryzhang/sweb.eval.x86_64.matplotlib_1776_matplotlib-29007",
+  "archs": [
+   "(single-arch manifest)"
+  ]
+ },
+ {
+  "instance_id": "mikedh__trimesh-2354",
+  "repo": "mikedh/trimesh",
+  "image": "starryzhang/sweb.eval.x86_64.mikedh_1776_trimesh-2354",
+  "archs": [
+   "(single-arch manifest)"
+  ]
+ },
+ {
+  "instance_id": "joke2k__faker-2190",
+  "repo": "joke2k/faker",
+  "image": "starryzhang/sweb.eval.x86_64.joke2k_1776_faker-2190",
+  "archs": [
+   "(single-arch manifest)"
+  ]
+ }
+]
