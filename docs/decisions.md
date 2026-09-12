@@ -114,3 +114,7 @@
   so the cap is not model-tier-biased. Batch: `--condition C1o --harness-sha harness-c1o
   --split all --k 3 --workers 2`, workers reduced from 3 because Opus runs draw on the scoped
   weekly cap that the owner's own Opus/Fable sessions share.
+- [2026-09-12] **C0o added post hoc** (single agent on claude-opus-5, same config as C0). C1o came
+  in at 0.900 [0.808, 0.975] vs C1 0.750 (5 flips, 0 regressions, p=0.018), but it mixes a stronger
+  model into the harness, so the effect is confounded with model tier. C0o de-confounds it. Not
+  pre-registered; labeled as an extension in every table. Weekly cap at 40% before the run.

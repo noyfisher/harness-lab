@@ -12,9 +12,24 @@ workers? Same subset, k=3, $4.00 budget, 2400 s wall, 2 workers.
 | weekly_all | 21% | 2026-09-14T21:00:00Z |
 | weekly_scoped (Opus/Fable) | 18% | 2026-09-14T20:59:59Z |
 
-## Usage after
+## Usage after C1o (Noy's `/usage`, 2026-09-12T09:40:21Z)
 
-(TBD)
+| window | before | after | delta |
+|---|---|---|---|
+| session (5-hour) | 8% | 0% | reset in between |
+| weekly_all | 21% | 40% | +19 points (C1o $188.59 + orchestration sessions ~$20 + owner's own use) |
+| weekly_scoped (Opus/Fable) | 18% | 20% | +2 points for ~$83 of Opus-5 run cost inside C1o |
+
+Implication: the scoped cap is far less sensitive to Opus-5 run spend than feared; the weekly_all
+cap is the binding one, at roughly $11 per point this week.
+
+## C0o: single agent on claude-opus-5 (post-hoc extension, started 2026-09-12)
+
+Same `bench/c0-config`, same prompt, same $4.00 budget, 2400 s wall, k=3 on all 40, 2 workers,
+`--model claude-opus-5`. Purpose: separate "Opus 5 is the better model" from "an Opus orchestrator
+makes the team work". Decision rule for the writeup: if C0o's paired comparison with C1o shows no
+advantage for C1o, the C1o gain is model tier; if C1o beats C0o with flips and no regressions, the
+structure earns its cost only when the orchestrator outranks the workers.
 
 ## Results (2026-09-12, batch `C1o-sensitivity`, 120 runs, 0 infra failures, $188.59 list)
 
