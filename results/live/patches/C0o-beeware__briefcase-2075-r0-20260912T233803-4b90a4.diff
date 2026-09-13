@@ -1,0 +1,32 @@
+diff --git a/changes/2074.bugfix.rst b/changes/2074.bugfix.rst
+new file mode 100644
+index 0000000..0db7486
+--- /dev/null
++++ b/changes/2074.bugfix.rst
+@@ -0,0 +1 @@
++Flatpak apps no longer request access to the entire DBus session bus by default. If your app requires session bus access, it can be added using the ``finish_arg`` setting.
+diff --git a/docs/reference/platforms/linux/flatpak.rst b/docs/reference/platforms/linux/flatpak.rst
+index eab3c9f..f23fb7e 100644
+--- a/docs/reference/platforms/linux/flatpak.rst
++++ b/docs/reference/platforms/linux/flatpak.rst
+@@ -96,7 +96,6 @@ Briefcase adds the following finish arguments by default:
+ * ``filesystem=xdg-config``
+ * ``filesystem=xdg-data``
+ * ``filesystem=xdg-documents``
+-* ``socket=session-bus``
+ 
+ These can be disabled by explicitly setting their value to ``False``; for example, to
+ disable audio access, you would specify::
+diff --git a/src/briefcase/platforms/linux/flatpak.py b/src/briefcase/platforms/linux/flatpak.py
+index 563248b..6c8f14a 100644
+--- a/src/briefcase/platforms/linux/flatpak.py
++++ b/src/briefcase/platforms/linux/flatpak.py
+@@ -139,8 +139,6 @@ class LinuxFlatpakCreateCommand(LinuxFlatpakMixin, CreateCommand):
+             "filesystem=xdg-config": True,
+             "filesystem=xdg-data": True,
+             "filesystem=xdg-documents": True,
+-            # DBus access
+-            "socket=session-bus": True,
+         }
+ 
+         finish_args.update(getattr(app, "finish_arg", {}))

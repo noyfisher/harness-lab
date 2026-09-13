@@ -1,7 +1,7 @@
 # Measurement protocol v2: SWE-bench-Live, Opus tier (pre-registered)
 
-Status: DRAFT until the spike numbers are in; then FROZEN before the first counted run. Changes
-after freezing go in `decisions.md` with a date and reason.
+Status: **FROZEN v2, 2026-09-13**, before the first counted run. Changes after freezing go in
+`decisions.md` with a date and reason.
 
 ## Why a second study
 
@@ -57,8 +57,8 @@ Same rules, done-condition, JSON summary contract, budget, timeout, and image in
 
 Identical to v1: only `problem_statement` enters the container; git history scrubbed to one
 commit; `.claude/` and `.mcp.json` removed; one credential env var; test-patch hunks stripped
-and other test edits flagged; never `--bare`. Wall clock **TBD** (assumption 3600 s, raised from
-2400 because emulation slows the agent's own test runs). Budget **$4.00** per run. **2 workers**
+and other test edits flagged; never `--bare`. Wall clock **3600 s** (raised from 2400 because emulation slows the agent's own test runs;
+the spike's longest run was 842 s). Budget **$4.00** per run. **2 workers**
 (Opus runs draw on the scoped weekly cap that the owner's own sessions share). Batches overnight.
 
 ## Metrics and inference
@@ -74,7 +74,8 @@ context only; they are not comparable (different scaffolds, budgets, and a 40-in
 Spike: 4 runs (2 instances x C0o, C1o) on the subscription with `/usage` before and after.
 Projected ~240 counted runs. Proceed on the subscription if the projected weekly usage of the
 heaviest week stays under 50% of both the weekly cap and the scoped cap; otherwise wait for a
-reset or use the $600-capped API key for overflow. Outcome: **TBD**.
+reset or use the $600-capped API key for overflow. Outcome: **subscription; C0o batch before the
+2026-09-14T21:00Z reset, C1o batch after it** (weekly cap was at 52% with dev usage included).
 
 ## Limitations stated up front
 
@@ -91,3 +92,8 @@ caps reset 2026-09-14T21:00Z. Weekly cap estimate from the two preceding reading
 $1,200 list-equivalent per point-hundred (~$10 to $12 per point). Benchmark runs already this
 week: C1o and C0o on Verified, ~$254. Decision under the compute rule: spike and the C0o batch
 before the reset; the C1o batch after it.
+
+Spike results (2026-09-13, `results/live/spike-runs.jsonl`, not counted): beeware__briefcase-2075
+resolved under both conditions; deepset-ai__haystack-8525 unresolved under both (0 of 2 hidden
+tests). C0o: $0.87 and $1.00, wall 419 s and 563 s. C1o: $1.25 and $1.94, wall 480 s and 842 s.
+Projection: C0o batch ~$115 and ~8 h at 2 workers; C1o batch ~$190 and ~11 h. Spike total $5.06.
