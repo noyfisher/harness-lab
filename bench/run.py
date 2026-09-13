@@ -131,6 +131,8 @@ def classify_result(result: dict | None, rc: int, timed_out: bool, stderr: str) 
         return "parse_error", f"no result event (rc={rc}): {text}"
     subtype = str(result.get("subtype", ""))
     err_text = json.dumps(result)[:2000]
+    if subtype == "dry":
+        return "ok", "dry"
     if "budget" in subtype:
         return "budget", subtype
     # A session that ends after one turn at zero cost did no work (e.g. "Unknown skill" when a
@@ -193,12 +195,15 @@ def run_one(a) -> dict:
         raise SystemExit("docker daemon not reachable (open Docker Desktop)")
     if sh(["docker", "image", "inspect", image]).returncode != 0:
         raise SystemExit(f"agent image missing: {image}. Build with bench/docker/build{'-live' if bench == 'live' else ''}.sh {a.instance}")
-    dig = sh(["docker", "image", "inspect", "--format", "{{index .RepoDigests 0}}", base_ref]).stdout.strip()
-    if not dig and bench == "live":
-        # Live bases are replaced locally by a tag on the agent image (disk); provenance is kept here.
+    dig = ""
+    if bench == "live":
+        # Live bases are replaced locally by a tag on the agent image (disk), so the local inspect
+        # would report the built image; the registry digest recorded at pull time is the provenance.
         digests_file = ROOT / "bench" / "live-image-digests.json"
         if digests_file.exists():
             dig = json.loads(digests_file.read_text()).get(a.instance, "")
+    if not dig:
+        dig = sh(["docker", "image", "inspect", "--format", "{{index .RepoDigests 0}}", base_ref]).stdout.strip()
     manifest["image_digest"] = dig or None  # only `latest` is published; the digest pins the environment
     cred_name, cred_value = ("DRY", "dry") if a.dry else read_credentials()
     manifest["credential"] = {"CLAUDE_CODE_OAUTH_TOKEN": "subscription", "ANTHROPIC_API_KEY": "api_key", "DRY": "dry"}[cred_name]
