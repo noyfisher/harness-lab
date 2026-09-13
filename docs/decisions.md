@@ -151,3 +151,9 @@
   because one path in `run.py` still used the Verified constant; manifests record the real path,
   so nothing is lost. Fixed for subsequent runs; the C0o Live runs graded before the fix keep their
   recorded paths.
+- [2026-09-13] **Live image footprint is ~2x the pulled size after first use.** During the C0o
+  Live batch, Docker's disk image grew ~110 GB beyond the pulled images while no container or
+  image accounted for it, then stopped growing once every instance had run once; sampling over
+  ten minutes and three runs showed zero growth. Reading: layers are unpacked into snapshots on
+  first container start, so budget ~6 GB per Live instance, not 3. A disk guard interrupts the
+  batch cleanly below 8 GB free.
