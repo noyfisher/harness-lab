@@ -194,6 +194,11 @@ def run_one(a) -> dict:
     if sh(["docker", "image", "inspect", image]).returncode != 0:
         raise SystemExit(f"agent image missing: {image}. Build with bench/docker/build{'-live' if bench == 'live' else ''}.sh {a.instance}")
     dig = sh(["docker", "image", "inspect", "--format", "{{index .RepoDigests 0}}", base_ref]).stdout.strip()
+    if not dig and bench == "live":
+        # Live bases are replaced locally by a tag on the agent image (disk); provenance is kept here.
+        digests_file = ROOT / "bench" / "live-image-digests.json"
+        if digests_file.exists():
+            dig = json.loads(digests_file.read_text()).get(a.instance, "")
     manifest["image_digest"] = dig or None  # only `latest` is published; the digest pins the environment
     cred_name, cred_value = ("DRY", "dry") if a.dry else read_credentials()
     manifest["credential"] = {"CLAUDE_CODE_OAUTH_TOKEN": "subscription", "ANTHROPIC_API_KEY": "api_key", "DRY": "dry"}[cred_name]

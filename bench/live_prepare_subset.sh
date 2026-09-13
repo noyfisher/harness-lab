@@ -23,11 +23,28 @@ i=0
 while read -r iid; do
   i=$((i+1))
   if [ "$(free_gb)" -lt "$MIN_FREE_GB" ]; then echo "STOP: host free $(free_gb) GB < $MIN_FREE_GB before $iid"; exit 2; fi
-  if docker image inspect "harness-lab/agent.amd64.$iid" >/dev/null 2>&1; then echo "[$i] $iid: agent image present"; continue; fi
-  $PY -c "from bench import live; import sys; sys.exit(0 if live.ensure_image('$iid') else 1)" || { echo "[$i] $iid: PULL FAILED"; continue; }
-  bench/docker/build-live.sh "$iid" >"results/batches/build-live-$iid.log" 2>&1 && echo "[$i] $iid: built ($(free_gb) GB free)" || echo "[$i] $iid: BUILD FAILED (see results/batches/build-live-$iid.log)"
-  # BuildKit keeps its own copy of the base layers; without this each instance costs ~2x on disk.
-  docker builder prune -af >/dev/null 2>&1 || true
+  base="$($PY -c "from bench import live; print(live.image_ref('$iid'))")"
+  if ! docker image inspect "harness-lab/agent.amd64.$iid" >/dev/null 2>&1; then
+    $PY -c "from bench import live; import sys; sys.exit(0 if live.ensure_image('$iid') else 1)" || { echo "[$i] $iid: PULL FAILED"; continue; }
+    bench/docker/build-live.sh "$iid" >"results/batches/build-live-$iid.log" 2>&1 && echo "[$i] $iid: built ($(free_gb) GB free)" || { echo "[$i] $iid: BUILD FAILED (see results/batches/build-live-$iid.log)"; continue; }
+    # BuildKit keeps its own copy of the base layers; without this each instance costs ~2x on disk.
+    docker builder prune -af >/dev/null 2>&1 || true
+  fi
+  # Record the pulled base's registry digest (provenance for the manifests), then replace the base
+  # image with a tag on the agent image: the agent image is the base plus Node and the CLI, the Live
+  # grader looks the base name up locally before pulling, and keeping both costs ~3.4 GB per instance.
+  dig="$(docker image inspect --format '{{index .RepoDigests 0}}' "$base" 2>/dev/null || true)"
+  if [ -n "$dig" ]; then
+    $PY - "$iid" "$dig" <<'EOF'
+import json, sys, os
+p = "bench/live-image-digests.json"
+d = json.load(open(p)) if os.path.exists(p) else {}
+d[sys.argv[1]] = sys.argv[2]
+json.dump(d, open(p, "w"), indent=1, sort_keys=True)
+EOF
+    docker rmi "$base" >/dev/null 2>&1 || true
+    docker tag "harness-lab/agent.amd64.$iid" "$base" && echo "[$i] $iid: base replaced by agent-image tag ($(free_gb) GB free)"
+  fi
 done < bench/.cache/live-subset-ids.txt
 
 echo "=== summary ==="
