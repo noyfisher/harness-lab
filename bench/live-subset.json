@@ -1,0 +1,111 @@
+{
+ "arch": "x86_64",
+ "bench": "live",
+ "buckets": {
+  "key": "difficulty.lines (gold patch changed lines)",
+  "large": "> 60",
+  "medium": "16-60",
+  "small": "<= 15",
+  "unknown": "difficulty missing or unparseable"
+ },
+ "dataset": "SWE-bench-Live/SWE-bench-Live",
+ "filters": {
+  "gold_passing": 46,
+  "gold_results": "bench/live-gold-results.json",
+  "image_available": 300,
+  "loaded": 300,
+  "max_per_repo": 6,
+  "selected": 40
+ },
+ "heldout": [
+  "conan-io__conan-17266",
+  "conan-io__conan-17725",
+  "conan-io__conan-17923",
+  "deepset-ai__haystack-8992",
+  "icloud-photos-downloader__icloud_photos_downloader-1060",
+  "instructlab__instructlab-2526",
+  "ipython__ipython-14798",
+  "kubernetes-client__python-2303",
+  "mikedh__trimesh-2354",
+  "mikedh__trimesh-2363",
+  "pdm-project__pdm-3250",
+  "pdm-project__pdm-3420",
+  "privacyidea__privacyidea-4223",
+  "reflex-dev__reflex-4563",
+  "theoehrly__fast-f1-699",
+  "tox-dev__tox-3409"
+ ],
+ "heldout_strata": {
+  "large": 5,
+  "medium": 6,
+  "small": 5
+ },
+ "mode": "subset",
+ "n": 40,
+ "pool_strata": {
+  "large": 83,
+  "medium": 104,
+  "small": 113
+ },
+ "repos": {
+  "Delgan/loguru": 1,
+  "beeware/briefcase": 1,
+  "conan-io/conan": 5,
+  "deepset-ai/haystack": 5,
+  "dynaconf/dynaconf": 2,
+  "icloud-photos-downloader/icloud_photos_downloader": 1,
+  "instructlab/instructlab": 4,
+  "ipython/ipython": 1,
+  "joke2k/faker": 1,
+  "kubernetes-client/python": 1,
+  "mikedh/trimesh": 2,
+  "patroni/patroni": 1,
+  "pdm-project/pdm": 4,
+  "privacyidea/privacyidea": 2,
+  "pvlib/pvlib-python": 2,
+  "pytorch/torchtune": 1,
+  "reflex-dev/reflex": 2,
+  "run-llama/llama_deploy": 2,
+  "theOehrly/Fast-F1": 1,
+  "tox-dev/tox": 1
+ },
+ "requested_n": 40,
+ "seed": 20260912,
+ "split": "lite",
+ "strata": {
+  "large": 12,
+  "medium": 16,
+  "small": 12
+ },
+ "train": [
+  "beeware__briefcase-2075",
+  "conan-io__conan-17292",
+  "conan-io__conan-17300",
+  "deepset-ai__haystack-8525",
+  "deepset-ai__haystack-8725",
+  "deepset-ai__haystack-8969",
+  "deepset-ai__haystack-8993",
+  "delgan__loguru-1297",
+  "dynaconf__dynaconf-1238",
+  "dynaconf__dynaconf-1241",
+  "instructlab__instructlab-2540",
+  "instructlab__instructlab-2825",
+  "instructlab__instructlab-3118",
+  "joke2k__faker-2142",
+  "patroni__patroni-3198",
+  "pdm-project__pdm-3374",
+  "pdm-project__pdm-3419",
+  "privacyidea__privacyidea-4251",
+  "pvlib__pvlib-python-2393",
+  "pvlib__pvlib-python-2400",
+  "pytorch__torchtune-2139",
+  "reflex-dev__reflex-4129",
+  "run-llama__llama_deploy-372",
+  "run-llama__llama_deploy-399"
+ ],
+ "train_strata": {
+  "large": 7,
+  "medium": 10,
+  "small": 7
+ }
+}

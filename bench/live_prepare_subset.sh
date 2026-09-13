@@ -26,6 +26,8 @@ while read -r iid; do
   if docker image inspect "harness-lab/agent.amd64.$iid" >/dev/null 2>&1; then echo "[$i] $iid: agent image present"; continue; fi
   $PY -c "from bench import live; import sys; sys.exit(0 if live.ensure_image('$iid') else 1)" || { echo "[$i] $iid: PULL FAILED"; continue; }
   bench/docker/build-live.sh "$iid" >"results/batches/build-live-$iid.log" 2>&1 && echo "[$i] $iid: built ($(free_gb) GB free)" || echo "[$i] $iid: BUILD FAILED (see results/batches/build-live-$iid.log)"
+  # BuildKit keeps its own copy of the base layers; without this each instance costs ~2x on disk.
+  docker builder prune -af >/dev/null 2>&1 || true
 done < bench/.cache/live-subset-ids.txt
 
 echo "=== summary ==="
