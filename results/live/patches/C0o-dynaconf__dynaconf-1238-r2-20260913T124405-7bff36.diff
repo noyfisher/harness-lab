@@ -1,0 +1,40 @@
+diff --git a/dynaconf/base.py b/dynaconf/base.py
+index 759cf42..05658f5 100644
+--- a/dynaconf/base.py
++++ b/dynaconf/base.py
+@@ -45,6 +45,7 @@ from dynaconf.utils.parse_conf import parse_conf_data
+ from dynaconf.utils.parse_conf import true_values
+ from dynaconf.validator import ValidationError
+ from dynaconf.validator import ValidatorList
++from dynaconf.vendor.box.box import Box
+ from dynaconf.vendor.box.box_list import BoxList
+ 
+ 
+@@ -1469,12 +1470,15 @@ class Settings:
+         merge=False,
+         merge_unique=False,
+         internal=False,
++        raw_dict=False,
+     ):
+         """Given the `obj` populate it using self.store items.
+ 
+         :param obj: An object to be populated, a class instance.
+         :param keys: A list of keys to be included.
+         :param ignore: A list of keys to be excluded.
++        :param raw_dict: Take the values out of the Box before assigning,
++            so `dict` and `list` are assigned instead of `DynaBox`/`BoxList`.
+         """
+         merge = merge or self.get("MERGE_ENABLED_FOR_DYNACONF")
+         keys = keys or self.keys()
+@@ -1502,6 +1506,11 @@ class Settings:
+                     value = object_merge(existing, value, merge_unique)
+ 
+             if value is not empty:
++                if raw_dict:
++                    if isinstance(value, Box):
++                        value = value.to_dict()
++                    elif isinstance(value, BoxList):
++                        value = value.to_list()
+                 setattr(obj, key, value)
+ 
+     def dynaconf_clone(self):

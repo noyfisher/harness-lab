@@ -1,0 +1,43 @@
+diff --git a/numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl b/numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+new file mode 100644
+index 0000000..4da62f8
+Binary files /dev/null and b/numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl differ
+diff --git a/trimesh-4.6.2-py3-none-any.whl b/trimesh-4.6.2-py3-none-any.whl
+new file mode 100644
+index 0000000..1fa575a
+Binary files /dev/null and b/trimesh-4.6.2-py3-none-any.whl differ
+diff --git a/trimesh/path/arc.py b/trimesh/path/arc.py
+index 5ac765e..bf33a85 100644
+--- a/trimesh/path/arc.py
++++ b/trimesh/path/arc.py
+@@ -203,6 +203,13 @@ def discretize_arc(points, close=False, scale=1.0):
+             )
+             log.warning("Failed arc points: %s", str(points))
+             raise ValueError("Arc endpoints diverging!")
++
++    # the parameterization above is only accurate to floating point
++    # error which can leave a tiny degenerate segment where this arc
++    # meets the next entity: snap to the exact control points
++    discrete[0] = points[0]
++    discrete[-1] = points[0] if close else points[-1]
++
+     discrete = discrete[:, : (3 - is_2D)]
+ 
+     return discrete
+diff --git a/trimesh/path/entities.py b/trimesh/path/entities.py
+index 6a25437..7920d64 100644
+--- a/trimesh/path/entities.py
++++ b/trimesh/path/entities.py
+@@ -629,10 +629,10 @@ class Arc(Entity):
+             # we don't need the angular span as
+             # it's indicated as a closed circle
+             fit = self.center(vertices, return_normal=False, return_angle=False)
+-            return np.pi * fit.radius * 4
++            return np.pi * fit.radius * 2
+         # get the angular span of the circular arc
+         fit = self.center(vertices, return_normal=False, return_angle=True)
+-        return fit.span * fit.radius * 2
++        return fit.span * fit.radius
+ 
+     def discrete(self, vertices, scale=1.0):
+         """

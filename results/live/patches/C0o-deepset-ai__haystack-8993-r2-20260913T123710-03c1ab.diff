@@ -1,0 +1,27 @@
+diff --git a/haystack/utils/type_serialization.py b/haystack/utils/type_serialization.py
+index 8a14a2f..51d89a6 100644
+--- a/haystack/utils/type_serialization.py
++++ b/haystack/utils/type_serialization.py
+@@ -120,14 +120,20 @@ def deserialize_type(type_str: str) -> Any:
+ 
+         main_type = deserialize_type(main_type_str)
+         generic_args = tuple(deserialize_type(arg) for arg in parse_generic_args(generics_str))
++        # Special types like typing.Optional only accept a single argument, not a 1-tuple
++        subscript = generic_args[0] if len(generic_args) == 1 else generic_args
+ 
+         # Reconstruct
+         if sys.version_info >= (3, 9) or repr(main_type).startswith("typing."):
+-            return main_type[generic_args]
++            return main_type[subscript]
+         else:
+-            return type_mapping[main_type][generic_args]  # type: ignore
++            return type_mapping[main_type][subscript]  # type: ignore
+ 
+     else:
++        # Handle NoneType, which is not accessible as builtins.NoneType
++        if type_str in ("NoneType", "types.NoneType"):
++            return type(None)
++
+         # Handle non-generics
+         parts = type_str.split(".")
+         module_name = ".".join(parts[:-1]) or "builtins"

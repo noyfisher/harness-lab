@@ -1,0 +1,60 @@
+diff --git a/IPython/core/inputtransformer2.py b/IPython/core/inputtransformer2.py
+index 4f9bcfe..28d1186 100644
+--- a/IPython/core/inputtransformer2.py
++++ b/IPython/core/inputtransformer2.py
+@@ -112,16 +112,41 @@ def __call__(self, lines):
+ )
+ 
+ 
++_cell_magic_assign_re = re.compile(
++    r"\s*(?P<target>[A-Za-z_]\w*(?:\s*\.\s*[A-Za-z_]\w*|\s*\[[^\]]*\])*)\s*=\s*(?=%%)"
++)
++
++
++def _cell_magic_start(line: str) -> Optional[Tuple[str, str]]:
++    """Split the first line of a cell into an assignment target and a cell magic.
++
++    Returns a ``(target, magic)`` tuple, where *target* is the empty string if
++    the cell magic is not assigned to anything, or None if *line* does not
++    start a cell magic.
++    """
++    if line.startswith("%%"):
++        return "", line
++    match = _cell_magic_assign_re.match(line)
++    if match is None:
++        return None
++    return match.group("target"), line[match.end() :]
++
++
+ def cell_magic(lines):
+-    if not lines or not lines[0].startswith('%%'):
++    if not lines:
++        return lines
++    split = _cell_magic_start(lines[0])
++    if split is None:
+         return lines
+-    if re.match(r'%%\w+\?', lines[0]):
++    target, magic = split
++    if re.match(r'%%\w+\?', magic):
+         # This case will be handled by help_end
+         return lines
+-    magic_name, _, first_line = lines[0][2:].rstrip().partition(' ')
++    magic_name, _, first_line = magic[2:].rstrip().partition(' ')
+     body = ''.join(lines[1:])
+-    return ['get_ipython().run_cell_magic(%r, %r, %r)\n'
+-            % (magic_name, first_line, body)]
++    lhs = "%s = " % target if target else ""
++    return ['%sget_ipython().run_cell_magic(%r, %r, %r)\n'
++            % (lhs, magic_name, first_line, body)]
+ 
+ 
+ def _find_assign_op(token_line) -> Optional[int]:
+@@ -696,7 +721,7 @@ def check_complete(self, cell: str):
+         except SyntaxError:
+             return 'invalid', None
+ 
+-        if lines[0].startswith('%%'):
++        if _cell_magic_start(lines[0]) is not None:
+             # Special case for cell magics - completion marked by blank line
+             if lines[-1].strip():
+                 return 'incomplete', find_last_indent(lines)

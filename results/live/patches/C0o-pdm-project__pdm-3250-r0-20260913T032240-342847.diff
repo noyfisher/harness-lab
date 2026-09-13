@@ -1,0 +1,47 @@
+diff --git a/src/pdm/cli/filters.py b/src/pdm/cli/filters.py
+index b8e6f21..ed63bed 100644
+--- a/src/pdm/cli/filters.py
++++ b/src/pdm/cli/filters.py
+@@ -5,6 +5,7 @@ from functools import cached_property
+ from typing import TYPE_CHECKING
+ 
+ from pdm.exceptions import PdmUsageError
++from pdm.utils import normalize_name
+ 
+ if TYPE_CHECKING:
+     from typing import Iterator, Sequence
+@@ -65,6 +66,16 @@ class GroupSelection:
+                 return groups
+         return list(self)
+ 
++    def _match_group(self, name: str) -> str:
++        """Return the group name as spelled in the project, since dependency group
++        names must be compared in their normalized form. (PEP 735)
++        """
++        project_groups = set(self.project.iter_groups())
++        if name in project_groups:
++            return name
++        normalized = normalize_name(name)
++        return normalized if normalized in project_groups else name
++
+     @cached_property
+     def _translated_groups(self) -> list[str]:
+         """Translate default, dev and groups containing ":all" into a list of groups"""
+@@ -80,7 +91,7 @@ class GroupSelection:
+         project = self.project
+         optional_groups = set(project.pyproject.metadata.get("optional-dependencies", {}))
+         dev_groups = set(project.pyproject.dev_dependencies)
+-        groups_set = set(groups)
++        groups_set = {self._match_group(g) for g in groups}
+         if groups_set & dev_groups:
+             if not dev:
+                 raise PdmUsageError("--prod is not allowed with dev groups and should be left")
+@@ -91,7 +102,7 @@ class GroupSelection:
+             groups_set.update(optional_groups)
+         if default:
+             groups_set.add("default")
+-        groups_set -= set(self.excluded_groups)
++        groups_set -= {self._match_group(g) for g in self.excluded_groups}
+ 
+         invalid_groups = groups_set - set(project.iter_groups())
+         if invalid_groups:

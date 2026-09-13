@@ -1,0 +1,48 @@
+diff --git a/reflex/app.py b/reflex/app.py
+index 935fe79..d206374 100644
+--- a/reflex/app.py
++++ b/reflex/app.py
+@@ -1360,14 +1360,14 @@ async def health() -> JSONResponse:
+         get_db_status(), prerequisites.get_redis_status()
+     )
+ 
+-    health_status["db"] = db_status
++    health_status["db"] = False if db_status is None else db_status
+ 
+     if redis_status is None:
+         health_status["redis"] = False
+     else:
+         health_status["redis"] = redis_status
+ 
+-    if not health_status["db"] or (
++    if (not health_status["db"] and db_status is not None) or (
+         not health_status["redis"] and redis_status is not None
+     ):
+         health_status["status"] = False
+diff --git a/reflex/model.py b/reflex/model.py
+index cb8bed2..bf2ce58 100644
+--- a/reflex/model.py
++++ b/reflex/model.py
+@@ -141,16 +141,20 @@ def get_async_engine(url: str | None) -> sqlalchemy.ext.asyncio.AsyncEngine:
+     return _ASYNC_ENGINE[url]
+ 
+ 
+-async def get_db_status() -> bool:
++async def get_db_status() -> bool | None:
+     """Checks the status of the database connection.
+ 
+     Attempts to connect to the database and execute a simple query to verify connectivity.
+ 
+     Returns:
+-        bool: The status of the database connection:
++        bool or None: The status of the database connection:
+             - True: The database is accessible.
+             - False: The database is not accessible.
++            - None: No database is configured, i.e. db_url is not set in rxconfig.
+     """
++    if not get_config().db_url:
++        return None
++
+     status = True
+     try:
+         engine = get_engine()

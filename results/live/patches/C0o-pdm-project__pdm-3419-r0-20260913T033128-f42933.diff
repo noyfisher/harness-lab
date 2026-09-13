@@ -1,0 +1,29 @@
+diff --git a/src/pdm/project/core.py b/src/pdm/project/core.py
+index 0c5b6fd..ed98378 100644
+--- a/src/pdm/project/core.py
++++ b/src/pdm/project/core.py
+@@ -454,7 +454,23 @@ class Project:
+ 
+     @property
+     def all_dependencies(self) -> dict[str, Sequence[Requirement]]:
+-        return {group: self.get_dependencies(group, resolve_include=False) for group in self.iter_groups()}
++        result = {group: self.get_dependencies(group, resolve_include=False) for group in self.iter_groups()}
++        # The dependencies referred by `include-group` or self-referencing extras are kept in the
++        # group where they are defined, but they belong to the referring groups as well.
++        # Collect the group metadata from the fully resolved groups and merge it back.
++        referred: dict[str, list[set[str]]] = {}
++        for group in result:
++            for req in self.get_dependencies(group):
++                referred.setdefault(req.identify(), []).append(set(req.groups))
++        for reqs in result.values():
++            for req in reqs:
++                own_groups = set(req.groups)
++                groups = set(own_groups)
++                for other in referred.get(req.identify(), []):
++                    if own_groups & other:
++                        groups.update(other)
++                req.groups = sorted(groups)
++        return result
+ 
+     @property
+     def default_source(self) -> RepositoryConfig:

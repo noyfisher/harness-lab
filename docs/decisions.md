@@ -157,3 +157,32 @@
   ten minutes and three runs showed zero growth. Reading: layers are unpacked into snapshots on
   first container start, so budget ~6 GB per Live instance, not 3. A disk guard interrupts the
   batch cleanly below 8 GB free.
+- [2026-09-13] **C0o Live batch complete (22:05Z).** 120 counted runs (40 instances x k=3):
+  pass rate 0.492 [0.350, 0.633], 16 solid-pass / 7 flaky / 17 solid-fail, $1.77 per solve,
+  mean wall 853 s; train 0.472, held-out 0.521; $104.71 at list price. Three `error` runs are
+  uncounted: two grader timeouts at the old 1800 s cap (re-run by the resume) and one agent
+  container that never started under the old 300 s start cap (no trace, no patch). No counted
+  run hit the agent's 3600 s timeout or the $4 budget. Roughly half the Verified rate for the
+  same agent: Live lite is harder for it, as the spike suggested. `results/live/c0o-stats.json`.
+- [2026-09-13] **All C0o Live traces live in `results/traces/`, not only the pre-fix ones.**
+  `bench.batch` imports `bench.run` in-process, so the resumed batch (started 09:23Z) kept the
+  old trace directory for its whole life; the fix landed at 17:53Z. Every manifest records the
+  real path and nothing is lost. The C1o batch starts a fresh process and writes to
+  `results/live/traces/`. Not moving the files: the manifest is append-only.
+- [2026-09-13] **The Live harness leaks its container when killed on timeout.** Found after the
+  batch: two `git-launch-<id>-*` containers from the C0o batch's 1800 s grader timeouts still
+  running 15 hours later, and four from the gold-validation waves running 19 to 22 hours, each
+  pinning a base image that the wave cleanup had untagged (the four "dangling" images, 10.7 GB).
+  All six, plus the never-started agent container, are removed, and the four images with them.
+  Fix: `grade_live` and `gold_validate` now remove any leftover `git-launch-<id>-*` container in
+  a `finally` (tests added). **Consequence for the numbers:** those six emulated containers were
+  burning CPU for the entire C0o batch, so C0o's Live wall times are inflated by contention that
+  C1o will not see. The pre-registered primary metric (pass rate) and cost per solve (token
+  based) are unaffected; wall time is reported as a secondary metric and this confound is stated
+  wherever the two conditions' wall times are compared.
+- [2026-09-13] **C1o launch task: disk gate lowered 40 -> 15 GB, disk guard made a script.**
+  Docker's disk image stopped growing once every Live instance had run once and stayed flat
+  for the last ~80 runs at ~20 GB host free; a 40 GB gate would have refused a launch that is
+  safe. `bench/disk_guard.sh <condition> [floor GB] [interval]` sends SIGINT to the batch's
+  Python process below the floor (8 GB) and exits when the batch is gone; the scheduled task
+  starts it alongside the batch. Host free after cleanup: 22 GB; Docker images 261 GB.

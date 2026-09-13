@@ -489,6 +489,29 @@ def _sh(cmd: list[str], timeout: float | None = None) -> subprocess.CompletedPro
     return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
 
 
+def _remove_launch_containers(instance_ids) -> list[str]:
+    """Remove RepoLaunch containers left behind for these instances.
+
+    The Live harness names its containers ``git-launch-<instance_id>-<4 hex>`` and
+    removes them on a normal exit, but when we kill it on timeout the container
+    keeps running the test suite under emulation indefinitely: seven such
+    containers were found hours later, still consuming CPU and pinning their
+    images (docs/decisions.md, 2026-09-13).  Returns the container ids removed.
+    Never raises; a failed lookup just leaves the container for the next call.
+    """
+    removed: list[str] = []
+    for iid in instance_ids:
+        try:
+            r = _sh(["docker", "ps", "-aq", "--filter", f"name=^git-launch-{iid}-"], timeout=60)
+            ids = (r.stdout or "").split() if isinstance(r.stdout, str) else []
+            if ids:
+                _sh(["docker", "rm", "-f", *ids], timeout=120)
+                removed.extend(ids)
+        except Exception:
+            pass
+    return removed
+
+
 PULL_ERRORS: dict[str, str] = {}  # instance_id -> last docker pull error line
 
 
@@ -669,6 +692,10 @@ def grade_live(
     except Exception as exc:  # infra failure: record, never raise past the batch
         result["infra_failure"] = True
         result["infra_failure_reason"] = f"{type(exc).__name__}: {exc}"
+    finally:
+        # On a normal exit the harness has already removed its container and this
+        # finds nothing; on timeout it is the only thing that stops the container.
+        _remove_launch_containers([instance_id])
 
     report = _read_report(out_dir, instance_id)
     if report is None:
@@ -747,6 +774,10 @@ def gold_validate(
             )
     except subprocess.TimeoutExpired:
         print(f"[live] WARNING: gold harness timed out after {timeout}s; scoring whatever landed")
+    finally:
+        leaked = _remove_launch_containers(ids)
+        if leaked:
+            print(f"[live] removed {len(leaked)} leftover harness container(s)", flush=True)
 
     results: dict[str, bool] = {}
     no_report: list[str] = []

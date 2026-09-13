@@ -1,0 +1,45 @@
+diff --git a/src/pdm/cli/filters.py b/src/pdm/cli/filters.py
+index b8e6f21..7526f40 100644
+--- a/src/pdm/cli/filters.py
++++ b/src/pdm/cli/filters.py
+@@ -51,6 +51,22 @@ class GroupSelection:
+             return self.groups[0]
+         return "dev" if self.dev else "default"
+ 
++    def _normalize_group(self, group: str) -> str:
++        """Map a user-given group name to the group name used by the project.
++
++        Dependency group names are normalized(PEP 735) when read from the pyproject.toml,
++        so a name given on the command line must be normalized before comparing as well.
++        """
++        from pdm.utils import normalize_name
++
++        if group.startswith(":"):  # special selectors like `:all`
++            return group
++        project_groups = set(self.project.iter_groups())
++        if group in project_groups:
++            return group
++        normalized = normalize_name(group)
++        return normalized if normalized in project_groups else group
++
+     @property
+     def is_unset(self) -> bool:
+         return self.default and self.dev is None and not self.groups
+@@ -80,7 +96,7 @@ class GroupSelection:
+         project = self.project
+         optional_groups = set(project.pyproject.metadata.get("optional-dependencies", {}))
+         dev_groups = set(project.pyproject.dev_dependencies)
+-        groups_set = set(groups)
++        groups_set = {self._normalize_group(g) for g in groups}
+         if groups_set & dev_groups:
+             if not dev:
+                 raise PdmUsageError("--prod is not allowed with dev groups and should be left")
+@@ -91,7 +107,7 @@ class GroupSelection:
+             groups_set.update(optional_groups)
+         if default:
+             groups_set.add("default")
+-        groups_set -= set(self.excluded_groups)
++        groups_set -= {self._normalize_group(g) for g in self.excluded_groups}
+ 
+         invalid_groups = groups_set - set(project.iter_groups())
+         if invalid_groups:

@@ -1,0 +1,93 @@
+diff --git a/privacyidea/lib/eventhandler/requestmangler.py b/privacyidea/lib/eventhandler/requestmangler.py
+index 9467939..184f86f 100644
+--- a/privacyidea/lib/eventhandler/requestmangler.py
++++ b/privacyidea/lib/eventhandler/requestmangler.py
+@@ -23,11 +23,12 @@ __doc__ = """This is the event handler module modifying request parameters.
+ from privacyidea.lib.eventhandler.base import BaseEventHandler
+ from privacyidea.lib.token import (get_token_types, set_validity_period_end,
+                                    set_validity_period_start)
+-from privacyidea.lib.realm import get_realms
++from privacyidea.lib.realm import get_realms, get_default_realm
+ from privacyidea.lib.token import (set_realms, remove_token, enable_token,
+                                    unassign_token, init_token, set_description,
+                                    set_count_window, add_tokeninfo,
+                                    set_failcounter, delete_tokeninfo)
++from privacyidea.lib.user import User, split_user
+ from privacyidea.lib.utils import (parse_date, is_true,
+                                    parse_time_offset_from_now)
+ from privacyidea.lib.tokenclass import DATE_FORMAT, AUTH_DATE_FORMAT
+@@ -51,6 +52,39 @@ class ACTION_TYPE(object):
+     DELETE = "delete"
+ 
+ 
++#: The request parameters that are used to create the ``request.User`` object
++USER_PARAMETERS = ["user", "username", "realm", "resolver"]
++
++
++def update_request_user(request):
++    """
++    Recreate the ``request.User`` object from the (mangled) request parameters.
++
++    The ``request.User`` object is created in the ``before_request`` of the
++    blueprints, i.e. before the pre event handlers are run. So if a user
++    related parameter is modified, the user object needs to be updated,
++    otherwise the modification would have no effect.
++
++    :param request: The request object
++    """
++    if not hasattr(request, "User"):
++        # Some endpoints do not provide a user object at all
++        return
++    params = request.all_data
++    # The /auth endpoint uses "username", all other endpoints use "user"
++    login, realm = split_user(params.get("user") or params.get("username") or "")
++    realm = params.get("realm") or realm
++    if login and not realm:
++        realm = get_default_realm()
++    try:
++        request.User = User(login=login, realm=realm or "",
++                            resolver=params.get("resolver") or "")
++    except Exception as e:
++        log.warning("Failed to resolve the user {0!r} in realm {1!r}: "
++                    "{2!s}".format(login, realm, e))
++        request.User = User()
++
++
+ class RequestManglerEventHandler(BaseEventHandler):
+     """
+     An Eventhandler needs to return a list of actions, which it can handle.
+@@ -139,9 +173,11 @@ class RequestManglerEventHandler(BaseEventHandler):
+         parameter = handler_options.get("parameter")
+ 
+         if parameter:
++            user_changed = False
+             if action.lower() == ACTION_TYPE.DELETE:
+                 if parameter in request.all_data:
+                     del(request.all_data[parameter])
++                    user_changed = parameter in USER_PARAMETERS
+             elif action.lower() == ACTION_TYPE.SET:
+                 value = handler_options.get("value")
+                 match_parameter = handler_options.get("match_parameter")
+@@ -151,6 +187,7 @@ class RequestManglerEventHandler(BaseEventHandler):
+                     if not match_parameter:
+                         # simple setting a parameter
+                         request.all_data[parameter] = value
++                        user_changed = parameter in USER_PARAMETERS
+                     elif match_pattern and match_parameter in request.all_data:
+                         # setting a parameter depending on another value,
+                         # but only set it, if match_parameter exists
+@@ -165,8 +202,14 @@ class RequestManglerEventHandler(BaseEventHandler):
+                             # Now we set the new value with the matching tuple
+                             try:
+                                 request.all_data[parameter] = value.format(*m.groups())
++                                user_changed = parameter in USER_PARAMETERS
+                             except IndexError:
+                                 log.warning("The number of found tags ({0!r}) "
+                                             "do not match the required number ({1!r}).".format(m.groups(), value))
+ 
++            if user_changed:
++                # The user object needs to be updated, since it was created
++                # before the event handler was run.
++                update_request_user(request)
++
+         return ret

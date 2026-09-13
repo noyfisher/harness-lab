@@ -1,0 +1,145 @@
+diff --git a/haystack/components/converters/pdfminer.py b/haystack/components/converters/pdfminer.py
+index 6c8fc6c..7575910 100644
+--- a/haystack/components/converters/pdfminer.py
++++ b/haystack/components/converters/pdfminer.py
+@@ -8,7 +8,7 @@ from pathlib import Path
+ from typing import Any, Dict, Iterator, List, Optional, Union
+ 
+ from haystack import Document, component, logging
+-from haystack.components.converters.utils import get_bytestream_from_source, normalize_metadata
++from haystack.components.converters.utils import get_bytestream_from_source, normalize_metadata, reencode_text
+ from haystack.dataclasses import ByteStream
+ from haystack.lazy_imports import LazyImport
+ 
+@@ -48,6 +48,7 @@ class PDFMinerToDocument:
+         detect_vertical: bool = True,
+         all_texts: bool = False,
+         store_full_path: bool = False,
++        encoding: str = "utf-8",
+     ) -> None:
+         """
+         Create a PDFMinerToDocument component.
+@@ -83,6 +84,10 @@ class PDFMinerToDocument:
+         :param store_full_path:
+             If True, the full path of the file is stored in the metadata of the document.
+             If False, only the file name is stored.
++        :param encoding:
++            The encoding of the text extracted from the PDF files. The extracted text is converted
++            to UTF-8 using this encoding. Set it to the encoding of the PDF files (for example
++            "cp1252") if their text is not UTF-8.
+         """
+ 
+         pdfminer_import.check()
+@@ -97,6 +102,7 @@ class PDFMinerToDocument:
+             all_texts=all_texts,
+         )
+         self.store_full_path = store_full_path
++        self.encoding = encoding
+ 
+     @staticmethod
+     def _converter(lt_page_objs: Iterator) -> str:
+@@ -161,7 +167,7 @@ class PDFMinerToDocument:
+                 continue
+             try:
+                 pages = extract_pages(io.BytesIO(bytestream.data), laparams=self.layout_params)
+-                text = self._converter(pages)
++                text = reencode_text(self._converter(pages), self.encoding)
+             except Exception as e:
+                 logger.warning(
+                     "Could not read {source} and convert it to Document, skipping. {error}", source=source, error=e
+diff --git a/haystack/components/converters/pypdf.py b/haystack/components/converters/pypdf.py
+index 15bbcc1..7fb02f6 100644
+--- a/haystack/components/converters/pypdf.py
++++ b/haystack/components/converters/pypdf.py
+@@ -9,7 +9,7 @@ from pathlib import Path
+ from typing import Any, Dict, List, Optional, Union
+ 
+ from haystack import Document, component, default_from_dict, default_to_dict, logging
+-from haystack.components.converters.utils import get_bytestream_from_source, normalize_metadata
++from haystack.components.converters.utils import get_bytestream_from_source, normalize_metadata, reencode_text
+ from haystack.dataclasses import ByteStream
+ from haystack.lazy_imports import LazyImport
+ 
+@@ -79,6 +79,7 @@ class PyPDFToDocument:
+         layout_mode_strip_rotated: bool = True,
+         layout_mode_font_height_weight: float = 1.0,
+         store_full_path: bool = False,
++        encoding: str = "utf-8",
+     ):
+         """
+         Create an PyPDFToDocument component.
+@@ -108,10 +109,15 @@ class PyPDFToDocument:
+         :param store_full_path:
+             If True, the full path of the file is stored in the metadata of the document.
+             If False, only the file name is stored.
++        :param encoding:
++            The encoding of the text extracted from the PDF files. The extracted text is converted
++            to UTF-8 using this encoding. Set it to the encoding of the PDF files (for example
++            "cp1252") if their text is not UTF-8.
+         """
+         pypdf_import.check()
+ 
+         self.store_full_path = store_full_path
++        self.encoding = encoding
+ 
+         if isinstance(extraction_mode, str):
+             extraction_mode = PyPDFExtractionMode.from_str(extraction_mode)
+@@ -140,6 +146,7 @@ class PyPDFToDocument:
+             layout_mode_strip_rotated=self.layout_mode_strip_rotated,
+             layout_mode_font_height_weight=self.layout_mode_font_height_weight,
+             store_full_path=self.store_full_path,
++            encoding=self.encoding,
+         )
+ 
+     @classmethod
+@@ -204,7 +211,7 @@ class PyPDFToDocument:
+                 continue
+             try:
+                 pdf_reader = PdfReader(io.BytesIO(bytestream.data))
+-                text = self._default_convert(pdf_reader)
++                text = reencode_text(self._default_convert(pdf_reader), self.encoding)
+             except Exception as e:
+                 logger.warning(
+                     "Could not read {source} and convert it to Document, skipping. {error}", source=source, error=e
+diff --git a/haystack/components/converters/utils.py b/haystack/components/converters/utils.py
+index 87cd143..9846bd5 100644
+--- a/haystack/components/converters/utils.py
++++ b/haystack/components/converters/utils.py
+@@ -2,6 +2,7 @@
+ #
+ # SPDX-License-Identifier: Apache-2.0
+ 
++import codecs
+ from pathlib import Path
+ from typing import Any, Dict, List, Optional, Union
+ 
+@@ -27,6 +28,29 @@ def get_bytestream_from_source(source: Union[str, Path, ByteStream]) -> ByteStre
+     raise ValueError(f"Unsupported source type {type(source)}")
+ 
+ 
++def reencode_text(text: str, encoding: str) -> str:
++    """
++    Converts text extracted from a document to UTF-8 using an explicit source encoding.
++
++    PDF parsers map the raw bytes of a file to characters one by one when the file does not carry
++    reliable encoding information. If those bytes are not UTF-8 (for example ANSI or cp1252), the
++    resulting string is garbled. This function maps the characters back to the original bytes and
++    decodes them with the given encoding.
++
++    :param text: The text to convert.
++    :param encoding: The encoding of the original bytes. "utf-8" leaves the text unchanged.
++    :returns: The converted text, or the original text if it cannot be converted.
++    """
++    if not text:
++        return text
++    try:
++        if codecs.lookup(encoding).name == "utf-8":
++            return text
++        return text.encode("latin-1", errors="ignore").decode(encoding, errors="replace")
++    except (LookupError, UnicodeDecodeError):
++        return text
++
++
+ def normalize_metadata(
+     meta: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]], sources_count: int
+ ) -> List[Dict[str, Any]]:

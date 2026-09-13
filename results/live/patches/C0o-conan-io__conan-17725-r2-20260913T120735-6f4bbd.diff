@@ -1,0 +1,207 @@
+diff --git a/certifi-2026.7.22-py3-none-any.whl b/certifi-2026.7.22-py3-none-any.whl
+new file mode 100644
+index 0000000..7a4afb1
+Binary files /dev/null and b/certifi-2026.7.22-py3-none-any.whl differ
+diff --git a/charset_normalizer-3.5.1-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl b/charset_normalizer-3.5.1-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+new file mode 100644
+index 0000000..bbdebb5
+Binary files /dev/null and b/charset_normalizer-3.5.1-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl differ
+diff --git a/colorama-0.4.6-py2.py3-none-any.whl b/colorama-0.4.6-py2.py3-none-any.whl
+new file mode 100644
+index 0000000..f666ce9
+Binary files /dev/null and b/colorama-0.4.6-py2.py3-none-any.whl differ
+diff --git a/conan-2.16.0.tar.gz b/conan-2.16.0.tar.gz
+new file mode 100644
+index 0000000..fc06292
+Binary files /dev/null and b/conan-2.16.0.tar.gz differ
+diff --git a/conan/internal/model/cpp_info.py b/conan/internal/model/cpp_info.py
+index 7967b75..9d2cae2 100644
+--- a/conan/internal/model/cpp_info.py
++++ b/conan/internal/model/cpp_info.py
+@@ -100,6 +100,7 @@ class _Component:
+         self._type = None
+         self._location = None
+         self._link_location = None
++        self._package_framework = None  # Apple framework provided by this package
+ 
+     def serialize(self):
+         return {
+@@ -126,7 +127,8 @@ class _Component:
+             "type": self._type,
+             "location": self._location,
+             "link_location": self._link_location,
+-            "languages": self._languages
++            "languages": self._languages,
++            "package_framework": self._package_framework
+         }
+ 
+     @staticmethod
+@@ -295,6 +297,14 @@ class _Component:
+     def location(self, value):
+         self._location = value
+ 
++    @property
++    def package_framework(self):
++        return self._package_framework
++
++    @package_framework.setter
++    def package_framework(self, value):
++        self._package_framework = value
++
+     @property
+     def link_location(self):
+         return self._link_location
+@@ -615,6 +625,24 @@ class _Component:
+             # old school Conan application packages withoud defining an exe, not an error
+             return
+ 
++        # Apple framework provided by this package
++        if self._package_framework:
++            if self._type is None:
++                self._type = conanfile.package_type
++            if self._type not in [PackageType.SHARED, PackageType.STATIC]:
++                raise ConanException(f"{name} .package_framework needs a static/shared .type")
++            if self._location is None:
++                framework = self._package_framework
++                for d in self.frameworkdirs + self.libdirs + [conanfile.package_folder]:
++                    loc = os.path.join(d, f"{framework}.framework", framework)
++                    if os.path.isfile(loc):
++                        self._location = loc.replace("\\", "/")
++                        break
++                else:
++                    raise ConanException(f"{name} cannot deduce the location of the framework "
++                                         f"'{framework}'. Please define 'cpp_info.location'")
++            return
++
+         # libraries
+         if len(self.libs) > 1:  # it could be 0, as the libs itself is not necessary
+             raise ConanException(f"{name} has more than 1 library in .libs: {self.libs}, "
+diff --git a/conan/tools/cmake/cmakedeps/templates/macros.py b/conan/tools/cmake/cmakedeps/templates/macros.py
+index db804b8..111bd91 100644
+--- a/conan/tools/cmake/cmakedeps/templates/macros.py
++++ b/conan/tools/cmake/cmakedeps/templates/macros.py
+@@ -29,6 +29,9 @@ class MacrosTemplate(CMakeDepsFileTemplate):
+        macro(conan_find_apple_frameworks FRAMEWORKS_FOUND FRAMEWORKS FRAMEWORKS_DIRS)
+            if(APPLE)
+                foreach(_FRAMEWORK ${FRAMEWORKS})
++                   # Different components or dependency versions can provide the same framework
++                   # name in different folders, the cached result must not be reused
++                   unset(CONAN_FRAMEWORK_${_FRAMEWORK}_FOUND CACHE)
+                    # https://cmake.org/pipermail/cmake-developers/2017-August/030199.html
+                    find_library(CONAN_FRAMEWORK_${_FRAMEWORK}_FOUND NAMES ${_FRAMEWORK} PATHS ${FRAMEWORKS_DIRS} CMAKE_FIND_ROOT_PATH_BOTH)
+                    if(CONAN_FRAMEWORK_${_FRAMEWORK}_FOUND)
+diff --git a/conan/tools/cmake/cmakedeps2/target_configuration.py b/conan/tools/cmake/cmakedeps2/target_configuration.py
+index e85df76..7f38dcb 100644
+--- a/conan/tools/cmake/cmakedeps2/target_configuration.py
++++ b/conan/tools/cmake/cmakedeps2/target_configuration.py
+@@ -4,7 +4,6 @@ import textwrap
+ import jinja2
+ from jinja2 import Template
+ 
+-from conan.api.output import ConanOutput
+ from conan.errors import ConanException
+ from conans.client.graph.graph import CONTEXT_BUILD, CONTEXT_HOST
+ from conan.internal.model.pkg_type import PackageType
+@@ -161,7 +160,8 @@ class TargetConfigurationTemplate2:
+         return libs
+ 
+     def _get_cmake_lib(self, info, components, pkg_folder, pkg_folder_var):
+-        if info.exe or not (info.includedirs or info.libs or info.system_libs):
++        if info.exe or not (info.includedirs or info.libs or info.system_libs or info.frameworks
++                            or info.package_framework):
+             return
+ 
+         includedirs = ";".join(self._path(i, pkg_folder, pkg_folder_var)
+@@ -182,13 +182,12 @@ class TargetConfigurationTemplate2:
+                   "cflags": " ".join(info.cflags),
+                   "sharedlinkflags": " ".join(info.sharedlinkflags),
+                   "exelinkflags": " ".join(info.exelinkflags),
+-                  "system_libs": system_libs}
++                  "system_libs": system_libs,
++                  # System frameworks, like system_libs, but for Apple
++                  "frameworks": " ".join(f'"-framework {f}"' for f in info.frameworks)}
+ 
+-        if info.frameworks:
+-            ConanOutput(scope=str(self._conanfile)).warning("frameworks not supported yet in new CMakeDeps generator")
+-
+-        if info.libs:  # TODO: to change to location
+-            if len(info.libs) != 1:
++        if info.libs or info.package_framework:  # TODO: to change to location
++            if len(info.libs) > 1:
+                 raise ConanException(f"New CMakeDeps only allows 1 lib per component:\n"
+                                      f"{self._conanfile}: {info.libs}")
+             assert info.location, "info.location missing for .libs, it should have been deduced"
+@@ -204,6 +203,8 @@ class TargetConfigurationTemplate2:
+             link_languages = info.languages or self._conanfile.languages or []
+             link_languages = ["CXX" if c == "C++" else c for c in link_languages]
+             target["link_languages"] = link_languages
++            if info.package_framework:
++                target["framework"] = True
+ 
+         return target
+ 
+@@ -354,6 +355,9 @@ class TargetConfigurationTemplate2:
+         set_target_properties({{lib}} PROPERTIES IMPORTED_IMPLIB_{{config}}
+                               "{{lib_info["link_location"]}}")
+         {% endif %}
++        {% if lib_info.get("framework") %}
++        set_target_properties({{lib}} PROPERTIES FRAMEWORK TRUE)
++        {% endif %}
+ 
+         {% if lib_info.get("requires") %}
+         # Information of transitive dependencies
+@@ -381,6 +385,10 @@ class TargetConfigurationTemplate2:
+         target_link_libraries({{lib}} INTERFACE {{lib_info["system_libs"]}})
+         {% endif %}
+ 
++        {% if lib_info.get("frameworks") %}
++        target_link_libraries({{lib}} INTERFACE {{lib_info["frameworks"]}})
++        {% endif %}
++
+         {% endfor %}
+ 
+         ################# Global variables for try compile and legacy ##############
+diff --git a/distro-1.8.0-py3-none-any.whl b/distro-1.8.0-py3-none-any.whl
+new file mode 100644
+index 0000000..bc9cccd
+Binary files /dev/null and b/distro-1.8.0-py3-none-any.whl differ
+diff --git a/fasteners-0.20-py3-none-any.whl b/fasteners-0.20-py3-none-any.whl
+new file mode 100644
+index 0000000..c60f12d
+Binary files /dev/null and b/fasteners-0.20-py3-none-any.whl differ
+diff --git a/idna-3.19-py3-none-any.whl b/idna-3.19-py3-none-any.whl
+new file mode 100644
+index 0000000..986ff36
+Binary files /dev/null and b/idna-3.19-py3-none-any.whl differ
+diff --git a/jinja2-3.1.6-py3-none-any.whl b/jinja2-3.1.6-py3-none-any.whl
+new file mode 100644
+index 0000000..5046d77
+Binary files /dev/null and b/jinja2-3.1.6-py3-none-any.whl differ
+diff --git a/markupsafe-3.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl b/markupsafe-3.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+new file mode 100644
+index 0000000..530fcec
+Binary files /dev/null and b/markupsafe-3.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl differ
+diff --git a/patch-ng-1.18.1.tar.gz b/patch-ng-1.18.1.tar.gz
+new file mode 100644
+index 0000000..81d3098
+Binary files /dev/null and b/patch-ng-1.18.1.tar.gz differ
+diff --git a/python_dateutil-2.9.0.post0-py2.py3-none-any.whl b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl
+new file mode 100644
+index 0000000..b9a14e1
+Binary files /dev/null and b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl differ
+diff --git a/pyyaml-6.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl b/pyyaml-6.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
+new file mode 100644
+index 0000000..c657d55
+Binary files /dev/null and b/pyyaml-6.0.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl differ
+diff --git a/requests-2.32.5-py3-none-any.whl b/requests-2.32.5-py3-none-any.whl
+new file mode 100644
+index 0000000..58c3d6a
+Binary files /dev/null and b/requests-2.32.5-py3-none-any.whl differ
+diff --git a/six-1.17.0-py2.py3-none-any.whl b/six-1.17.0-py2.py3-none-any.whl
+new file mode 100644
+index 0000000..c506fd0
+Binary files /dev/null and b/six-1.17.0-py2.py3-none-any.whl differ
+diff --git a/urllib3-2.0.7-py3-none-any.whl b/urllib3-2.0.7-py3-none-any.whl
+new file mode 100644
+index 0000000..9e6f189
+Binary files /dev/null and b/urllib3-2.0.7-py3-none-any.whl differ

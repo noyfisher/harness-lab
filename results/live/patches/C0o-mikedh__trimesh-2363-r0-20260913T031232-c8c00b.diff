@@ -1,0 +1,190 @@
+diff --git a/trimesh/path/exchange/svg_io.py b/trimesh/path/exchange/svg_io.py
+index cdaa99a..7cc1141 100644
+--- a/trimesh/path/exchange/svg_io.py
++++ b/trimesh/path/exchange/svg_io.py
+@@ -1,6 +1,7 @@
+ import base64
+ import collections
+ import json
++import re
+ from copy import deepcopy
+ 
+ import numpy as np
+@@ -21,6 +22,144 @@ _ns = f"{{{_ns_url}}}"
+ _IDENTITY = np.eye(3)
+ _IDENTITY.flags["WRITEABLE"] = False
+ 
++# matches an SVG number, i.e. "-1.2e3" possibly followed by a unit
++_number_re = re.compile(r"[+-]?(?:[0-9]*\.[0-9]+|[0-9]+\.?)(?:[eE][+-]?[0-9]+)?")
++# the control point offset to approximate a quarter ellipse with a cubic bezier
++_kappa = 4.0 * (np.sqrt(2) - 1.0) / 3.0
++
++
++def _svg_number(value, default=0.0):
++    """
++    Parse an SVG attribute into a float, discarding any unit suffix.
++
++    Parameters
++    ------------
++    value : None or str
++      Something like "10" or "1.5mm"
++    default : float
++      Returned if the value can't be parsed.
++
++    Returns
++    ------------
++    number : float
++      The parsed value.
++    """
++    if value is None:
++        return default
++    match = _number_re.match(value.strip())
++    if match is None:
++        return default
++    return float(match.group())
++
++
++def _ellipse_to_path(cx, cy, rx, ry):
++    """
++    Generate an SVG path string for an axis-aligned ellipse.
++    """
++    if rx <= 0.0 or ry <= 0.0:
++        return None
++    if np.isclose(rx, ry):
++        # a circle is exactly representable as two arc segments
++        return (
++            f"M{cx - rx},{cy}"
++            f"a{rx},{ry} 0 1,0 {2.0 * rx},0"
++            f"a{rx},{ry} 0 1,0 {-2.0 * rx},0"
++        )
++    # approximate a non-circular ellipse with four cubic bezier segments
++    ox, oy = rx * _kappa, ry * _kappa
++    return (
++        f"M{cx + rx},{cy}"
++        f"C{cx + rx},{cy + oy} {cx + ox},{cy + ry} {cx},{cy + ry}"
++        f"C{cx - ox},{cy + ry} {cx - rx},{cy + oy} {cx - rx},{cy}"
++        f"C{cx - rx},{cy - oy} {cx - ox},{cy - ry} {cx},{cy - ry}"
++        f"C{cx + ox},{cy - ry} {cx + rx},{cy - oy} {cx + rx},{cy}"
++    )
++
++
++def _rect_to_path(attrib):
++    """
++    Convert the attributes of an SVG `rect` into a path string.
++    """
++    x = _svg_number(attrib.get("x"))
++    y = _svg_number(attrib.get("y"))
++    width = _svg_number(attrib.get("width"))
++    height = _svg_number(attrib.get("height"))
++    if width <= 0.0 or height <= 0.0:
++        # per the SVG spec this disables rendering of the element
++        return None
++
++    # "auto" or missing values are inherited from the other radius
++    rx, ry = attrib.get("rx"), attrib.get("ry")
++    if rx is None and ry is None:
++        rx, ry = 0.0, 0.0
++    elif rx is None:
++        rx = ry = _svg_number(ry)
++    elif ry is None:
++        rx = ry = _svg_number(rx)
++    else:
++        rx, ry = _svg_number(rx), _svg_number(ry)
++    # radii are clamped to half of the side length
++    rx = min(max(rx, 0.0), width / 2.0)
++    ry = min(max(ry, 0.0), height / 2.0)
++
++    if rx <= 0.0 or ry <= 0.0:
++        return f"M{x},{y}H{x + width}V{y + height}H{x}Z"
++
++    return (
++        f"M{x + rx},{y}"
++        f"H{x + width - rx}"
++        f"A{rx},{ry} 0 0,1 {x + width},{y + ry}"
++        f"V{y + height - ry}"
++        f"A{rx},{ry} 0 0,1 {x + width - rx},{y + height}"
++        f"H{x + rx}"
++        f"A{rx},{ry} 0 0,1 {x},{y + height - ry}"
++        f"V{y + ry}"
++        f"A{rx},{ry} 0 0,1 {x + rx},{y}"
++    )
++
++
++def _points_to_path(attrib, close):
++    """
++    Convert the `points` attribute of a polyline or polygon.
++    """
++    values = [float(i) for i in _number_re.findall(attrib.get("points", ""))]
++    # an odd trailing value is discarded per the SVG spec
++    points = np.array(values[: (len(values) // 2) * 2]).reshape((-1, 2))
++    if len(points) < 2:
++        return None
++    path = f"M{points[0][0]},{points[0][1]}" + "".join(
++        f"L{p[0]},{p[1]}" for p in points[1:]
++    )
++    if close:
++        path += "Z"
++    return path
++
++
++# convert SVG basic shapes into equivalent path strings
++_shape_convert = {
++    "rect": _rect_to_path,
++    "circle": lambda a: _ellipse_to_path(
++        _svg_number(a.get("cx")),
++        _svg_number(a.get("cy")),
++        _svg_number(a.get("r")),
++        _svg_number(a.get("r")),
++    ),
++    "ellipse": lambda a: _ellipse_to_path(
++        _svg_number(a.get("cx")),
++        _svg_number(a.get("cy")),
++        _svg_number(a.get("rx")),
++        _svg_number(a.get("ry")),
++    ),
++    "line": lambda a: "M{},{}L{},{}".format(
++        _svg_number(a.get("x1")),
++        _svg_number(a.get("y1")),
++        _svg_number(a.get("x2")),
++        _svg_number(a.get("y2")),
++    ),
++    "polyline": lambda a: _points_to_path(a, close=False),
++    "polygon": lambda a: _points_to_path(a, close=True),
++}
++
+ 
+ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+     """
+@@ -74,9 +213,30 @@ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+         # store paths and transforms as
+         # (path string, 3x3 matrix)
+         paths = []
+-        for element in tree.iter("{*}path"):
++        for element in tree.iter():
++            tag = element.tag
++            if not isinstance(tag, str):
++                # comments and processing instructions
++                continue
++            # strip off any XML namespace from the tag
++            tag = tag.rsplit("}", 1)[-1]
++            if tag == "path":
++                attrib = element.attrib
++            elif tag in _shape_convert:
++                # convert SVG basic shapes into an equivalent path string
++                try:
++                    d = _shape_convert[tag](element.attrib)
++                except BaseException:
++                    log.debug(f"failed to convert `{tag}`", exc_info=True)
++                    continue
++                if d is None:
++                    continue
++                attrib = dict(element.attrib)
++                attrib["d"] = d
++            else:
++                continue
+             # store every path element attributes and transform
+-            paths.append((element.attrib, element_transform(element)))
++            paths.append((attrib, element_transform(element)))
+ 
+         try:
+             # see if the SVG should be reproduced as a scene

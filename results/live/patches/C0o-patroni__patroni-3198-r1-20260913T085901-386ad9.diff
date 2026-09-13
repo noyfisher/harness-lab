@@ -1,0 +1,41 @@
+diff --git a/patroni/postgresql/__init__.py b/patroni/postgresql/__init__.py
+index 33a6cc4..2085ca9 100644
+--- a/patroni/postgresql/__init__.py
++++ b/patroni/postgresql/__init__.py
+@@ -1151,20 +1151,23 @@ class Postgresql(object):
+             self.__cb_pending = CallbackAction.NOOP
+ 
+         ret = True
+-        if self.is_running():
+-            if do_reload:
+-                self.config.write_postgresql_conf()
+-                ret = self.reload(block_callbacks=change_role)
+-                if ret and change_role:
+-                    self.set_role(role)
++        try:
++            if self.is_running():
++                if do_reload:
++                    self.config.write_postgresql_conf()
++                    ret = self.reload(block_callbacks=change_role)
++                    if ret and change_role:
++                        self.set_role(role)
++                else:
++                    ret = self.restart(block_callbacks=change_role, role=role)
+             else:
+-                ret = self.restart(block_callbacks=change_role, role=role)
+-        else:
+-            ret = self.start(timeout=timeout, block_callbacks=change_role, role=role) or None
+-
+-        if change_role:
+-            # TODO: postpone this until start completes, or maybe do even earlier
+-            self.call_nowait(CallbackAction.ON_ROLE_CHANGE)
++                ret = self.start(timeout=timeout, block_callbacks=change_role, role=role) or None
++        finally:
++            # The role was already changed, therefore the callback must be executed even
++            # if starting/restarting/reloading postgres failed or raised an exception.
++            if change_role:
++                # TODO: postpone this until start completes, or maybe do even earlier
++                self.call_nowait(CallbackAction.ON_ROLE_CHANGE)
+         return ret
+ 
+     def _wait_promote(self, wait_seconds: int) -> Optional[bool]:

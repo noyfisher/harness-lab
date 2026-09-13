@@ -1,0 +1,18 @@
+diff --git a/faker/providers/bank/nl_BE/__init__.py b/faker/providers/bank/nl_BE/__init__.py
+index 92455b9..d433749 100644
+--- a/faker/providers/bank/nl_BE/__init__.py
++++ b/faker/providers/bank/nl_BE/__init__.py
+@@ -66,3 +66,13 @@ class Provider(BankProvider):
+     def bank(self) -> str:
+         """Generate a bank name."""
+         return self.random_element(self.banks)
++
++    def bban(self) -> str:
++        """Generate a Belgian Basic Bank Account Number (BBAN).
++
++        The last two digits are the national check digits, i.e. the remainder
++        of the first ten digits modulo 97, where a remainder of 0 becomes 97.
++        """
++        body = self.numerify("#" * 10)
++        check = int(body) % 97 or 97
++        return f"{body}{check:02d}"

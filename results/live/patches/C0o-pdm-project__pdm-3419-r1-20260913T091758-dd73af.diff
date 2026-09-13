@@ -1,0 +1,23 @@
+diff --git a/src/pdm/cli/commands/update.py b/src/pdm/cli/commands/update.py
+index 02c49f0..fca8817 100644
+--- a/src/pdm/cli/commands/update.py
++++ b/src/pdm/cli/commands/update.py
+@@ -171,6 +171,18 @@ class Command(BaseCommand):
+             for deps in updated_deps.values():
+                 for dep in deps:
+                     dep.specifier = get_specifier("")
++        # `all_dependencies` doesn't expand `include-group` items, so requirements coming from an
++        # included group don't carry the including group. Restore that metadata, otherwise the
++        # including group would be dropped from the lockfile entries.
++        inherited_groups: dict[str, set[str]] = defaultdict(set)
++        for g in all_dependencies:
++            if locked_groups is None or g in locked_groups:
++                for r in project.get_dependencies(g):
++                    inherited_groups[r.identify()].update(r.groups)
++        for deps in all_dependencies.values():
++            for r in deps:
++                if r.identify() in inherited_groups:
++                    r.groups = sorted(inherited_groups[r.identify()].union(r.groups))
+         reqs = [r for g, deps in all_dependencies.items() for r in deps if locked_groups is None or g in locked_groups]
+         # Since dry run is always true in the locking,
+         # we need to emit the hook manually with the real dry_run value

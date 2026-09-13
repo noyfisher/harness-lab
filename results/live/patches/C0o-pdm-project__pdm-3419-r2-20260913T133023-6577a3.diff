@@ -1,0 +1,42 @@
+diff --git a/src/pdm/project/core.py b/src/pdm/project/core.py
+index 0c5b6fd..eb80385 100644
+--- a/src/pdm/project/core.py
++++ b/src/pdm/project/core.py
+@@ -454,7 +454,36 @@ class Project:
+ 
+     @property
+     def all_dependencies(self) -> dict[str, Sequence[Requirement]]:
+-        return {group: self.get_dependencies(group, resolve_include=False) for group in self.iter_groups()}
++        groups = list(self.iter_groups())
++        optional_dependencies = {
++            normalize_name(k): v for k, v in self.pyproject.metadata.get("optional-dependencies", {}).items()
++        }
++        dev_dependencies = self.pyproject.dev_dependencies
++        project_name = normalize_name(self.name) if self.name else None
++        # The referred groups aren't expanded into the referring group below, but their
++        # requirements still belong to the referring group. Collect the reverse mapping here.
++        including_groups: dict[str, set[str]] = {}
++        for group in groups:
++            name = normalize_name(group)
++            if name in optional_dependencies:
++                _, referred = _resolve_dependency_group(project_name, optional_dependencies, name)
++            elif name in dev_dependencies:
++                _, referred = _resolve_dependency_group(
++                    project_name, dev_dependencies, name, (), optional_dependencies
++                )
++            else:
++                continue
++            for referred_groups in referred.values():
++                for referred_group in referred_groups:
++                    including_groups.setdefault(referred_group, set()).add(name)
++        result: dict[str, Sequence[Requirement]] = {}
++        for group in groups:
++            deps = self.get_dependencies(group, resolve_include=False)
++            if extra_groups := including_groups.get(normalize_name(group)):
++                for req in deps:
++                    req.groups = sorted(set(req.groups) | extra_groups)
++            result[group] = deps
++        return result
+ 
+     @property
+     def default_source(self) -> RepositoryConfig:

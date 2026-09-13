@@ -1,0 +1,109 @@
+diff --git a/src/instructlab/configuration.py b/src/instructlab/configuration.py
+index d2c3412..68d34a9 100644
+--- a/src/instructlab/configuration.py
++++ b/src/instructlab/configuration.py
+@@ -448,7 +448,7 @@ class _train(BaseModel):
+         default=False, description="Allow CPU offload for FSDP optimizer."
+     )
+     distributed_backend: DistributedBackend = Field(
+-        default=DistributedBackend.DEEPSPEED,
++        default=DistributedBackend.FSDP,
+         description="Pick a distributed training backend framework for GPU accelerated full fine-tuning.",
+         validate_default=True,  # ensures that the 'use_enum_values' flag takes effect on the default value
+     )
+@@ -567,6 +567,7 @@ class Config(BaseModel):
+ 
+ 
+ EIGHT_GPU_TRAIN_AH = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -590,6 +591,7 @@ EIGHT_GPU_TRAIN_AH = _train(
+ )
+ 
+ FOUR_GPU_TRAIN_AH = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -613,6 +615,7 @@ FOUR_GPU_TRAIN_AH = _train(
+ )
+ 
+ TWO_GPU_TRAIN_AH = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -638,6 +641,7 @@ TWO_GPU_TRAIN_AH = _train(
+ )
+ 
+ EIGHT_L_FORTY_GPU = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -661,6 +665,7 @@ EIGHT_L_FORTY_GPU = _train(
+ )
+ 
+ FOUR_L_FORTY_GPU = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -686,6 +691,7 @@ FOUR_L_FORTY_GPU = _train(
+ )
+ 
+ EIGHT_L_FOUR_GPU = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -711,6 +717,7 @@ EIGHT_L_FOUR_GPU = _train(
+ )
+ 
+ SINGLE_SERVER_GPU_TRAIN = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -736,6 +743,7 @@ SINGLE_SERVER_GPU_TRAIN = _train(
+ )
+ 
+ SINGLE_CONSUMER_GPU_TRAIN = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -762,6 +770,7 @@ SINGLE_CONSUMER_GPU_TRAIN = _train(
+ 
+ 
+ MULTI_CONSUMER_GPU_TRAIN = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -788,6 +797,7 @@ MULTI_CONSUMER_GPU_TRAIN = _train(
+ 
+ 
+ SINGLE_L4 = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -813,6 +823,7 @@ SINGLE_L4 = _train(
+ )
+ 
+ SINGLE_L40 = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,
+@@ -838,6 +849,7 @@ SINGLE_L40 = _train(
+ )
+ 
+ SINGLE_A100_H100 = _train(
++    distributed_backend=DistributedBackend.FSDP,
+     additional_args={
+         "warmup_steps": 25,
+         "learning_rate": 2e-5,

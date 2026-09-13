@@ -1,0 +1,111 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index f059af5..7a901c0 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,8 @@
+ 
+ ### Breaking Changes
+ 
++* `llama-cpp-python` has been upgraded to v0.3.2 and will need to be reinstalled if you are upgrading `ilab` from an older version. This adds support for serving models that use the new `granite` architecture, such as Granite 3.0.
++
+ ### Features
+ 
+ * A new command `ilab model upload` has been introduced so users can now upload their trained models to [Hugging Face](https://huggingface.co/) via the `ilab` CLI
+diff --git a/docs/gpu-acceleration.md b/docs/gpu-acceleration.md
+index b9edfc0..fdab02d 100644
+--- a/docs/gpu-acceleration.md
++++ b/docs/gpu-acceleration.md
+@@ -45,7 +45,7 @@ With Python 3.11 installed, it's time to replace some packages!
+ ### llama-cpp-python backends
+ 
+ Go to the project's GitHub to see
+-the [supported backends](https://github.com/abetlen/llama-cpp-python/tree/v0.2.79?tab=readme-ov-file#supported-backends).
++the [supported backends](https://github.com/abetlen/llama-cpp-python/tree/v0.3.2?tab=readme-ov-file#supported-backends).
+ 
+ Whichever backend you choose, you'll see a `pip install` command. First
+ you have to purge pip's wheel cache to force a rebuild of llama-cpp-python:
+@@ -58,7 +58,7 @@ You'll want to add a few options to ensure it gets installed over the
+ existing package, has the desired backend, and the correct version.
+ 
+ ```shell
+-pip install --force-reinstall --no-deps llama_cpp_python==0.2.79 -C cmake.args="-DLLAMA_$BACKEND=on"
++pip install --force-reinstall --no-deps llama_cpp_python==0.3.2 -C cmake.args="-DLLAMA_$BACKEND=on"
+ ```
+ 
+ where `$BACKEND` is one of `HIPBLAS` (ROCm), `CUDA`, `METAL`
+@@ -112,7 +112,7 @@ sudo dnf -y install cuda-toolkit-12-4 nvtop
+ ```
+ 
+ Go to the project's GitHub to see the
+-[supported backends](https://github.com/abetlen/llama-cpp-python/tree/v0.2.79?tab=readme-ov-file#supported-backends).
++[supported backends](https://github.com/abetlen/llama-cpp-python/tree/v0.3.2?tab=readme-ov-file#supported-backends).
+ Find the `CUDA` backend. You'll see a `pip install` command.
+ You'll want to add a few options to ensure it gets installed over the
+ existing package: `--force-reinstall`. Your final
+@@ -126,7 +126,7 @@ export PATH=$PATH:$CUDA_HOME/bin
+ 
+ # Recompile llama-cpp-python using CUDA
+ pip cache remove llama_cpp_python
+-pip install --force-reinstall --no-deps llama_cpp_python==0.2.79 -C cmake.args="-DLLAMA_CUDA=on"
++pip install --force-reinstall --no-deps llama_cpp_python==0.3.2 -C cmake.args="-DLLAMA_CUDA=on"
+ 
+ # Re-install InstructLab
+ pip install ./instructlab[cuda]
+@@ -139,7 +139,7 @@ supports GCC v14.1+.
+ ```shell
+ # Recompile llama-cpp-python using CUDA
+ sudo dnf install clang17
+-CUDAHOSTCXX=$(which clang++-17) pip install --force-reinstall llama_cpp_python==0.2.79 -C cmake.args="-DLLAMA_CUDA=on"
++CUDAHOSTCXX=$(which clang++-17) pip install --force-reinstall llama_cpp_python==0.3.2 -C cmake.args="-DLLAMA_CUDA=on"
+ ```
+ 
+ Proceed to the `Initialize` section of
+@@ -221,7 +221,7 @@ we'll include that in our build command as follows:
+ ```shell
+ export PATH=/opt/rocm/llvm/bin:$PATH
+ pip cache remove llama_cpp_python
+-CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DCMAKE_C_COMPILER='/opt/rocm/llvm/bin/clang' -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS=gfx1100" FORCE_CMAKE=1 pip install --force-reinstall llama_cpp_python==0.2.79
++CMAKE_ARGS="-DLLAMA_HIPBLAS=on -DCMAKE_C_COMPILER='/opt/rocm/llvm/bin/clang' -DCMAKE_CXX_COMPILER=/opt/rocm/llvm/bin/clang++ -DCMAKE_PREFIX_PATH=/opt/rocm -DAMDGPU_TARGETS=gfx1100" FORCE_CMAKE=1 pip install --force-reinstall llama_cpp_python==0.3.2
+ ```
+ 
+ > **Note:** This is explicitly forcing the build to use the ROCm compilers and
+@@ -249,7 +249,7 @@ Your final command should look like so (this uses `CLBlast`):
+ 
+ ```shell
+ pip cache remove llama_cpp_python
+-pip install --force-reinstall llama_cpp_python==0.2.79 -C cmake.args="-DLLAMA_CLBLAST=on"
++pip install --force-reinstall llama_cpp_python==0.3.2 -C cmake.args="-DLLAMA_CLBLAST=on"
+ ```
+ 
+ Once that package is installed, recompile `ilab` with `pip install .` and skip
+@@ -269,7 +269,7 @@ add a few options to ensure it gets installed over the existing package:
+ 
+ ```shell
+ pip cache remove llama_cpp_python
+-pip install --force-reinstall llama_cpp_python==0.2.79 -C cmake.args="-DLLAMA_METAL=on"
++pip install --force-reinstall llama_cpp_python==0.3.2 -C cmake.args="-DLLAMA_METAL=on"
+ ```
+ 
+ Once that package is installed, recompile `ilab` with `pip install .[mps]` and skip
+@@ -306,7 +306,7 @@ True
+ ```python
+ >>> import llama
+ >>> llama_cpp.__version__
+-'0.2.79'
++'0.3.2'
+ >>> llama_cpp.llama_supports_gpu_offload()
+ True
+ >>> llama_cpp.llama_backend_init()
+diff --git a/requirements.txt b/requirements.txt
+index b6b7130..ee3295f 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -11,7 +11,7 @@ instructlab-quantize>=0.1.0
+ instructlab-schema>=0.4.0
+ instructlab-sdg>=0.6.2
+ instructlab-training>=0.6.0
+-llama_cpp_python[server]==0.2.79
++llama_cpp_python[server]==0.3.2
+ mlx>=0.5.1,<0.6.0; sys_platform == 'darwin' and platform_machine == 'arm64'
+ numpy>=1.26.4,<2.0.0
+ openai>=1.13.3

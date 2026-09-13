@@ -1,0 +1,81 @@
+diff --git a/llama_deploy/apiserver/routers/deployments.py b/llama_deploy/apiserver/routers/deployments.py
+index eec538f..e137e5f 100644
+--- a/llama_deploy/apiserver/routers/deployments.py
++++ b/llama_deploy/apiserver/routers/deployments.py
+@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
+ 
+ from llama_deploy.apiserver.config_parser import Config
+ from llama_deploy.apiserver.server import manager
+-from llama_deploy.types import TaskDefinition
++from llama_deploy.types import SessionDefinition, TaskDefinition
+ 
+ deployments_router = APIRouter(
+     prefix="/deployments",
+@@ -146,7 +146,7 @@ async def get_task_result(
+ @deployments_router.get("/{deployment_name}/tasks")
+ async def get_tasks(
+     deployment_name: str,
+-) -> JSONResponse:
++) -> list[TaskDefinition]:
+     """Get all the tasks from all the sessions in a given deployment."""
+     deployment = manager.get_deployment(deployment_name)
+     if deployment is None:
+@@ -157,20 +157,20 @@ async def get_tasks(
+         session = await deployment.client.get_session(session_id=session_def.session_id)
+         for task_def in await session.get_tasks():
+             tasks.append(task_def)
+-    return JSONResponse(tasks)
++    return tasks
+ 
+ 
+ @deployments_router.get("/{deployment_name}/sessions")
+ async def get_sessions(
+     deployment_name: str,
+-) -> JSONResponse:
++) -> list[SessionDefinition]:
+     """Get the active sessions in a deployment and service."""
+     deployment = manager.get_deployment(deployment_name)
+     if deployment is None:
+         raise HTTPException(status_code=404, detail="Deployment not found")
+ 
+     sessions = await deployment.client.list_sessions()
+-    return JSONResponse(sessions)
++    return sessions
+ 
+ 
+ @deployments_router.get("/{deployment_name}/sessions/{session_id}")
+diff --git a/llama_deploy/client/models/apiserver.py b/llama_deploy/client/models/apiserver.py
+index e69a795..dc9b237 100644
+--- a/llama_deploy/client/models/apiserver.py
++++ b/llama_deploy/client/models/apiserver.py
+@@ -70,7 +70,9 @@ class SessionCollection(Collection):
+         model_class = self._prepare(Session)
+         items = [
+             model_class(client=self.client, id=session_def.session_id)
+-            for session_def in r.json()
++            for session_def in (
++                SessionDefinition.model_validate(sd) for sd in r.json()
++            )
+         ]
+         return items
+ 
+@@ -184,7 +186,7 @@ class Deployment(Model):
+                 session_id=task_def.session_id,
+                 deployment_id=self.id,
+             )
+-            for task_def in r.json()
++            for task_def in (TaskDefinition.model_validate(td) for td in r.json())
+         }
+         model_class = self._prepare(TaskCollection)
+         return model_class(client=self.client, deployment_id=self.id, items=items)
+@@ -201,7 +203,9 @@ class Deployment(Model):
+         model_class = self._prepare(Session)
+         items = {
+             "id": model_class(client=self.client, id=session_def.session_id)
+-            for session_def in r.json()
++            for session_def in (
++                SessionDefinition.model_validate(sd) for sd in r.json()
++            )
+         }
+         coll_model_class = self._prepare(SessionCollection)
+         return coll_model_class(client=self.client, deployment_id=self.id, items=items)

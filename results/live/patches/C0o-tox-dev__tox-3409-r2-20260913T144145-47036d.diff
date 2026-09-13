@@ -1,0 +1,188 @@
+diff --git a/docs/changelog/3408.feature.rst b/docs/changelog/3408.feature.rst
+new file mode 100644
+index 0000000..3bc33eb
+--- /dev/null
++++ b/docs/changelog/3408.feature.rst
+@@ -0,0 +1,2 @@
++Add support for :pep:`735` dependency groups via the new ``dependency_groups`` environment configuration key - by
++:user:`gaborbernat`.
+diff --git a/docs/config.rst b/docs/config.rst
+index 3c8083f..7e4ae9d 100644
+--- a/docs/config.rst
++++ b/docs/config.rst
+@@ -856,6 +856,32 @@ Python run
+             -r requirements.txt
+             -c constraints.txt
+ 
++.. conf::
++   :keys: dependency_groups
++   :default: <empty list>
++   :version_added: 4.22
++
++   Name of the :pep:`735` dependency groups (defined within the ``[dependency-groups]`` table of the ``pyproject.toml``
++   found at :ref:`package_root`) to install into the environment. Installed after :ref:`deps`, but before the package.
++
++   For example:
++    .. tab:: TOML
++
++       .. code-block:: toml
++
++          [tool.tox.env_run_base]
++          dependency_groups = [
++            "test",
++          ]
++
++    .. tab:: INI
++
++       .. code-block:: ini
++
++        [testenv]
++        dependency_groups =
++            test
++
+ .. conf::
+    :keys: use_develop, usedevelop
+    :default: false
+diff --git a/src/tox/tox_env/python/runner.py b/src/tox/tox_env/python/runner.py
+index 336476e..d8600f4 100644
+--- a/src/tox/tox_env/python/runner.py
++++ b/src/tox/tox_env/python/runner.py
+@@ -2,21 +2,30 @@
+ 
+ from __future__ import annotations
+ 
++import sys
+ from abc import ABC
+ from functools import partial
+-from typing import TYPE_CHECKING, Set
++from typing import TYPE_CHECKING, Any, Iterable, Mapping, Set
+ 
++from packaging.requirements import InvalidRequirement, Requirement
+ from packaging.utils import canonicalize_name
+ 
+ from tox.config.loader.str_convert import StrConvert
+ from tox.report import HandledError
+-from tox.tox_env.errors import Skip
++from tox.tox_env.errors import Fail, Skip
+ from tox.tox_env.python.pip.req_file import PythonDeps
+ from tox.tox_env.runner import RunToxEnv
+ 
+ from .api import Python
+ 
++if sys.version_info >= (3, 11):  # pragma: no cover (py311+)
++    import tomllib
++else:  # pragma: no cover (py311+)
++    import tomli as tomllib
++
+ if TYPE_CHECKING:
++    from pathlib import Path
++
+     from tox.config.cli.parser import Parsed
+     from tox.config.sets import CoreConfigSet, EnvConfigSet
+     from tox.tox_env.api import ToxEnvCreateArgs
+@@ -37,6 +46,12 @@ class PythonRun(Python, RunToxEnv, ABC):
+             default=PythonDeps("", root),
+             desc="Name of the python dependencies as specified by PEP-440",
+         )
++        self.conf.add_config(
++            keys="dependency_groups",
++            of_type=Set[str],
++            default=set(),
++            desc="dependency groups to install of the target package as specified by PEP-735",
++        )
+         add_skip_missing_interpreters_to_core(self.core, self.options)
+ 
+     @property
+@@ -87,11 +102,26 @@ class PythonRun(Python, RunToxEnv, ABC):
+     def _setup_env(self) -> None:
+         super()._setup_env()
+         self._install_deps()
++        self._install_dependency_groups()
+ 
+     def _install_deps(self) -> None:
+         requirements_file: PythonDeps = self.conf["deps"]
+         self._install(requirements_file, PythonRun.__name__, "deps")
+ 
++    def _install_dependency_groups(self) -> None:
++        groups: set[str] = self.conf["dependency_groups"]
++        if not groups:
++            return
++        root: Path = self.core["package_root"] if "package_root" in self.core else self.core["tox_root"]
++        pyproject_file = root / "pyproject.toml"
++        if not pyproject_file.exists():
++            msg = f"could not find {pyproject_file} to resolve dependency groups {', '.join(sorted(groups))}"
++            raise Fail(msg)
++        with pyproject_file.open("rb") as file_handler:
++            pyproject = tomllib.load(file_handler)
++        deps = dependency_groups_to_deps(pyproject.get("dependency-groups", {}), groups)
++        self._install(deps, PythonRun.__name__, "dependency-groups")
++
+     def _build_packages(self) -> list[Package]:
+         package_env = self.package_env
+         assert package_env is not None  # noqa: S101
+@@ -134,8 +164,65 @@ def add_extras_to_env(conf: EnvConfigSet) -> None:
+     )
+ 
+ 
++def dependency_groups_to_deps(groups: Mapping[str, Any], names: Iterable[str]) -> list[Requirement]:
++    """
++    Resolve PEP-735 dependency groups into a list of requirements.
++
++    :param groups: the content of the ``dependency-groups`` table
++    :param names: the dependency group names to resolve
++    :return: the requirements of the selected groups (with the included groups expanded)
++    """
++    by_name: dict[str, Any] = {}
++    for name, value in groups.items():
++        key = canonicalize_name(name)
++        if key in by_name:
++            msg = f"duplicate dependency group name {key}"
++            raise Fail(msg)
++        by_name[key] = value
++    result: list[Requirement] = []
++    done: set[str] = set()
++    for name in names:
++        _resolve_dependency_group(by_name, canonicalize_name(name), [], done, result)
++    return result
++
++
++def _resolve_dependency_group(
++    groups: Mapping[str, Any],
++    name: str,
++    path: list[str],
++    done: set[str],
++    result: list[Requirement],
++) -> None:
++    if name in path:
++        msg = f"cyclic dependency group include {' -> '.join([*path, name])}"
++        raise Fail(msg)
++    if name not in groups:
++        msg = f"dependency group {name} not found, available groups are {', '.join(sorted(groups)) or 'none'}"
++        raise Fail(msg)
++    if name in done:
++        return
++    done.add(name)
++    entries = groups[name]
++    if not isinstance(entries, list):
++        msg = f"dependency group {name} is not a list"
++        raise Fail(msg)
++    for entry in entries:
++        if isinstance(entry, str):
++            try:
++                result.append(Requirement(entry))
++            except InvalidRequirement as exc:
++                msg = f"{entry} is not a valid requirement in dependency group {name}: {exc}"
++                raise Fail(msg) from exc
++        elif isinstance(entry, dict) and set(entry) == {"include-group"} and isinstance(entry["include-group"], str):
++            _resolve_dependency_group(groups, canonicalize_name(entry["include-group"]), [*path, name], done, result)
++        else:
++            msg = f"invalid dependency group item {entry!r} in dependency group {name}"
++            raise Fail(msg)
++
++
+ __all__ = [
+     "PythonRun",
+     "add_extras_to_env",
+     "add_skip_missing_interpreters_to_core",
++    "dependency_groups_to_deps",
+ ]

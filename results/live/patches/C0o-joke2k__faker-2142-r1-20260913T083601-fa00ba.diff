@@ -1,0 +1,22 @@
+diff --git a/faker/providers/bank/nl_BE/__init__.py b/faker/providers/bank/nl_BE/__init__.py
+index 92455b9..f87c50a 100644
+--- a/faker/providers/bank/nl_BE/__init__.py
++++ b/faker/providers/bank/nl_BE/__init__.py
+@@ -63,6 +63,17 @@ class Provider(BankProvider):
+         "XXX",
+     ]
+ 
++    def bban(self) -> str:
++        """Generate a Belgian Basic Bank Account Number (BBAN).
++
++        A Belgian BBAN is composed of a 3 digit bank code, a 7 digit account
++        number, and a 2 digit national check number equal to the first 10
++        digits modulo 97 (97 is used when the remainder is 0).
++        """
++        body = self.numerify("#" * 10)
++        check = int(body) % 97 or 97
++        return f"{body}{check:02d}"
++
+     def bank(self) -> str:
+         """Generate a bank name."""
+         return self.random_element(self.banks)

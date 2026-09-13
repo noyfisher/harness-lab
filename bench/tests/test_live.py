@@ -488,3 +488,54 @@ def test_check_many_never_caches_an_inconclusive_result(tmp_path, monkeypatch):
     missing, unknown = live.split_negatives(results)
     assert missing == ["a__b-2"]
     assert unknown == ["a__b-3"]
+
+
+# --------------------------------------------------------------------------- #
+# leftover harness containers (docs/decisions.md 2026-09-13)
+# --------------------------------------------------------------------------- #
+def test_remove_launch_containers_removes_only_matching(monkeypatch):
+    calls = []
+
+    def fake_sh(cmd, timeout=None):
+        calls.append(list(cmd))
+        if cmd[:2] == ["docker", "ps"]:
+            # only the second instance has a leftover container
+            iid = cmd[-1].split("git-launch-", 1)[1].rstrip("-")
+            return subprocess.CompletedProcess(cmd, 0, stdout="deadbeef\n" if iid == "b__b-2" else "", stderr="")
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(live, "_sh", fake_sh)
+    removed = live._remove_launch_containers(["a__a-1", "b__b-2"])
+    assert removed == ["deadbeef"]
+    assert ["docker", "ps", "-aq", "--filter", "name=^git-launch-a__a-1-"] in calls
+    assert ["docker", "rm", "-f", "deadbeef"] in calls
+    assert not any(c[:3] == ["docker", "rm", "-f"] and "a__a-1" in " ".join(c) for c in calls)
+
+
+def test_remove_launch_containers_never_raises(monkeypatch):
+    def broken(cmd, timeout=None):
+        raise subprocess.TimeoutExpired(cmd, 1)
+
+    monkeypatch.setattr(live, "_sh", broken)
+    assert live._remove_launch_containers(["x__y-1"]) == []
+
+
+def test_grade_live_timeout_removes_leftover_container(graded, monkeypatch):
+    def _boom(cmd, **kwargs):
+        raise subprocess.TimeoutExpired(cmd, 5)
+
+    cleaned = []
+    monkeypatch.setattr(live.subprocess, "run", _boom)
+    monkeypatch.setattr(live, "_remove_launch_containers", lambda ids: cleaned.append(list(ids)) or [])
+    out = live.grade_live("joke2k__faker-2190", GOLD_DIFF, "r6", timeout=5)
+    assert out["infra_failure"] is True
+    assert cleaned == [["joke2k__faker-2190"]]
+
+
+def test_grade_live_success_still_sweeps_containers(graded, monkeypatch):
+    cleaned = []
+    monkeypatch.setattr(live.subprocess, "run", fake_harness(report_fixture(True)))
+    monkeypatch.setattr(live, "_remove_launch_containers", lambda ids: cleaned.append(list(ids)) or [])
+    out = live.grade_live("joke2k__faker-2190", GOLD_DIFF, "r7")
+    assert out["resolved"] is True
+    assert cleaned == [["joke2k__faker-2190"]]

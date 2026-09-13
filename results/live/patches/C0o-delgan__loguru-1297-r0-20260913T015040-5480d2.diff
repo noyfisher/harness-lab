@@ -1,0 +1,29 @@
+diff --git a/CHANGELOG.rst b/CHANGELOG.rst
+index 5adf50f..90b6d8d 100644
+--- a/CHANGELOG.rst
++++ b/CHANGELOG.rst
+@@ -5,6 +5,7 @@
+ - Allow the ``rotation`` argument of file sinks to accept a list of rotation conditions, any of which can trigger the rotation (`#1174 <https://github.com/Delgan/loguru/issues/1174>`_, thanks `@CollinHeist <https://github.com/CollinHeist>`_).
+ - Update the default log format to include the timezone offset since it produces less ambiguous logs (`#856 <https://github.com/Delgan/loguru/pull/856>`_, thanks `@tim-x-y-z <https://github.com/tim-x-y-z>`_).
+ - Add requirement for ``$TERM`` not to be ``"dumb"`` to enable colorization (`#1287 <https://github.com/Delgan/loguru/pull/1287>`_, thanks `@snosov1 <https://github.com/snosov1>`_).
++- Fix ``ValueError`` raised when the system clock is set to a date for which the platform returns an invalid UTC offset, in which case the timezone now falls back to UTC (`#1291 <https://github.com/Delgan/loguru/issues/1291>`_).
+ 
+ `0.7.3`_ (2024-12-06)
+ =====================
+diff --git a/loguru/_datetime.py b/loguru/_datetime.py
+index 52fffc3..b581a98 100644
+--- a/loguru/_datetime.py
++++ b/loguru/_datetime.py
+@@ -156,6 +156,11 @@ def aware_now():
+         seconds = offset.total_seconds()
+         zone = strftime("%Z")
+ 
+-    tzinfo = timezone(timedelta(seconds=seconds), zone)
++    try:
++        tzinfo = timezone(timedelta(seconds=seconds), zone)
++    except ValueError:
++        # The system may return an invalid UTC offset (out of the -24h / +24h range) if the local
++        # clock is set to a date it can't handle, in which case we fallback to UTC.
++        tzinfo = timezone.utc
+ 
+     return datetime.combine(now.date(), now.time().replace(tzinfo=tzinfo))

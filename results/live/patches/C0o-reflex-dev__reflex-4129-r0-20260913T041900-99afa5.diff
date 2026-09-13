@@ -1,0 +1,60 @@
+diff --git a/reflex/istate/dynamic.py b/reflex/istate/dynamic.py
+new file mode 100644
+index 0000000..6ba10cb
+--- /dev/null
++++ b/reflex/istate/dynamic.py
+@@ -0,0 +1,5 @@
++"""A module to hold state for dynamically created states.
++
++Locally-defined state classes are registered here so that they can be pickled
++by reference, since pickle cannot handle classes defined inside a function.
++"""
+diff --git a/reflex/state.py b/reflex/state.py
+index 5d1d51b..3100b42 100644
+--- a/reflex/state.py
++++ b/reflex/state.py
+@@ -60,6 +60,7 @@ import wrapt
+ from redis.asyncio import Redis
+ from redis.exceptions import ResponseError
+ 
++import reflex.istate.dynamic
+ from reflex import constants
+ from reflex.base import Base
+ from reflex.event import (
+@@ -547,6 +548,25 @@ class BaseState(Base, ABC, extra=pydantic.Extra.allow):
+         cls._substate_var_dependencies = defaultdict(set)
+         cls._init_var_dependency_dicts()
+ 
++        # Handle locally-defined states for pickling.
++        if "<locals>" in cls.__qualname__:
++            cls._handle_local_def()
++
++    @classmethod
++    def _handle_local_def(cls):
++        """Handle locally-defined states for pickling."""
++        known_names = set(dir(reflex.istate.dynamic))
++        proposed_name = cls.__name__
++        for ix in range(len(known_names)):
++            if proposed_name not in known_names:
++                break
++            proposed_name = f"{cls.__name__}_{ix}"
++        setattr(reflex.istate.dynamic, proposed_name, cls)
++        cls.__original_name__ = cls.__name__
++        cls.__original_qualname__ = cls.__qualname__
++        cls.__name__ = cls.__qualname__ = proposed_name
++        cls.__module__ = reflex.istate.dynamic.__name__
++
+     @staticmethod
+     def _copy_fn(fn: Callable) -> Callable:
+         """Copy a function. Used to copy ComputedVars and EventHandlers from mixins.
+@@ -1209,7 +1229,9 @@ class BaseState(Base, ABC, extra=pydantic.Extra.allow):
+             name not in self.vars
+             and name not in self.get_skip_vars()
+             and not name.startswith("__")
+-            and not name.startswith(f"_{type(self).__name__}__")
++            and not name.startswith(
++                f"_{getattr(type(self), '__original_name__', type(self).__name__)}__"
++            )
+         ):
+             raise SetUndefinedStateVarError(
+                 f"The state variable '{name}' has not been defined in '{type(self).__name__}'. "

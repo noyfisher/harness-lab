@@ -1,0 +1,19 @@
+diff --git a/haystack/utils/type_serialization.py b/haystack/utils/type_serialization.py
+index 8a14a2f..2595fc1 100644
+--- a/haystack/utils/type_serialization.py
++++ b/haystack/utils/type_serialization.py
+@@ -122,10 +122,12 @@ def deserialize_type(type_str: str) -> Any:
+         generic_args = tuple(deserialize_type(arg) for arg in parse_generic_args(generics_str))
+ 
+         # Reconstruct
++        # Special forms like typing.Optional only accept a single type, not a tuple of length one
++        subscript = generic_args[0] if len(generic_args) == 1 else generic_args
+         if sys.version_info >= (3, 9) or repr(main_type).startswith("typing."):
+-            return main_type[generic_args]
++            return main_type[subscript]
+         else:
+-            return type_mapping[main_type][generic_args]  # type: ignore
++            return type_mapping[main_type][subscript]  # type: ignore
+ 
+     else:
+         # Handle non-generics

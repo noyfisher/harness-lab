@@ -1,0 +1,18 @@
+diff --git a/src/pdm/cli/commands/remove.py b/src/pdm/cli/commands/remove.py
+index 8785a33..ca2e6ff 100644
+--- a/src/pdm/cli/commands/remove.py
++++ b/src/pdm/cli/commands/remove.py
+@@ -123,9 +123,12 @@ class Command(BaseCommand):
+             lock_groups = [g for g in lock_groups if g in project_groups]
+         do_lock(project, "reuse", dry_run=dry_run, tracked_names=tracked_names, hooks=hooks, groups=lock_groups)
+         if sync:
++            # Only sync the group being modified, don't implicitly pull in the other dev groups,
++            # which may not be in the lockfile.
++            is_dev = normalize_name(group) in project.pyproject.dev_dependencies
+             do_sync(
+                 project,
+-                selection=GroupSelection(project, default=False, groups=[group]),
++                selection=GroupSelection(project, default=False, dev=is_dev, groups=[group]),
+                 clean=True,
+                 no_editable=no_editable,
+                 no_self=no_self,

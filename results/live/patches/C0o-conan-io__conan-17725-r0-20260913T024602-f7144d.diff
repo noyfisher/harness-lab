@@ -1,0 +1,151 @@
+diff --git a/conan/internal/model/cpp_info.py b/conan/internal/model/cpp_info.py
+index 7967b75..4a68b89 100644
+--- a/conan/internal/model/cpp_info.py
++++ b/conan/internal/model/cpp_info.py
+@@ -100,6 +100,7 @@ class _Component:
+         self._type = None
+         self._location = None
+         self._link_location = None
++        self._package_framework = None  # The package itself is a .framework
+ 
+     def serialize(self):
+         return {
+@@ -126,7 +127,8 @@ class _Component:
+             "type": self._type,
+             "location": self._location,
+             "link_location": self._link_location,
+-            "languages": self._languages
++            "languages": self._languages,
++            "package_framework": self._package_framework
+         }
+ 
+     @staticmethod
+@@ -295,6 +297,14 @@ class _Component:
+     def location(self, value):
+         self._location = value
+ 
++    @property
++    def package_framework(self):
++        return self._package_framework
++
++    @package_framework.setter
++    def package_framework(self, value):
++        self._package_framework = value
++
+     @property
+     def link_location(self):
+         return self._link_location
+@@ -597,6 +607,18 @@ class _Component:
+         if self._type != pkg_type:
+             out.warning(f"Lib {libname} deduced as '{self._type}, but 'package_type={pkg_type}'")
+ 
++    def _auto_deduce_framework_location(self, conanfile, name):
++        framework = self._package_framework
++        dirs = list(self.frameworkdirs)
++        if conanfile.package_folder:
++            dirs.append(conanfile.package_folder)
++        for d in dirs:
++            location = os.path.join(d, f"{framework}.framework", framework)
++            if os.path.isfile(location):
++                return location.replace("\\", "/")
++        raise ConanException(f"{name}: Cannot obtain 'location' for framework '{framework}' in "
++                             f"{dirs}. You can specify 'cpp_info.location' directly.")
++
+     def deduce_locations(self, conanfile, component_name=""):
+         name = f'{conanfile} cpp_info.components["{component_name}"]' if component_name \
+             else f'{conanfile} cpp_info'
+@@ -615,6 +637,14 @@ class _Component:
+             # old school Conan application packages withoud defining an exe, not an error
+             return
+ 
++        # the package itself is a framework, the location is the binary inside the .framework
++        if self._package_framework:
++            if self._type is None:
++                self._type = PackageType(conanfile.package_type)
++            if not self._location:
++                self._location = self._auto_deduce_framework_location(conanfile, name)
++            return
++
+         # libraries
+         if len(self.libs) > 1:  # it could be 0, as the libs itself is not necessary
+             raise ConanException(f"{name} has more than 1 library in .libs: {self.libs}, "
+diff --git a/conan/tools/cmake/cmakedeps/templates/macros.py b/conan/tools/cmake/cmakedeps/templates/macros.py
+index db804b8..9e849cb 100644
+--- a/conan/tools/cmake/cmakedeps/templates/macros.py
++++ b/conan/tools/cmake/cmakedeps/templates/macros.py
+@@ -37,6 +37,8 @@ class MacrosTemplate(CMakeDepsFileTemplate):
+                    else()
+                        message(FATAL_ERROR "Framework library ${_FRAMEWORK} not found in paths: ${FRAMEWORKS_DIRS}")
+                    endif()
++                   # Do not cache, different components/configs can have different FRAMEWORKS_DIRS
++                   unset(CONAN_FRAMEWORK_${_FRAMEWORK}_FOUND CACHE)
+                endforeach()
+            endif()
+        endmacro()
+diff --git a/conan/tools/cmake/cmakedeps2/target_configuration.py b/conan/tools/cmake/cmakedeps2/target_configuration.py
+index e85df76..1631b56 100644
+--- a/conan/tools/cmake/cmakedeps2/target_configuration.py
++++ b/conan/tools/cmake/cmakedeps2/target_configuration.py
+@@ -4,7 +4,6 @@ import textwrap
+ import jinja2
+ from jinja2 import Template
+ 
+-from conan.api.output import ConanOutput
+ from conan.errors import ConanException
+ from conans.client.graph.graph import CONTEXT_BUILD, CONTEXT_HOST
+ from conan.internal.model.pkg_type import PackageType
+@@ -161,7 +160,8 @@ class TargetConfigurationTemplate2:
+         return libs
+ 
+     def _get_cmake_lib(self, info, components, pkg_folder, pkg_folder_var):
+-        if info.exe or not (info.includedirs or info.libs or info.system_libs):
++        if info.exe or not (info.includedirs or info.libs or info.system_libs or info.frameworks
++                            or info.package_framework):
+             return
+ 
+         includedirs = ";".join(self._path(i, pkg_folder, pkg_folder_var)
+@@ -182,16 +182,16 @@ class TargetConfigurationTemplate2:
+                   "cflags": " ".join(info.cflags),
+                   "sharedlinkflags": " ".join(info.sharedlinkflags),
+                   "exelinkflags": " ".join(info.exelinkflags),
+-                  "system_libs": system_libs}
++                  "system_libs": system_libs,
++                  # cpp_info.frameworks are system frameworks, like cpp_info.system_libs
++                  "frameworks": " ".join(f'"-framework {f}"' for f in info.frameworks)}
+ 
+-        if info.frameworks:
+-            ConanOutput(scope=str(self._conanfile)).warning("frameworks not supported yet in new CMakeDeps generator")
+-
+-        if info.libs:  # TODO: to change to location
+-            if len(info.libs) != 1:
++        if info.libs or info.package_framework:  # TODO: to change to location
++            if len(info.libs) > 1:
+                 raise ConanException(f"New CMakeDeps only allows 1 lib per component:\n"
+                                      f"{self._conanfile}: {info.libs}")
+-            assert info.location, "info.location missing for .libs, it should have been deduced"
++            assert info.location, "info.location missing, it should have been deduced"
++            target["framework"] = bool(info.package_framework)
+             location = self._path(info.location, pkg_folder, pkg_folder_var)
+             link_location = self._path(info.link_location, pkg_folder, pkg_folder_var) \
+                 if info.link_location else None
+@@ -345,6 +345,9 @@ class TargetConfigurationTemplate2:
+                      IMPORTED_LINK_INTERFACE_LANGUAGES_{{config}} {{lang}})
+         {% endfor %}
+         {% endif %}
++        {% if lib_info.get("framework") %}
++        set_target_properties({{lib}} PROPERTIES FRAMEWORK TRUE)
++        {% endif %}
+         {% if lib_info.get("location") %}
+         set_property(TARGET {{lib}} APPEND PROPERTY IMPORTED_CONFIGURATIONS {{config}})
+         set_target_properties({{lib}} PROPERTIES IMPORTED_LOCATION_{{config}}
+@@ -381,6 +384,10 @@ class TargetConfigurationTemplate2:
+         target_link_libraries({{lib}} INTERFACE {{lib_info["system_libs"]}})
+         {% endif %}
+ 
++        {% if lib_info.get("frameworks") %}
++        target_link_libraries({{lib}} INTERFACE {{lib_info["frameworks"]}})
++        {% endif %}
++
+         {% endfor %}
+ 
+         ################# Global variables for try compile and legacy ##############

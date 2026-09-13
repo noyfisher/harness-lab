@@ -1,0 +1,181 @@
+diff --git a/recipes/knowledge_distillation_distributed.py b/recipes/knowledge_distillation_distributed.py
+index 76dc5e3..badb171 100644
+--- a/recipes/knowledge_distillation_distributed.py
++++ b/recipes/knowledge_distillation_distributed.py
+@@ -28,7 +28,6 @@ from torchtune.modules.peft import (
+     get_adapter_state_dict,
+     get_lora_module_names,
+     get_merged_lora_ckpt,
+-    load_dora_magnitudes,
+     LoRALinear,
+     set_trainable_params,
+     validate_missing_and_unexpected_for_lora,
+@@ -477,8 +476,12 @@ class KDRecipeDistributed(FTRecipeInterface):
+                 ) and not lora_weights_state_dict:
+                     # lora may not be covered in state dict
+                     # if finetune for the 1st time
+-                    m.lora_a.to_empty(device=lora_device)
+-                    m.lora_b.to_empty(device=lora_device)
++                    if isinstance(m, DoRALinear):
++                        # DoRALinear.to_empty also handles the magnitude param
++                        m.to_empty(device=lora_device)
++                    else:
++                        m.lora_a.to_empty(device=lora_device)
++                        m.lora_b.to_empty(device=lora_device)
+                     m.initialize_parameters()
+                 # RoPE is not covered in state dict
+                 if hasattr(m, "rope_init"):
+@@ -491,13 +494,11 @@ class KDRecipeDistributed(FTRecipeInterface):
+             self._is_rank_zero,
+             cpu_offload=fsdp_cpu_offload,
+         )
+-        is_dora = False
++        # This is for any adapters that need to be initialized after base weights
++        # have been loaded (e.g. DoRA).
+         for m in model.modules():
+             if hasattr(m, "initialize_dora_magnitude"):
+-                is_dora = True
+                 m.initialize_dora_magnitude()
+-        if is_dora:
+-            load_dora_magnitudes(model)
+         validate_missing_and_unexpected_for_lora(
+             lora_attn_modules=self._lora_attn_modules,
+             apply_lora_to_mlp=self._apply_lora_to_mlp,
+diff --git a/recipes/lora_dpo_distributed.py b/recipes/lora_dpo_distributed.py
+index 993fd2a..bd01efa 100644
+--- a/recipes/lora_dpo_distributed.py
++++ b/recipes/lora_dpo_distributed.py
+@@ -27,7 +27,6 @@ from torchtune.modules.peft import (
+     get_adapter_params,
+     get_adapter_state_dict,
+     get_merged_lora_ckpt,
+-    load_dora_magnitudes,
+     LoRALinear,
+     set_trainable_params,
+     validate_missing_and_unexpected_for_lora,
+@@ -400,8 +399,12 @@ class LoRADPORecipeDistributed(FTRecipeInterface):
+                 ) and not lora_weights_state_dict:
+                     # lora may not be covered in state dict
+                     # if finetune for the 1st time
+-                    m.lora_a.to_empty(device=lora_device)
+-                    m.lora_b.to_empty(device=lora_device)
++                    if isinstance(m, DoRALinear):
++                        # DoRALinear.to_empty also handles the magnitude param
++                        m.to_empty(device=lora_device)
++                    else:
++                        m.lora_a.to_empty(device=lora_device)
++                        m.lora_b.to_empty(device=lora_device)
+                     m.initialize_parameters()
+                 # RoPE is not covered in state dict
+                 if hasattr(m, "rope_init"):
+@@ -414,13 +417,11 @@ class LoRADPORecipeDistributed(FTRecipeInterface):
+             self._is_rank_zero,
+             cpu_offload=fsdp_cpu_offload,
+         )
+-        is_dora = False
++        # This is for any adapters that need to be initialized after base weights
++        # have been loaded (e.g. DoRA).
+         for m in model.modules():
+             if hasattr(m, "initialize_dora_magnitude"):
+-                is_dora = True
+                 m.initialize_dora_magnitude()
+-        if is_dora:
+-            load_dora_magnitudes(model)
+         validate_missing_and_unexpected_for_lora(
+             lora_attn_modules=self._lora_attn_modules,
+             apply_lora_to_mlp=self._apply_lora_to_mlp,
+diff --git a/recipes/lora_finetune_distributed.py b/recipes/lora_finetune_distributed.py
+index e95fbb4..2c384c5 100644
+--- a/recipes/lora_finetune_distributed.py
++++ b/recipes/lora_finetune_distributed.py
+@@ -29,7 +29,6 @@ from torchtune.modules.peft import (
+     get_adapter_state_dict,
+     get_lora_module_names,
+     get_merged_lora_ckpt,
+-    load_dora_magnitudes,
+     LoRALinear,
+     set_trainable_params,
+     validate_missing_and_unexpected_for_lora,
+@@ -496,8 +495,12 @@ class LoRAFinetuneRecipeDistributed(FTRecipeInterface):
+                 ) and not lora_weights_state_dict:
+                     # lora may not be covered in state dict
+                     # if finetune for the 1st time
+-                    m.lora_a.to_empty(device=lora_device)
+-                    m.lora_b.to_empty(device=lora_device)
++                    if isinstance(m, DoRALinear):
++                        # DoRALinear.to_empty also handles the magnitude param
++                        m.to_empty(device=lora_device)
++                    else:
++                        m.lora_a.to_empty(device=lora_device)
++                        m.lora_b.to_empty(device=lora_device)
+                     m.initialize_parameters()
+                 # RoPE is not covered in state dict
+                 if hasattr(m, "rope_init"):
+@@ -510,13 +513,11 @@ class LoRAFinetuneRecipeDistributed(FTRecipeInterface):
+             self._is_rank_zero,
+             cpu_offload=fsdp_cpu_offload,
+         )
+-        is_dora = False
++        # This is for any adapters that need to be initialized after base weights
++        # have been loaded (e.g. DoRA).
+         for m in model.modules():
+             if hasattr(m, "initialize_dora_magnitude"):
+-                is_dora = True
+                 m.initialize_dora_magnitude()
+-        if is_dora:
+-            load_dora_magnitudes(model)
+         validate_missing_and_unexpected_for_lora(
+             lora_attn_modules=self._lora_attn_modules,
+             apply_lora_to_mlp=self._apply_lora_to_mlp,
+diff --git a/torchtune/modules/peft/dora.py b/torchtune/modules/peft/dora.py
+index 6f097da..538fb4f 100644
+--- a/torchtune/modules/peft/dora.py
++++ b/torchtune/modules/peft/dora.py
+@@ -5,7 +5,7 @@
+ # LICENSE file in the root directory of this source tree.
+ 
+ import math
+-from typing import List
++from typing import List, Optional, Union
+ 
+ import torch
+ import torch.nn.functional as F
+@@ -99,12 +99,38 @@ class DoRALinear(nn.Module, AdapterModule):
+         _lora_a_init_params(self.lora_a)
+         _lora_b_init_params(self.lora_b)
+ 
++    def to_empty(
++        self, *, device: Optional[Union[str, torch.device, int]], recurse: bool = True
++    ):
++        self.lora_a.to_empty(device=device, recurse=recurse)
++        self.lora_b.to_empty(device=device, recurse=recurse)
++        magnitude = nn.Parameter(
++            torch.empty_like(self.magnitude, device=device),
++            requires_grad=self.magnitude.requires_grad,
++        )
++        torch.utils.swap_tensors(self.magnitude, magnitude)
++        return self
++
+     @torch.no_grad()
+     def initialize_dora_magnitude(self):
+         """
+         DoRA initializes the magnitude vector such that its outputs are initially
+         identical to standard LoRA's outputs.
++
++        Raises:
++            RuntimeError: If base or LoRA parameters are still on meta device.
+         """
++        if any(
++            [
++                self.weight.is_meta,
++                self.lora_a.weight.is_meta,
++                self.lora_b.weight.is_meta,
++                self.magnitude.is_meta,
++            ]
++        ):
++            raise RuntimeError(
++                "Cannot initialize DoRA magnitude if base or LoRA parameters are still on meta device."
++            )
+         base_weight = self.weight.to(self.lora_a.weight.dtype)
+         lora_weight = self.lora_b.weight @ self.lora_a.weight
+         weight_norm = self._get_weight_norm(base_weight, lora_weight)

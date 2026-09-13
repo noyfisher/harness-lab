@@ -1,0 +1,54 @@
+diff --git a/privacyidea/lib/eventhandler/requestmangler.py b/privacyidea/lib/eventhandler/requestmangler.py
+index 9467939..85489eb 100644
+--- a/privacyidea/lib/eventhandler/requestmangler.py
++++ b/privacyidea/lib/eventhandler/requestmangler.py
+@@ -23,11 +23,12 @@ __doc__ = """This is the event handler module modifying request parameters.
+ from privacyidea.lib.eventhandler.base import BaseEventHandler
+ from privacyidea.lib.token import (get_token_types, set_validity_period_end,
+                                    set_validity_period_start)
+-from privacyidea.lib.realm import get_realms
++from privacyidea.lib.realm import get_realms, get_default_realm
+ from privacyidea.lib.token import (set_realms, remove_token, enable_token,
+                                    unassign_token, init_token, set_description,
+                                    set_count_window, add_tokeninfo,
+                                    set_failcounter, delete_tokeninfo)
++from privacyidea.lib.user import User, split_user
+ from privacyidea.lib.utils import (parse_date, is_true,
+                                    parse_time_offset_from_now)
+ from privacyidea.lib.tokenclass import DATE_FORMAT, AUTH_DATE_FORMAT
+@@ -122,6 +123,25 @@ class RequestManglerEventHandler(BaseEventHandler):
+                    }
+         return actions
+ 
++    @staticmethod
++    def _update_user(request):
++        """
++        Recreate the user object of the request from the (modified) request
++        parameters. The user object is created in the before_request handler,
++        i.e. *before* the pre-event handlers run, so it would still contain the
++        original user and realm.
++
++        :param request: The request object
++        """
++        # The /auth endpoint uses "username", the other endpoints use "user"
++        username = request.all_data.get("user") or request.all_data.get("username") or ""
++        login, realm = split_user(username) if username else ("", "")
++        if "realm" in request.all_data:
++            realm = request.all_data.get("realm") or realm
++        if login and not realm:
++            realm = get_default_realm()
++        request.User = User(login, realm, resolver=request.all_data.get("resolver") or "")
++
+     def do(self, action, options=None):
+         """
+         This method executes the defined action in the given event.
+@@ -168,5 +188,9 @@ class RequestManglerEventHandler(BaseEventHandler):
+                             except IndexError:
+                                 log.warning("The number of found tags ({0!r}) "
+                                             "do not match the required number ({1!r}).".format(m.groups(), value))
++            if parameter in ["user", "username", "realm", "resolver"]:
++                # The user in the request was changed, so we also need to
++                # update the already resolved user object of the request.
++                self._update_user(request)
+ 
+         return ret

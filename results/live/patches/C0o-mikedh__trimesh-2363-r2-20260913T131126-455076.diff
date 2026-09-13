@@ -1,0 +1,166 @@
+diff --git a/trimesh/path/exchange/svg_io.py b/trimesh/path/exchange/svg_io.py
+index cdaa99a..b329be5 100644
+--- a/trimesh/path/exchange/svg_io.py
++++ b/trimesh/path/exchange/svg_io.py
+@@ -1,6 +1,7 @@
+ import base64
+ import collections
+ import json
++import re
+ from copy import deepcopy
+ 
+ import numpy as np
+@@ -21,6 +22,122 @@ _ns = f"{{{_ns_url}}}"
+ _IDENTITY = np.eye(3)
+ _IDENTITY.flags["WRITEABLE"] = False
+ 
++# match a floating point number possibly followed by a unit
++_re_float = re.compile(r"[-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?")
++# the magic number to approximate a quarter ellipse with a cubic bezier
++_KAPPA = 4.0 * (np.sqrt(2.0) - 1.0) / 3.0
++
++
++def _svg_float(value, default=0.0):
++    """
++    Parse an SVG attribute which may include a unit into a float.
++
++    Parameters
++    ------------
++    value : None or str
++      Something like "10" or "1.5mm"
++    default : float
++      Returned if the value can't be parsed.
++
++    Returns
++    ------------
++    parsed : float
++      Value as a float.
++    """
++    if value is None:
++        return default
++    found = _re_float.match(str(value).strip())
++    if found is None:
++        return default
++    return float(found.group())
++
++
++def _shape_to_path(tag, attrib):
++    """
++    Convert one of the SVG "basic shapes" into an SVG path string.
++
++    Parameters
++    ------------
++    tag : str
++      Element tag without a namespace, i.e. `rect`
++    attrib : dict
++      Attributes of the element.
++
++    Returns
++    ------------
++    path_string : None or str
++      The shape as an SVG path string or None if it has no geometry.
++    """
++    if tag == "rect":
++        x, y = _svg_float(attrib.get("x")), _svg_float(attrib.get("y"))
++        width = _svg_float(attrib.get("width"))
++        height = _svg_float(attrib.get("height"))
++        if width <= 0.0 or height <= 0.0:
++            return None
++        # radii may be unset, "auto", or inherited from each other
++        rx, ry = attrib.get("rx"), attrib.get("ry")
++        rx = None if rx in (None, "auto") else _svg_float(rx)
++        ry = None if ry in (None, "auto") else _svg_float(ry)
++        if rx is None:
++            rx = ry
++        if ry is None:
++            ry = rx
++        if rx is None or rx <= 0.0 or ry <= 0.0:
++            # a plain un-rounded rectangle
++            return f"M{x},{y}H{x + width}V{y + height}H{x}Z"
++        # radii are clamped to half the side length
++        rx, ry = min(rx, width / 2.0), min(ry, height / 2.0)
++        return (
++            f"M{x + rx},{y}"
++            + f"H{x + width - rx}A{rx},{ry} 0 0 1 {x + width},{y + ry}"
++            + f"V{y + height - ry}A{rx},{ry} 0 0 1 {x + width - rx},{y + height}"
++            + f"H{x + rx}A{rx},{ry} 0 0 1 {x},{y + height - ry}"
++            + f"V{y + ry}A{rx},{ry} 0 0 1 {x + rx},{y}Z"
++        )
++    elif tag in ("circle", "ellipse"):
++        cx, cy = _svg_float(attrib.get("cx")), _svg_float(attrib.get("cy"))
++        if tag == "circle":
++            rx = ry = _svg_float(attrib.get("r"))
++        else:
++            rx, ry = _svg_float(attrib.get("rx")), _svg_float(attrib.get("ry"))
++        if rx <= 0.0 or ry <= 0.0:
++            return None
++        if rx == ry:
++            # a circle is exactly representable as two arc segments
++            return (
++                f"M{cx - rx},{cy}"
++                + f"A{rx},{rx} 0 1 0 {cx + rx},{cy}"
++                + f"A{rx},{rx} 0 1 0 {cx - rx},{cy}"
++            )
++        # trimesh has no elliptical arc entity so approximate
++        # each quadrant of the ellipse with a cubic bezier
++        kx, ky = rx * _KAPPA, ry * _KAPPA
++        return (
++            f"M{cx - rx},{cy}"
++            + f"C{cx - rx},{cy - ky} {cx - kx},{cy - ry} {cx},{cy - ry}"
++            + f"C{cx + kx},{cy - ry} {cx + rx},{cy - ky} {cx + rx},{cy}"
++            + f"C{cx + rx},{cy + ky} {cx + kx},{cy + ry} {cx},{cy + ry}"
++            + f"C{cx - kx},{cy + ry} {cx - rx},{cy + ky} {cx - rx},{cy}"
++        )
++    elif tag == "line":
++        x1, y1 = _svg_float(attrib.get("x1")), _svg_float(attrib.get("y1"))
++        x2, y2 = _svg_float(attrib.get("x2")), _svg_float(attrib.get("y2"))
++        return f"M{x1},{y1}L{x2},{y2}"
++    elif tag in ("polyline", "polygon"):
++        # points are delimited by any combination of commas and whitespace
++        values = [float(v) for v in _re_float.findall(attrib.get("points", ""))]
++        if len(values) < 4:
++            return None
++        points = np.array(values[: len(values) - len(values) % 2]).reshape((-1, 2))
++        result = f"M{points[0][0]},{points[0][1]}" + "".join(
++            f"L{p[0]},{p[1]}" for p in points[1:]
++        )
++        if tag == "polygon":
++            result += "Z"
++        return result
++
++    return None
++
+ 
+ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+     """
+@@ -74,9 +191,28 @@ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+         # store paths and transforms as
+         # (path string, 3x3 matrix)
+         paths = []
+-        for element in tree.iter("{*}path"):
++        for element in tree.iter(
++            "{*}path",
++            "{*}rect",
++            "{*}circle",
++            "{*}ellipse",
++            "{*}line",
++            "{*}polyline",
++            "{*}polygon",
++        ):
++            # strip the namespace off the tag
++            tag = element.tag.rsplit("}", 1)[-1]
++            if tag == "path":
++                attrib = element.attrib
++            else:
++                # convert the basic shape into a path string
++                path_string = _shape_to_path(tag, element.attrib)
++                if path_string is None:
++                    continue
++                attrib = dict(element.attrib)
++                attrib["d"] = path_string
+             # store every path element attributes and transform
+-            paths.append((element.attrib, element_transform(element)))
++            paths.append((attrib, element_transform(element)))
+ 
+         try:
+             # see if the SVG should be reproduced as a scene

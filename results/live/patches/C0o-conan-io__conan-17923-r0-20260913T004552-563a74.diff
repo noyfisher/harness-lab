@@ -1,0 +1,16 @@
+diff --git a/conan/internal/model/cpp_info.py b/conan/internal/model/cpp_info.py
+index d33d6c0..b580301 100644
+--- a/conan/internal/model/cpp_info.py
++++ b/conan/internal/model/cpp_info.py
+@@ -527,6 +527,11 @@ class _Component:
+                 if lib_found:
+                     if len(lib_found) > 1:
+                         lib_found.sort()
++                        for lib in lib_found:
++                            # Exact match has precedence, e.g., libmylib.a over libmylib_extra.a
++                            name = os.path.splitext(os.path.basename(lib))[0]
++                            if name in (libname, f"lib{libname}"):
++                                return lib.replace("\\", "/")
+                         out.warning(f"There were several matches for Lib {libname}: {lib_found}")
+                     return lib_found[0].replace("\\", "/")
+ 

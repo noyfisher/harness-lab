@@ -1,0 +1,48 @@
+diff --git a/CHANGELOG.rst b/CHANGELOG.rst
+index 5adf50f..c3c3060 100644
+--- a/CHANGELOG.rst
++++ b/CHANGELOG.rst
+@@ -5,6 +5,7 @@
+ - Allow the ``rotation`` argument of file sinks to accept a list of rotation conditions, any of which can trigger the rotation (`#1174 <https://github.com/Delgan/loguru/issues/1174>`_, thanks `@CollinHeist <https://github.com/CollinHeist>`_).
+ - Update the default log format to include the timezone offset since it produces less ambiguous logs (`#856 <https://github.com/Delgan/loguru/pull/856>`_, thanks `@tim-x-y-z <https://github.com/tim-x-y-z>`_).
+ - Add requirement for ``$TERM`` not to be ``"dumb"`` to enable colorization (`#1287 <https://github.com/Delgan/loguru/pull/1287>`_, thanks `@snosov1 <https://github.com/snosov1>`_).
++- Fix ``ValueError`` raised at import time if the system clock is set to a date beyond the year 2038 and the platform computes an invalid UTC offset in such case (`#1291 <https://github.com/Delgan/loguru/issues/1291>`_).
+ 
+ `0.7.3`_ (2024-12-06)
+ =====================
+diff --git a/loguru/_datetime.py b/loguru/_datetime.py
+index 52fffc3..3b40bbb 100644
+--- a/loguru/_datetime.py
++++ b/loguru/_datetime.py
+@@ -141,6 +141,12 @@ class datetime(datetime_):  # noqa: N801
+         return _compile_format(fmt)(self)
+ 
+ 
++def _utc_offset_seconds(timestamp):
++    utc_naive = datetime_.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=None)
++    offset = datetime_.fromtimestamp(timestamp) - utc_naive
++    return offset.total_seconds()
++
++
+ def aware_now():
+     now = datetime_.now()
+     timestamp = now.timestamp()
+@@ -151,11 +157,15 @@ def aware_now():
+         zone = local.tm_zone
+     except AttributeError:
+         # Workaround for Python 3.5.
+-        utc_naive = datetime_.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=None)
+-        offset = datetime_.fromtimestamp(timestamp) - utc_naive
+-        seconds = offset.total_seconds()
++        seconds = _utc_offset_seconds(timestamp)
+         zone = strftime("%Z")
+ 
++    if abs(seconds) >= 86400:
++        # On some platforms (notably Windows), the "tm_gmtoff" value is computed from an
++        # integer subtraction which overflows for timestamps beyond the year 2038, resulting
++        # in a nonsensical offset. In such case, compute the offset from the datetime itself.
++        seconds = _utc_offset_seconds(timestamp)
++
+     tzinfo = timezone(timedelta(seconds=seconds), zone)
+ 
+     return datetime.combine(now.date(), now.time().replace(tzinfo=tzinfo))

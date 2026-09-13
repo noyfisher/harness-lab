@@ -1,0 +1,49 @@
+diff --git a/IPython/core/inputtransformer2.py b/IPython/core/inputtransformer2.py
+index 4f9bcfe..4992b1a 100644
+--- a/IPython/core/inputtransformer2.py
++++ b/IPython/core/inputtransformer2.py
+@@ -112,16 +112,30 @@ def __call__(self, lines):
+ )
+ 
+ 
++# Matches an assignment to a (possibly dotted/subscripted) target in front of a
++# cell magic, e.g. ``res = %%timeit -o``.
++_cell_magic_assign_re = re.compile(
++    r"(?P<lhs>[a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*|\[[^\]]*\])*\s*=\s*)%%"
++)
++
++
+ def cell_magic(lines):
+-    if not lines or not lines[0].startswith('%%'):
++    if not lines:
+         return lines
+-    if re.match(r'%%\w+\?', lines[0]):
++    lhs = ''
++    if not lines[0].startswith('%%'):
++        match = _cell_magic_assign_re.match(lines[0])
++        if match is None:
++            return lines
++        lhs = match.group('lhs')
++    first_line_rest = lines[0][len(lhs):]
++    if re.match(r'%%\w+\?', first_line_rest):
+         # This case will be handled by help_end
+         return lines
+-    magic_name, _, first_line = lines[0][2:].rstrip().partition(' ')
++    magic_name, _, first_line = first_line_rest[2:].rstrip().partition(' ')
+     body = ''.join(lines[1:])
+-    return ['get_ipython().run_cell_magic(%r, %r, %r)\n'
+-            % (magic_name, first_line, body)]
++    return ['%sget_ipython().run_cell_magic(%r, %r, %r)\n'
++            % (lhs, magic_name, first_line, body)]
+ 
+ 
+ def _find_assign_op(token_line) -> Optional[int]:
+@@ -696,7 +710,7 @@ def check_complete(self, cell: str):
+         except SyntaxError:
+             return 'invalid', None
+ 
+-        if lines[0].startswith('%%'):
++        if lines[0].startswith('%%') or _cell_magic_assign_re.match(lines[0]):
+             # Special case for cell magics - completion marked by blank line
+             if lines[-1].strip():
+                 return 'incomplete', find_last_indent(lines)

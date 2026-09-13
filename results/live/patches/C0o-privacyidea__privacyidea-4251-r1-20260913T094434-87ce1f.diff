@@ -1,0 +1,18 @@
+diff --git a/privacyidea/lib/eventhandler/scripthandler.py b/privacyidea/lib/eventhandler/scripthandler.py
+index ada40e1..e00e300 100644
+--- a/privacyidea/lib/eventhandler/scripthandler.py
++++ b/privacyidea/lib/eventhandler/scripthandler.py
+@@ -84,7 +84,12 @@ class ScriptEventHandler(BaseEventHandler):
+ 
+         :return: dict with actions
+         """
+-        scripts = os.listdir(cls.script_directory)
++        try:
++            scripts = os.listdir(cls.script_directory)
++        except OSError as err:
++            log.warning("Could not read script directory {0!r}: {1!r}".format(
++                cls.script_directory, err))
++            scripts = []
+         actions = {}
+         for script in scripts:
+             actions[script] = {

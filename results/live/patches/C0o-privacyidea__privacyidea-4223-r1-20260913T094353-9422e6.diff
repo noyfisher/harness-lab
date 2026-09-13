@@ -1,0 +1,34 @@
+diff --git a/privacyidea/lib/eventhandler/requestmangler.py b/privacyidea/lib/eventhandler/requestmangler.py
+index 9467939..98fe282 100644
+--- a/privacyidea/lib/eventhandler/requestmangler.py
++++ b/privacyidea/lib/eventhandler/requestmangler.py
+@@ -23,7 +23,8 @@ __doc__ = """This is the event handler module modifying request parameters.
+ from privacyidea.lib.eventhandler.base import BaseEventHandler
+ from privacyidea.lib.token import (get_token_types, set_validity_period_end,
+                                    set_validity_period_start)
+-from privacyidea.lib.realm import get_realms
++from privacyidea.lib.realm import get_realms, get_default_realm
++from privacyidea.lib.user import User, split_user
+ from privacyidea.lib.token import (set_realms, remove_token, enable_token,
+                                    unassign_token, init_token, set_description,
+                                    set_count_window, add_tokeninfo,
+@@ -169,4 +170,19 @@ class RequestManglerEventHandler(BaseEventHandler):
+                                 log.warning("The number of found tags ({0!r}) "
+                                             "do not match the required number ({1!r}).".format(m.groups(), value))
+ 
++            if parameter in ["user", "username", "realm"]:
++                # The user or the realm of the request was modified. Thus we also need to
++                # update the user object in the request, since this is used during the request.
++                login_name = request.all_data.get("user") or request.all_data.get("username") or ""
++                login_name, realm = split_user(login_name)
++                if login_name:
++                    realm = request.all_data.get("realm") or realm or get_default_realm()
++                else:
++                    realm = request.all_data.get("realm") or realm or ""
++                try:
++                    request.User = User(login_name, realm, resolver=request.all_data.get("resolver") or "")
++                except Exception as e:
++                    request.User = User()
++                    log.warning("Failed to resolve user {0!r} in realm {1!r}: {2!s}".format(login_name, realm, e))
++
+         return ret

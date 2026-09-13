@@ -1,0 +1,20 @@
+diff --git a/src/pdm/cli/commands/remove.py b/src/pdm/cli/commands/remove.py
+index 8785a33..05e0f43 100644
+--- a/src/pdm/cli/commands/remove.py
++++ b/src/pdm/cli/commands/remove.py
+@@ -125,7 +125,14 @@ class Command(BaseCommand):
+         if sync:
+             do_sync(
+                 project,
+-                selection=GroupSelection(project, default=False, groups=[group]),
++                selection=GroupSelection(
++                    project,
++                    default=False,
++                    # Only sync the group being removed from, don't pull in all dev groups,
++                    # which may not exist in the lockfile.
++                    dev=normalize_name(group) in project.pyproject.dev_dependencies,
++                    groups=[group],
++                ),
+                 clean=True,
+                 no_editable=no_editable,
+                 no_self=no_self,

@@ -1,0 +1,172 @@
+diff --git a/trimesh/path/exchange/svg_io.py b/trimesh/path/exchange/svg_io.py
+index cdaa99a..5779c38 100644
+--- a/trimesh/path/exchange/svg_io.py
++++ b/trimesh/path/exchange/svg_io.py
+@@ -22,6 +22,136 @@ _IDENTITY = np.eye(3)
+ _IDENTITY.flags["WRITEABLE"] = False
+ 
+ 
++def _attrib_to_float(attrib, key, default=0.0):
++    """
++    Get a single attribute from an SVG element as a float,
++    ignoring any unit suffix, i.e. "10mm" -> 10.0
++
++    Parameters
++    ------------
++    attrib : dict
++      Attributes of an SVG element.
++    key : str
++      The attribute to retrieve.
++    default : float
++      Value to return if the key is missing or unparseable.
++
++    Returns
++    ------------
++    value : float
++      The value of the attribute.
++    """
++    raw = attrib.get(key)
++    if raw is None:
++        return default
++    try:
++        return float(raw)
++    except ValueError:
++        pass
++    # strip off any trailing unit, i.e. "10mm" or "50%"
++    trim = raw.strip().rstrip("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ%")
++    try:
++        return float(trim)
++    except ValueError:
++        return default
++
++
++def _shape_to_path_string(tag, attrib):
++    """
++    Convert one of the SVG basic shapes into an equivalent
++    SVG path string, i.e. the value of a `path` element's `d`.
++
++    Parameters
++    ------------
++    tag : str
++      The name of the element without a namespace,
++      i.e. `rect` or `circle`.
++    attrib : dict
++      Attributes of the SVG element.
++
++    Returns
++    ------------
++    path_string : str
++      A path string which may be empty if the
++      element has no usable geometry.
++    """
++    if tag == "rect":
++        width = _attrib_to_float(attrib, "width")
++        height = _attrib_to_float(attrib, "height")
++        if width <= 0.0 or height <= 0.0:
++            return ""
++        x = _attrib_to_float(attrib, "x")
++        y = _attrib_to_float(attrib, "y")
++        # corner radii default to each other and are clipped to half the side
++        rx = _attrib_to_float(attrib, "rx", _attrib_to_float(attrib, "ry"))
++        ry = _attrib_to_float(attrib, "ry", rx)
++        rx, ry = min(abs(rx), width / 2.0), min(abs(ry), height / 2.0)
++        if rx <= 0.0 or ry <= 0.0:
++            # a simple rectangle from four lines
++            return f"M{x},{y}H{x + width}V{y + height}H{x}Z"
++        # a rounded rectangle alternating lines and corner arcs
++        arc = f"A{rx},{ry} 0 0 1 "
++        return (
++            f"M{x + rx},{y}H{x + width - rx}{arc}{x + width},{y + ry}"
++            + f"V{y + height - ry}{arc}{x + width - rx},{y + height}"
++            + f"H{x + rx}{arc}{x},{y + height - ry}"
++            + f"V{y + ry}{arc}{x + rx},{y}Z"
++        )
++    elif tag in ("circle", "ellipse"):
++        cx = _attrib_to_float(attrib, "cx")
++        cy = _attrib_to_float(attrib, "cy")
++        if tag == "circle":
++            rx = _attrib_to_float(attrib, "r")
++            ry = rx
++        else:
++            rx = _attrib_to_float(attrib, "rx", _attrib_to_float(attrib, "ry"))
++            ry = _attrib_to_float(attrib, "ry", rx)
++        if rx <= 0.0 or ry <= 0.0:
++            return ""
++        if abs(rx - ry) < 1e-8:
++            # a circle as two arc segments which will be
++            # recombined into a single closed arc entity
++            return (
++                f"M{cx - rx},{cy}a{rx},{rx} 0 1 0 {2.0 * rx},0"
++                + f"a{rx},{rx} 0 1 0 {-2.0 * rx},0Z"
++            )
++        # an ellipse can't be represented by trimesh arcs so
++        # use the usual four cubic bezier approximation
++        k = 0.5522847498307933
++        return (
++            f"M{cx + rx},{cy}"
++            + f"C{cx + rx},{cy + k * ry} {cx + k * rx},{cy + ry} {cx},{cy + ry}"
++            + f"C{cx - k * rx},{cy + ry} {cx - rx},{cy + k * ry} {cx - rx},{cy}"
++            + f"C{cx - rx},{cy - k * ry} {cx - k * rx},{cy - ry} {cx},{cy - ry}"
++            + f"C{cx + k * rx},{cy - ry} {cx + rx},{cy - k * ry} {cx + rx},{cy}Z"
++        )
++    elif tag == "line":
++        x1 = _attrib_to_float(attrib, "x1")
++        y1 = _attrib_to_float(attrib, "y1")
++        x2 = _attrib_to_float(attrib, "x2")
++        y2 = _attrib_to_float(attrib, "y2")
++        return f"M{x1},{y1}L{x2},{y2}"
++    elif tag in ("polyline", "polygon"):
++        try:
++            values = [
++                float(i) for i in attrib.get("points", "").replace(",", " ").split()
++            ]
++        except ValueError:
++            log.debug("failed to parse points", exc_info=True)
++            return ""
++        if len(values) < 4:
++            return ""
++        # an even number of values are required
++        points = np.array(values[: (len(values) // 2) * 2]).reshape((-1, 2))
++        path_string = "M" + "L".join(f"{x},{y}" for x, y in points)
++        if tag == "polygon":
++            # polygons are implicitly closed
++            path_string += "Z"
++        return path_string
++
++    return ""
++
++
+ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+     """
+     Load an SVG file into a Path2D object.
+@@ -74,9 +204,28 @@ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+         # store paths and transforms as
+         # (path string, 3x3 matrix)
+         paths = []
+-        for element in tree.iter("{*}path"):
++        for element in tree.iter(
++            "{*}path",
++            "{*}rect",
++            "{*}circle",
++            "{*}ellipse",
++            "{*}line",
++            "{*}polyline",
++            "{*}polygon",
++        ):
++            # the tag without the XML namespace, i.e. `rect`
++            tag = element.tag.rsplit("}", 1)[-1]
++            attrib = element.attrib
++            if tag != "path":
++                # convert basic shapes into an equivalent path string
++                converted = _shape_to_path_string(tag, attrib)
++                if len(converted) == 0:
++                    continue
++                # keep the other attributes, i.e. trimesh metadata
++                attrib = dict(attrib)
++                attrib["d"] = converted
+             # store every path element attributes and transform
+-            paths.append((element.attrib, element_transform(element)))
++            paths.append((attrib, element_transform(element)))
+ 
+         try:
+             # see if the SVG should be reproduced as a scene
