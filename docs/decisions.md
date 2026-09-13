@@ -186,3 +186,8 @@
   safe. `bench/disk_guard.sh <condition> [floor GB] [interval]` sends SIGINT to the batch's
   Python process below the floor (8 GB) and exits when the batch is gone; the scheduled task
   starts it alongside the batch. Host free after cleanup: 22 GB; Docker images 261 GB.
+- [2026-09-13] **CI was red from 06:38Z on every commit; cause was float noise, not code.** The
+  site-drift step regenerates `results/site` on the Linux runner and diffs it byte for byte;
+  three Wilcoxon p-values differed from this arm64 Mac in the 17th digit (libm). The 213 tests
+  passed throughout. Fix: the site serialiser rounds floats to 10 decimals (test added) and the
+  site was regenerated. Lesson kept: a byte-for-byte gate needs platform-stable output.
