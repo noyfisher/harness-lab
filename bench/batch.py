@@ -162,7 +162,8 @@ def make_ns(a, condition: str, instance: str, repeat: int, sha: str) -> argparse
     return argparse.Namespace(
         instance=instance, condition=condition, harness_sha=sha, repeat=repeat,
         model=a.model, effort=a.effort, budget_usd=a.budget_usd, timeout=a.timeout,
-        dry=a.dry, bench=getattr(a, "bench", "verified"), **FIXED_JOB_FIELDS,
+        dry=a.dry, bench=getattr(a, "bench", "verified"),
+        **{**FIXED_JOB_FIELDS, "grade_timeout": getattr(a, "grade_timeout", None) or FIXED_JOB_FIELDS["grade_timeout"]},
     )
 
 
@@ -345,6 +346,8 @@ def print_summary(batch_id: str, cfg: dict, res: dict) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(prog="python -m bench.batch", description=__doc__.split("\n")[0])
+    ap.add_argument("--grade-timeout", type=int, default=None,
+                    help="grader wall clock per run in seconds (default 1800; use 3600 for SWE-bench-Live under emulation)")
     ap.add_argument("--bench", choices=["verified", "live"], default="verified",
                     help="verified (Epoch arm64, results/runs.jsonl) or live (SWE-bench-Live amd64, results/live/runs.jsonl)")
     ap.add_argument("--condition", required=True, help="C0, C1, C2.., or cand-<sha7>")
@@ -425,7 +428,7 @@ def main(argv=None) -> int:
         "batch_id": batch_id, "bench": getattr(a, "bench", "verified"), "condition": a.condition, "harness_sha": sha,
         "harness_sha_ref": a.harness_sha, "split": split_label, "subset": subset_used,
         "k": a.k, "instances": instances, "model": a.model, "effort": a.effort,
-        "budget_usd": a.budget_usd, "timeout": a.timeout, "grade_timeout": FIXED_JOB_FIELDS["grade_timeout"],
+        "budget_usd": a.budget_usd, "timeout": a.timeout, "grade_timeout": getattr(a, "grade_timeout", None) or FIXED_JOB_FIELDS["grade_timeout"],
         "network": FIXED_JOB_FIELDS["network"], "workers": a.workers, "dry": a.dry,
         "max_infra_errors": a.max_infra_errors, "pause_minutes": a.pause_minutes,
         "max_pause_hours": a.max_pause_hours, "results_file": str(results_path),

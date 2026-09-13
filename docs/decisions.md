@@ -141,3 +141,9 @@
   backend, which also idle-restarted the VM. `~/.docker/config.json` had no stored logins, so
   `credsStore` was set to empty (backup at `config.json.bak-20260912`); public pulls need no
   helper. Restore the original file to re-enable Docker Hub login through Desktop.
+- [2026-09-13] **Live grading timeout raised to 3600 s (infra parameter, post-freeze).** The
+  first C0o Live runs on conan hit the grader's 1800 s cap: its ~4,000-test suite under emulation
+  with two concurrent gradings exceeds 30 minutes. This is the grader's wall clock, not the
+  agent's budget or timeout, so it does not touch the pre-registered comparison; affected runs
+  were `error` (uncounted) and are re-run by resume. Container-start timeout raised 300 -> 900 s
+  for the same contention. `bench.batch` now takes `--grade-timeout`.

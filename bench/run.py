@@ -234,7 +234,7 @@ def run_one(a) -> dict:
         env_args = ["-e", f"{cred_name}={cred_value}", "-e", "CLAUDE_CONFIG_DIR=/harness", "-e", "IS_SANDBOX=1",
                     "-e", "DISABLE_AUTOUPDATER=1", "-e", "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1", "-e", "HOME=/root"]
         r = sh(["docker", "run", "-d", "--name", cname, "--platform", platform, "--network", a.network,
-                "-v", f"{cfg_src}:/harness-src:ro", "-v", f"{task_dir}:/task", *env_args, image, "sleep", "infinity"], timeout=300)
+                "-v", f"{cfg_src}:/harness-src:ro", "-v", f"{task_dir}:/task", *env_args, image, "sleep", "infinity"], timeout=900)  # emulation + concurrent grading can make container start slow
         if r.returncode != 0:
             raise RuntimeError(f"docker run failed: {r.stderr.strip()}")
 
