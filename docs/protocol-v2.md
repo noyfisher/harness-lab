@@ -83,3 +83,11 @@ the timeout is not comparable with v1. The lite split leans toward repositories 
 could build automatically. Forty instances give a confidence interval about 24 points wide.
 Trajectories are archived so a leaderboard submission is possible; none is planned unless the
 subset is expanded to the full lite split.
+
+## Spike log
+
+Usage before (2026-09-13T06:37Z): session 1%, weekly_all 52%, weekly_scoped 31%; both weekly
+caps reset 2026-09-14T21:00Z. Weekly cap estimate from the two preceding readings: ~$1,100 to
+$1,200 list-equivalent per point-hundred (~$10 to $12 per point). Benchmark runs already this
+week: C1o and C0o on Verified, ~$254. Decision under the compute rule: spike and the C0o batch
+before the reset; the C1o batch after it.
