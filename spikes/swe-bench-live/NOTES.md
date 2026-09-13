@@ -56,3 +56,12 @@ Haystack rerun: resolved=True (F2P 5 pass / 0 fail; P2P 0 fail). Gold tally: 5 o
   JSON in, `report.json` out), or reimplement `test_cmds` + `log_parser` with swebench 5.x
   parsers. Delegation is the faithful choice for leaderboard comparability.
 - Agent image: `FROM starryzhang/...` + node + pinned CLI, built with `--platform linux/amd64`.
+
+## Gold validation of the 60 candidates (waves of 10, 2026-09-13)
+
+Wave 1: 5 of 10 resolved. All four aws-cloudformation/cfn-lint candidates fail on PASS_TO_PASS
+integration tests (`test_quickstart_templates*`) that appear to depend on external template
+downloads, plus two unit tests; their FAIL_TO_PASS tests pass. One checkov candidate produced no
+report. Both are environment-bound and excluded by the gold filter. A second-stage candidate list
+(`bench/live-candidates-extra.json`, 32 ids = seeded 90-draw minus the 60-draw) is prepared in
+case the keep rate stays near one half.
