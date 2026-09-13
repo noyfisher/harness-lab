@@ -39,8 +39,8 @@
       "k_min": 3,
       "k_max": 3,
       "n_counted_runs": 120,
-      "pass_rate": 0.7833333333333334,
-      "ci_lo": 0.6583333333333333,
+      "pass_rate": 0.7833333333,
+      "ci_lo": 0.6583333333,
       "ci_hi": 0.9,
       "ci_alpha": 0.05,
       "class_counts": {
@@ -253,13 +253,13 @@
       "cost": {
         "condition": "C0",
         "n_counted": 120,
-        "total_cost_usd": 94.24385264999997,
+        "total_cost_usd": 94.24385265,
         "n_cost_reported": 120,
-        "mean_cost_per_run": 0.7853654387499998,
+        "mean_cost_per_run": 0.7853654387,
         "resolved_count": 94,
-        "cost_per_solve": 1.0025941771276592,
-        "mean_wall_s": 211.7366666666666,
-        "mean_num_turns": 35.30833333333333,
+        "cost_per_solve": 1.0025941771,
+        "mean_wall_s": 211.7366666667,
+        "mean_num_turns": 35.3083333333,
         "infra_failures": {},
         "infra_failures_total": 0
       }
@@ -484,13 +484,13 @@
       "cost": {
         "condition": "C0o",
         "n_counted": 120,
-        "total_cost_usd": 64.90913535000003,
+        "total_cost_usd": 64.90913535,
         "n_cost_reported": 120,
-        "mean_cost_per_run": 0.5409094612500003,
+        "mean_cost_per_run": 0.5409094613,
         "resolved_count": 105,
-        "cost_per_solve": 0.6181822414285717,
-        "mean_wall_s": 206.8616666666668,
-        "mean_num_turns": 24.708333333333332,
+        "cost_per_solve": 0.6181822414,
+        "mean_wall_s": 206.8616666667,
+        "mean_num_turns": 24.7083333333,
         "infra_failures": {},
         "infra_failures_total": 0
       }
@@ -502,7 +502,7 @@
       "k_max": 3,
       "n_counted_runs": 120,
       "pass_rate": 0.75,
-      "ci_lo": 0.6247916666666667,
+      "ci_lo": 0.6247916667,
       "ci_hi": 0.875,
       "ci_alpha": 0.05,
       "class_counts": {
@@ -715,13 +715,13 @@
       "cost": {
         "condition": "C1",
         "n_counted": 120,
-        "total_cost_usd": 156.07826339999997,
+        "total_cost_usd": 156.0782634,
         "n_cost_reported": 120,
-        "mean_cost_per_run": 1.3006521949999998,
+        "mean_cost_per_run": 1.300652195,
         "resolved_count": 90,
-        "cost_per_solve": 1.7342029266666663,
-        "mean_wall_s": 367.0066666666669,
-        "mean_num_turns": 34.11666666666667,
+        "cost_per_solve": 1.7342029267,
+        "mean_wall_s": 367.0066666667,
+        "mean_num_turns": 34.1166666667,
         "infra_failures": {},
         "infra_failures_total": 0
       }
@@ -733,7 +733,7 @@
       "k_max": 3,
       "n_counted_runs": 120,
       "pass_rate": 0.9,
-      "ci_lo": 0.8083333333333332,
+      "ci_lo": 0.8083333333,
       "ci_hi": 0.975,
       "ci_alpha": 0.05,
       "class_counts": {
@@ -946,13 +946,13 @@
       "cost": {
         "condition": "C1o",
         "n_counted": 120,
-        "total_cost_usd": 188.58694020000004,
+        "total_cost_usd": 188.5869402,
         "n_cost_reported": 120,
-        "mean_cost_per_run": 1.5715578350000003,
+        "mean_cost_per_run": 1.571557835,
         "resolved_count": 108,
-        "cost_per_solve": 1.7461753722222226,
-        "mean_wall_s": 532.3166666666668,
-        "mean_num_turns": 20.691666666666666,
+        "cost_per_solve": 1.7461753722,
+        "mean_wall_s": 532.3166666667,
+        "mean_num_turns": 20.6916666667,
         "infra_failures": {},
         "infra_failures_total": 0
       }
@@ -964,8 +964,8 @@
       "k_max": 1,
       "n_counted_runs": 24,
       "pass_rate": 0.75,
-      "ci_lo": 0.5833333333333334,
-      "ci_hi": 0.9166666666666666,
+      "ci_lo": 0.5833333333,
+      "ci_hi": 0.9166666667,
       "ci_alpha": 0.05,
       "class_counts": {
         "solid_pass": 18,
@@ -1102,8 +1102,8 @@
         "mean_cost_per_run": 1.259699325,
         "resolved_count": 18,
         "cost_per_solve": 1.6795991,
-        "mean_wall_s": 393.97499999999997,
-        "mean_num_turns": 33.791666666666664,
+        "mean_wall_s": 393.975,
+        "mean_num_turns": 33.7916666667,
         "infra_failures": {},
         "infra_failures_total": 0
       }
@@ -1114,7 +1114,7 @@
       "k_min": 1,
       "k_max": 1,
       "n_counted_runs": 24,
-      "pass_rate": 0.7083333333333334,
+      "pass_rate": 0.7083333333,
       "ci_lo": 0.5,
       "ci_hi": 0.875,
       "ci_alpha": 0.05,
@@ -1250,11 +1250,11 @@
         "n_counted": 24,
         "total_cost_usd": 33.15380655,
         "n_cost_reported": 24,
-        "mean_cost_per_run": 1.38140860625,
+        "mean_cost_per_run": 1.3814086062,
         "resolved_count": 17,
-        "cost_per_solve": 1.9502239147058822,
+        "cost_per_solve": 1.9502239147,
         "mean_wall_s": 416.3,
-        "mean_num_turns": 32.416666666666664,
+        "mean_num_turns": 32.4166666667,
         "infra_failures": {},
         "infra_failures_total": 0
       }
@@ -1265,8 +1265,8 @@
       "k_min": 1,
       "k_max": 1,
       "n_counted_runs": 18,
-      "pass_rate": 0.8333333333333334,
-      "ci_lo": 0.6666666666666666,
+      "pass_rate": 0.8333333333,
+      "ci_lo": 0.6666666667,
       "ci_hi": 1.0,
       "ci_alpha": 0.05,
       "class_counts": {
@@ -1369,13 +1369,13 @@
       "cost": {
         "condition": "cand-4c62dca",
         "n_counted": 18,
-        "total_cost_usd": 22.859085599999997,
+        "total_cost_usd": 22.8590856,
         "n_cost_reported": 18,
         "mean_cost_per_run": 1.2699492,
         "resolved_count": 15,
-        "cost_per_solve": 1.5239390399999997,
-        "mean_wall_s": 425.8388888888889,
-        "mean_num_turns": 31.555555555555557,
+        "cost_per_solve": 1.52393904,
+        "mean_wall_s": 425.8388888889,
+        "mean_num_turns": 31.5555555556,
         "infra_failures": {
           "paused": 6
         },
@@ -1388,9 +1388,9 @@
       "k_min": 3,
       "k_max": 3,
       "n_counted_runs": 120,
-      "pass_rate": 0.7666666666666666,
-      "ci_lo": 0.6416666666666666,
-      "ci_hi": 0.8833333333333332,
+      "pass_rate": 0.7666666667,
+      "ci_lo": 0.6416666667,
+      "ci_hi": 0.8833333333,
       "ci_alpha": 0.05,
       "class_counts": {
         "solid_pass": 29,
@@ -1602,13 +1602,13 @@
       "cost": {
         "condition": "cand-5777b17",
         "n_counted": 120,
-        "total_cost_usd": 205.42012709999995,
+        "total_cost_usd": 205.4201271,
         "n_cost_reported": 120,
-        "mean_cost_per_run": 1.7118343924999995,
+        "mean_cost_per_run": 1.7118343925,
         "resolved_count": 92,
-        "cost_per_solve": 2.23282746847826,
-        "mean_wall_s": 531.8033333333337,
-        "mean_num_turns": 27.116666666666667,
+        "cost_per_solve": 2.2328274685,
+        "mean_wall_s": 531.8033333333,
+        "mean_num_turns": 27.1166666667,
         "infra_failures": {},
         "infra_failures_total": 0
       }
@@ -1619,7 +1619,7 @@
       "k_min": 1,
       "k_max": 1,
       "n_counted_runs": 24,
-      "pass_rate": 0.7083333333333334,
+      "pass_rate": 0.7083333333,
       "ci_lo": 0.5,
       "ci_hi": 0.875,
       "ci_alpha": 0.05,
@@ -1753,12 +1753,12 @@
       "cost": {
         "condition": "cand-6e9817c",
         "n_counted": 24,
-        "total_cost_usd": 31.794614399999997,
+        "total_cost_usd": 31.7946144,
         "n_cost_reported": 24,
         "mean_cost_per_run": 1.3247756,
         "resolved_count": 17,
-        "cost_per_solve": 1.8702714352941174,
-        "mean_wall_s": 426.6166666666666,
+        "cost_per_solve": 1.8702714353,
+        "mean_wall_s": 426.6166666667,
         "mean_num_turns": 29.0,
         "infra_failures": {},
         "infra_failures_total": 0
@@ -1770,9 +1770,9 @@
       "k_min": 1,
       "k_max": 1,
       "n_counted_runs": 21,
-      "pass_rate": 0.7142857142857143,
-      "ci_lo": 0.5238095238095238,
-      "ci_hi": 0.9047619047619048,
+      "pass_rate": 0.7142857143,
+      "ci_lo": 0.5238095238,
+      "ci_hi": 0.9047619048,
       "ci_alpha": 0.05,
       "class_counts": {
         "solid_pass": 15,
@@ -1889,13 +1889,13 @@
       "cost": {
         "condition": "cand-b64eadc",
         "n_counted": 21,
-        "total_cost_usd": 27.786768450000004,
+        "total_cost_usd": 27.78676845,
         "n_cost_reported": 21,
-        "mean_cost_per_run": 1.3231794500000003,
+        "mean_cost_per_run": 1.32317945,
         "resolved_count": 15,
-        "cost_per_solve": 1.8524512300000002,
-        "mean_wall_s": 662.5238095238095,
-        "mean_num_turns": 345.3333333333333,
+        "cost_per_solve": 1.85245123,
+        "mean_wall_s": 662.5238095238,
+        "mean_num_turns": 345.3333333333,
         "infra_failures": {
           "paused": 3
         },
@@ -1909,8 +1909,8 @@
       "k_max": 1,
       "n_counted_runs": 24,
       "pass_rate": 0.75,
-      "ci_lo": 0.5833333333333334,
-      "ci_hi": 0.9166666666666666,
+      "ci_lo": 0.5833333333,
+      "ci_hi": 0.9166666667,
       "ci_alpha": 0.05,
       "class_counts": {
         "solid_pass": 18,
@@ -2042,13 +2042,13 @@
       "cost": {
         "condition": "cand-c57396f",
         "n_counted": 24,
-        "total_cost_usd": 26.673014399999996,
+        "total_cost_usd": 26.6730144,
         "n_cost_reported": 24,
         "mean_cost_per_run": 1.1113756,
         "resolved_count": 18,
-        "cost_per_solve": 1.4818341333333331,
-        "mean_wall_s": 379.4166666666667,
-        "mean_num_turns": 36.041666666666664,
+        "cost_per_solve": 1.4818341333,
+        "mean_wall_s": 379.4166666667,
+        "mean_num_turns": 36.0416666667,
         "infra_failures": {},
         "infra_failures_total": 0
       }
@@ -2799,7 +2799,7 @@
       },
       "wilcoxon": {
         "statistic": 2.0,
-        "p_value": 0.06836531288935434,
+        "p_value": 0.0683653129,
         "zero_method": "wilcox",
         "n_nonzero": 6,
         "note": ""
@@ -3523,7 +3523,7 @@
       },
       "wilcoxon": {
         "statistic": 3.0,
-        "p_value": 0.031032519500144923,
+        "p_value": 0.0310325195,
         "zero_method": "wilcox",
         "n_nonzero": 8,
         "note": ""
@@ -4247,7 +4247,7 @@
       },
       "wilcoxon": {
         "statistic": 3.0,
-        "p_value": 0.018255860587459264,
+        "p_value": 0.0182558606,
         "zero_method": "wilcox",
         "n_nonzero": 9,
         "note": ""
@@ -4919,7 +4919,7 @@
       },
       "wilcoxon": {
         "statistic": 0.0,
-        "p_value": 0.31731050786291415,
+        "p_value": 0.3173105079,
         "zero_method": "wilcox",
         "n_nonzero": 1,
         "note": ""
@@ -5291,7 +5291,7 @@
       },
       "wilcoxon": {
         "statistic": 0.0,
-        "p_value": 0.31731050786291415,
+        "p_value": 0.3173105079,
         "zero_method": "wilcox",
         "n_nonzero": 1,
         "note": ""

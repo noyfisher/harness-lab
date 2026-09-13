@@ -484,3 +484,11 @@ def test_cli_reports_a_missing_runs_file(tmp_path, capsys):
     )
     assert rc == 2
     assert "no such runs file" in capsys.readouterr().err
+
+
+def test_json_safe_rounds_platform_noise():
+    """Last-digit libm differences (Linux CI vs arm64 Mac) must not change the site."""
+    from bench.site import _json_safe
+    assert _json_safe(0.06836531288935432) == _json_safe(0.06836531288935434)
+    assert _json_safe({"p": [0.031032519500144917]}) == {"p": [0.0310325195]}
+    assert _json_safe(float("nan")) is None

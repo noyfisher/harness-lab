@@ -116,10 +116,17 @@ def _num(value: float) -> str:
     return "0.00" if out == "-0.00" else out
 
 
+# Floats are rounded before serialisation so the committed site is byte-identical
+# across platforms: scipy's p-values differ in the 17th digit between the Linux CI
+# runner and an arm64 Mac (libm), and CI diffs the regenerated site byte for byte.
+_FLOAT_PLACES = 10
+
+
 def _json_safe(obj: Any) -> Any:
-    """Non-finite floats become null; numpy scalars become python scalars."""
+    """Non-finite floats become null; numpy scalars become python scalars;
+    finite floats are rounded to ``_FLOAT_PLACES`` decimals (platform-stable)."""
     if isinstance(obj, float):
-        return obj if math.isfinite(obj) else None
+        return round(obj, _FLOAT_PLACES) if math.isfinite(obj) else None
     if isinstance(obj, dict):
         return {k: _json_safe(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
