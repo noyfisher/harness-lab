@@ -224,7 +224,7 @@ def run_one(a) -> dict:
     (task_dir / "problem.md").write_text(task["problem_statement"])  # the ONLY task data that enters
     (task_dir / "prompt.md").write_text(prompt)
     cname = "hl.run." + re.sub(r"[^A-Za-z0-9_.-]", "_", run_id)[:70]
-    trace_path = TRACES / f"{run_id}.jsonl.gz"
+    trace_path = traces_dir / f"{run_id}.jsonl.gz"
     result_event = None
     stderr_tail = ""
     rc = -1

@@ -147,3 +147,7 @@
   agent's budget or timeout, so it does not touch the pre-registered comparison; affected runs
   were `error` (uncounted) and are re-run by resume. Container-start timeout raised 300 -> 900 s
   for the same contention. `bench.batch` now takes `--grade-timeout`.
+- [2026-09-13] **Live traces before this fix landed in `results/traces/` (the Verified directory)**
+  because one path in `run.py` still used the Verified constant; manifests record the real path,
+  so nothing is lost. Fixed for subsequent runs; the C0o Live runs graded before the fix keep their
+  recorded paths.
