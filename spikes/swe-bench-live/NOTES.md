@@ -65,3 +65,8 @@ downloads, plus two unit tests; their FAIL_TO_PASS tests pass. One checkov candi
 report. Both are environment-bound and excluded by the gold filter. A second-stage candidate list
 (`bench/live-candidates-extra.json`, 32 ids = seeded 90-draw minus the 60-draw) is prepared in
 case the keep rate stays near one half.
+
+Final: 46 of 60 candidates resolve (77%), six waves of ten, 242 minutes, host free never below
+243 GB thanks to per-wave cleanup. Failures by repo: aws-cloudformation 0/4, matplotlib 0/3,
+keras 0/2, and singletons in checkov, flexget, smolagents, kedro, qtile. The second-stage list
+was not needed. `bench/live-gold-results.json` is the exclusion record.
