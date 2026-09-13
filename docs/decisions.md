@@ -191,3 +191,10 @@
   three Wilcoxon p-values differed from this arm64 Mac in the 17th digit (libm). The 213 tests
   passed throughout. Fix: the site serialiser rounds floats to 10 decimals (test added) and the
   site was regenerated. Lesson kept: a byte-for-byte gate needs platform-stable output.
+- [2026-09-13] **C1o Live batch started 23:01Z, ahead of the planned Monday reset.** Owner's
+  call on the strength of remaining weekly usage headroom (the deferral to after the reset was
+  usage management, not protocol; conditions and parameters are exactly those frozen in
+  `docs/protocol-v2.md`). Batch id `live-C1o`, harness tag `harness-c1o`, two workers, disk
+  guard armed at 8 GB, host free 27 GB at start. The one-time launch task for Monday is
+  disabled so it cannot start a second copy. The owner's day-trader scheduled tasks stay paused
+  through Monday so the batch has the usage bucket to itself.
