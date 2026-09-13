@@ -97,3 +97,7 @@ Spike results (2026-09-13, `results/live/spike-runs.jsonl`, not counted): beewar
 resolved under both conditions; deepset-ai__haystack-8525 unresolved under both (0 of 2 hidden
 tests). C0o: $0.87 and $1.00, wall 419 s and 563 s. C1o: $1.25 and $1.94, wall 480 s and 842 s.
 Projection: C0o batch ~$115 and ~8 h at 2 workers; C1o batch ~$190 and ~11 h. Spike total $5.06.
+Usage after the spike (2026-09-13T07:06Z): session 9% (+8 points for ~$24 list-equivalent
+including the orchestration session), weekly_all 54% (+2), weekly_scoped 33% (+2). Consistent
+with ~$12 per weekly point; the C0o batch (~$115) is projected to end the week near 64%, leaving
+the owner headroom until the reset. The C1o batch is scheduled for 2026-09-14T21:10Z.
