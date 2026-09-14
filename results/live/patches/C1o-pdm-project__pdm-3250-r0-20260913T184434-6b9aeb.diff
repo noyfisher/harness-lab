@@ -1,0 +1,67 @@
+diff --git a/news/3249.bug.md b/news/3249.bug.md
+new file mode 100644
+index 0000000..ffd9ccf
+--- /dev/null
++++ b/news/3249.bug.md
+@@ -0,0 +1 @@
++Normalize user-supplied dependency-group names (`-G/--group`, `--without`) before comparing them against project groups, so underscore/case variants match correctly.
+diff --git a/src/pdm/cli/filters.py b/src/pdm/cli/filters.py
+index b8e6f21..934d9df 100644
+--- a/src/pdm/cli/filters.py
++++ b/src/pdm/cli/filters.py
+@@ -5,6 +5,7 @@ from functools import cached_property
+ from typing import TYPE_CHECKING
+ 
+ from pdm.exceptions import PdmUsageError
++from pdm.utils import normalize_name
+ 
+ if TYPE_CHECKING:
+     from typing import Iterator, Sequence
+@@ -24,11 +25,44 @@ class GroupSelection:
+         excluded_groups: Sequence[str] = (),
+     ):
+         self.project = project
+-        self.groups = groups
+-        self.group = group
++        self._groups = groups
++        self._group = group
+         self.default = default
+         self.dev = dev
+-        self.excluded_groups = excluded_groups
++        self._excluded_groups = excluded_groups
++
++    @cached_property
++    def _group_lookup(self) -> dict[str, str]:
++        """Map normalized group names to the project's actual group names.
++
++        Computed lazily (rather than in ``__init__``) because the pyproject
++        can be mutated between constructing a ``GroupSelection`` and reading
++        it (e.g. ``pdm add``).
++        """
++        return {normalize_name(g): g for g in self.project.iter_groups()}
++
++    def _resolve_group(self, name: str) -> str:
++        """Resolve a user-supplied group name to the project's actual group name.
++
++        ``:all`` and other ``:xxx`` markers are left untouched. Names that
++        don't match any project group are returned unchanged so the existing
++        "Ignoring non-existing groups" handling still applies.
++        """
++        if name.startswith(":"):
++            return name
++        return self._group_lookup.get(normalize_name(name), name)
++
++    @property
++    def groups(self) -> list[str]:
++        return [self._resolve_group(g) for g in self._groups]
++
++    @property
++    def group(self) -> str | None:
++        return self._resolve_group(self._group) if self._group else self._group
++
++    @property
++    def excluded_groups(self) -> list[str]:
++        return [self._resolve_group(g) for g in self._excluded_groups]
+ 
+     @classmethod
+     def from_options(cls, project: Project, options: argparse.Namespace) -> GroupSelection:

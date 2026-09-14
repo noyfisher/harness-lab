@@ -1,0 +1,33 @@
+diff --git a/haystack/utils/type_serialization.py b/haystack/utils/type_serialization.py
+index 8a14a2f..14ca412 100644
+--- a/haystack/utils/type_serialization.py
++++ b/haystack/utils/type_serialization.py
+@@ -122,10 +122,13 @@ def deserialize_type(type_str: str) -> Any:
+         generic_args = tuple(deserialize_type(arg) for arg in parse_generic_args(generics_str))
+ 
+         # Reconstruct
++        # Single-argument generics (e.g. typing.Optional) must be subscripted with the
++        # bare argument rather than a 1-tuple, otherwise typing raises a TypeError.
++        reconstructed_args = generic_args[0] if len(generic_args) == 1 else generic_args
+         if sys.version_info >= (3, 9) or repr(main_type).startswith("typing."):
+-            return main_type[generic_args]
++            return main_type[reconstructed_args]
+         else:
+-            return type_mapping[main_type][generic_args]  # type: ignore
++            return type_mapping[main_type][reconstructed_args]  # type: ignore
+ 
+     else:
+         # Handle non-generics
+diff --git a/releasenotes/notes/fix-deserialize-type-single-arg-generics-7e2b2466487134d9.yaml b/releasenotes/notes/fix-deserialize-type-single-arg-generics-7e2b2466487134d9.yaml
+new file mode 100644
+index 0000000..788eaaa
+--- /dev/null
++++ b/releasenotes/notes/fix-deserialize-type-single-arg-generics-7e2b2466487134d9.yaml
+@@ -0,0 +1,7 @@
++---
++fixes:
++  - |
++    Fixed `deserialize_type` raising a `TypeError` when deserializing generics that accept a
++    single type argument, such as `typing.Optional`. This previously broke `Pipeline.loads`
++    for pipelines containing components (e.g. `BranchJoiner`) configured with an `Optional`
++    type.

@@ -1,0 +1,41 @@
+diff --git a/fastf1/core.py b/fastf1/core.py
+index 0f364cc..077d242 100644
+--- a/fastf1/core.py
++++ b/fastf1/core.py
+@@ -2223,8 +2223,21 @@ class Session:
+ 
+         # F1 and Ergast data
+         else:
+-            missing_drivers = list(set(driver_info_ergast['DriverNumber'])
+-                                   .difference(driver_info_f1['DriverNumber']))
++            # for practice sessions, Ergast only provides the race-weekend
++            # entry list, not the session-specific one, so it must not be
++            # used to add drivers that are missing from the F1 API data
++            is_race_or_quali = (
++                self.name
++                in self._RACE_LIKE_SESSIONS + self._QUALI_LIKE_SESSIONS
++            )
++
++            if is_race_or_quali:
++                missing_drivers = list(
++                    set(driver_info_ergast['DriverNumber'])
++                    .difference(driver_info_f1['DriverNumber'])
++                )
++            else:
++                missing_drivers = list()
+             # drivers are missing if DNSed (did not start)
+             # in that case, pull more information from Ergast for these drivers
+ 
+@@ -2232,8 +2245,10 @@ class Session:
+                 = list(set(driver_info_ergast.columns).difference(info_cols))
+ 
+             self._results = SessionResults(
+-                driver_info_f1.join(driver_info_ergast.loc[:, join_cols],
+-                                    how='outer'),
++                driver_info_f1.join(
++                    driver_info_ergast.loc[:, join_cols],
++                    how='outer' if is_race_or_quali else 'left'
++                ),
+                 _force_default_cols=True
+             )
+ 

@@ -1,0 +1,36 @@
+diff --git a/trimesh/path/arc.py b/trimesh/path/arc.py
+index 5ac765e..90f9798 100644
+--- a/trimesh/path/arc.py
++++ b/trimesh/path/arc.py
+@@ -203,6 +203,14 @@ def discretize_arc(points, close=False, scale=1.0):
+             )
+             log.warning("Failed arc points: %s", str(points))
+             raise ValueError("Arc endpoints diverging!")
++    if not close:
++        # snap the endpoints to the exact input control points
++        # so the discretized arc matches its own source geometry
++        discrete[0] = points[0]
++        discrete[-1] = points[-1]
++    else:
++        # a closed arc should have exactly matching endpoints
++        discrete[-1] = discrete[0]
+     discrete = discrete[:, : (3 - is_2D)]
+ 
+     return discrete
+diff --git a/trimesh/path/entities.py b/trimesh/path/entities.py
+index 6a25437..7920d64 100644
+--- a/trimesh/path/entities.py
++++ b/trimesh/path/entities.py
+@@ -629,10 +629,10 @@ class Arc(Entity):
+             # we don't need the angular span as
+             # it's indicated as a closed circle
+             fit = self.center(vertices, return_normal=False, return_angle=False)
+-            return np.pi * fit.radius * 4
++            return np.pi * fit.radius * 2
+         # get the angular span of the circular arc
+         fit = self.center(vertices, return_normal=False, return_angle=True)
+-        return fit.span * fit.radius * 2
++        return fit.span * fit.radius
+ 
+     def discrete(self, vertices, scale=1.0):
+         """

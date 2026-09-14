@@ -17,3 +17,6 @@ jobs:
               python -m bench.site --runs results/runs.jsonl --out /tmp/site && diff -r /tmp/site results/site
             fi
           fi
+          if [ -f results/live/runs.jsonl ] && [ -f results/live/site/index.html ]; then
+            python -m bench.site --runs results/live/runs.jsonl --out /tmp/live-site && diff -r /tmp/live-site results/live/site
+          fi

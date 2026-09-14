@@ -1,0 +1,37 @@
+diff --git a/loguru/_datetime.py b/loguru/_datetime.py
+index 52fffc3..839f136 100644
+--- a/loguru/_datetime.py
++++ b/loguru/_datetime.py
+@@ -141,6 +141,12 @@ class datetime(datetime_):  # noqa: N801
+         return _compile_format(fmt)(self)
+ 
+ 
++def _get_utcoffset_seconds(timestamp):
++    utc_naive = datetime_.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=None)
++    offset = datetime_.fromtimestamp(timestamp) - utc_naive
++    return offset.total_seconds()
++
++
+ def aware_now():
+     now = datetime_.now()
+     timestamp = now.timestamp()
+@@ -151,11 +157,16 @@ def aware_now():
+         zone = local.tm_zone
+     except AttributeError:
+         # Workaround for Python 3.5.
+-        utc_naive = datetime_.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=None)
+-        offset = datetime_.fromtimestamp(timestamp) - utc_naive
+-        seconds = offset.total_seconds()
++        seconds = _get_utcoffset_seconds(timestamp)
+         zone = strftime("%Z")
+ 
++    if not -86400 < seconds < 86400:
++        # Workaround for a bug on Windows where a clock set far enough in the future
++        # (past year 2038) makes the 32-bit "tm_gmtoff" overflow and return garbage.
++        seconds = _get_utcoffset_seconds(timestamp)
++        if not -86400 < seconds < 86400:
++            seconds = 0
++
+     tzinfo = timezone(timedelta(seconds=seconds), zone)
+ 
+     return datetime.combine(now.date(), now.time().replace(tzinfo=tzinfo))

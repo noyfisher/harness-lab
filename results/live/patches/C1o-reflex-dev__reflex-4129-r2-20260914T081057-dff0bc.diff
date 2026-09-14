@@ -1,0 +1,51 @@
+diff --git a/reflex/state.py b/reflex/state.py
+index 5d1d51b..6c86c41 100644
+--- a/reflex/state.py
++++ b/reflex/state.py
+@@ -10,6 +10,7 @@ import functools
+ import inspect
+ import os
+ import pickle
++import sys
+ import uuid
+ from abc import ABC, abstractmethod
+ from collections import defaultdict
+@@ -405,6 +406,27 @@ class BaseState(Base, ABC, extra=pydantic.Extra.allow):
+                 "Please rename the module."
+             )
+ 
++    @classmethod
++    def _handle_local_def(cls):
++        """Save a reference to a locally-defined state class in its own module.
++
++        Pickle resolves a class as `getattr(sys.modules[__module__], __qualname__)`,
++        which fails for classes defined inside a function, since their
++        `__qualname__` contains "<locals>". Exposing the class as a top-level
++        attribute of its defining module under a non-local name makes it
++        resolvable again.
++        """
++        module = sys.modules.get(cls.__module__)
++        if module is None:
++            return
++        name = cls.__name__
++        suffix = 0
++        while getattr(module, name, cls) is not cls:
++            suffix += 1
++            name = f"{cls.__name__}_{suffix}"
++        setattr(module, name, cls)
++        cls.__qualname__ = name
++
+     @classmethod
+     def __init_subclass__(cls, mixin: bool = False, **kwargs):
+         """Do some magic for the subclass initialization.
+@@ -547,6 +569,10 @@ class BaseState(Base, ABC, extra=pydantic.Extra.allow):
+         cls._substate_var_dependencies = defaultdict(set)
+         cls._init_var_dependency_dicts()
+ 
++        # Handle locally-defined states for pickling.
++        if "<locals>" in cls.__qualname__:
++            cls._handle_local_def()
++
+     @staticmethod
+     def _copy_fn(fn: Callable) -> Callable:
+         """Copy a function. Used to copy ComputedVars and EventHandlers from mixins.

@@ -1,0 +1,140 @@
+diff --git a/trimesh/path/exchange/svg_io.py b/trimesh/path/exchange/svg_io.py
+index cdaa99a..34a9426 100644
+--- a/trimesh/path/exchange/svg_io.py
++++ b/trimesh/path/exchange/svg_io.py
+@@ -1,6 +1,7 @@
+ import base64
+ import collections
+ import json
++import re
+ from copy import deepcopy
+ 
+ import numpy as np
+@@ -21,6 +22,98 @@ _ns = f"{{{_ns_url}}}"
+ _IDENTITY = np.eye(3)
+ _IDENTITY.flags["WRITEABLE"] = False
+ 
++# local (namespace-stripped) tag names we can turn into paths
++_shape_tags = {"path", "rect", "circle", "ellipse", "line", "polyline", "polygon"}
++
++# matches a single SVG number, e.g. `-1`, `0-5`, `1.5e-3`
++_num_re = re.compile(r"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?")
++
++
++def _shape_to_path_string(tag, attrib):
++    """
++    Convert an SVG basic-shape element's attributes into an
++    equivalent SVG path `d` string so it can be run through the
++    same `_svg_path_convert` pipeline as a `<path>` element.
++
++    Parameters
++    ------------
++    tag : str
++      Local tag name, e.g. 'rect', 'circle', etc.
++    attrib : dict
++      Element attributes.
++
++    Returns
++    ------------
++    d : str or None
++      Equivalent path string, or None if the shape is
++      degenerate (zero size) and should be skipped.
++    """
++
++    def num(key, default=0.0):
++        # missing attributes default to 0 per the SVG spec
++        try:
++            return float(attrib.get(key, default))
++        except (TypeError, ValueError):
++            log.debug(f"unparseable SVG attribute `{key}`={attrib.get(key)!r}")
++            return default
++
++    if tag == "line":
++        return f"M {num('x1')},{num('y1')} L {num('x2')},{num('y2')}"
++    elif tag in ("polyline", "polygon"):
++        values = [float(v) for v in _num_re.findall(attrib.get("points", ""))]
++        if len(values) < 4:
++            return None
++        points = zip(values[0::2], values[1::2])
++        d = "M " + " L ".join(f"{x},{y}" for x, y in points)
++        return d + " Z" if tag == "polygon" else d
++    elif tag == "rect":
++        x, y, width, height = num("x"), num("y"), num("width"), num("height")
++        if width <= 0 or height <= 0:
++            return None
++        # unparseable or negative rx/ry are "unset" per the SVG spec
++        rx, ry = num("rx", None), num("ry", None)
++        rx = None if rx is not None and rx < 0 else rx
++        ry = None if ry is not None and ry < 0 else ry
++        if rx is not None or ry is not None:
++            rx = rx if rx is not None else ry
++            ry = ry if ry is not None else rx
++            rx = min(rx, width / 2.0)
++            ry = min(ry, height / 2.0)
++        if rx and ry and rx > 0 and ry > 0:
++            return (
++                f"M {x + rx},{y} "
++                + f"H {x + width - rx} "
++                + f"A {rx},{ry} 0 0 1 {x + width},{y + ry} "
++                + f"V {y + height - ry} "
++                + f"A {rx},{ry} 0 0 1 {x + width - rx},{y + height} "
++                + f"H {x + rx} "
++                + f"A {rx},{ry} 0 0 1 {x},{y + height - ry} "
++                + f"V {y + ry} "
++                + f"A {rx},{ry} 0 0 1 {x + rx},{y} Z"
++            )
++        return f"M {x},{y} h {width} v {height} h {-width} Z"
++    elif tag == "circle":
++        cx, cy, r = num("cx"), num("cy"), num("r")
++        if r <= 0:
++            return None
++        return f"M {cx - r},{cy} a{r},{r},0,1,0,{2 * r},0 a{r},{r},0,1,0,{-2 * r},0 Z"
++    elif tag == "ellipse":
++        cx, cy, rx, ry = num("cx"), num("cy"), num("rx"), num("ry")
++        if rx <= 0 or ry <= 0:
++            return None
++        if np.isclose(rx, ry):
++            # a circle can be represented exactly as two arcs, since
++            # trimesh's `Arc` entity is reconstructed by fitting a
++            # circle through three sampled points on the curve
++            return f"M {cx - rx},{cy} a{rx},{rx},0,1,0,{2 * rx},0 a{rx},{rx},0,1,0,{-2 * rx},0 Z"
++        # a true (non-circular) ellipse can't be represented by
++        # trimesh's `Arc` entity, which only fits circular arcs, so
++        # approximate it as a closed polyline instead
++        theta = np.linspace(0, 2 * np.pi, 64, endpoint=False)
++        xy = np.column_stack((cx + rx * np.cos(theta), cy + ry * np.sin(theta)))
++        return "M " + " L ".join(f"{x},{y}" for x, y in xy) + " Z"
++    return None
++
+ 
+ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+     """
+@@ -74,9 +167,25 @@ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+         # store paths and transforms as
+         # (path string, 3x3 matrix)
+         paths = []
+-        for element in tree.iter("{*}path"):
+-            # store every path element attributes and transform
+-            paths.append((element.attrib, element_transform(element)))
++        for element in tree.iter():
++            # skip comments, processing instructions, etc
++            if not isinstance(element.tag, str):
++                continue
++            tag = etree.QName(element).localname
++            if tag not in _shape_tags:
++                continue
++            if tag == "path":
++                # store every path element attributes and transform
++                paths.append((element.attrib, element_transform(element)))
++            else:
++                # convert basic shapes into an equivalent path string
++                d = _shape_to_path_string(tag, element.attrib)
++                if d is None:
++                    # degenerate shape, e.g. zero radius or size
++                    continue
++                attrib = dict(element.attrib)
++                attrib["d"] = d
++                paths.append((attrib, element_transform(element)))
+ 
+         try:
+             # see if the SVG should be reproduced as a scene

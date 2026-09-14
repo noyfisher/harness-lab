@@ -198,3 +198,11 @@
   guard armed at 8 GB, host free 27 GB at start. The one-time launch task for Monday is
   disabled so it cannot start a second copy. The owner's day-trader scheduled tasks stay paused
   through Monday so the batch has the usage bucket to itself.
+- [2026-09-14] **C1o Live batch complete (16:12Z); protocol v2 answered.** 120 counted runs, 2 of
+  them at the $4 cap (counted as failures per protocol), 0 infrastructure errors, $260.95 at list
+  price. C1o 0.508 [0.367, 0.650], 18/6/16, $4.28 per solve, 1028 s mean wall. Paired C0o -> C1o
+  on all 40: 0 flips up, 0 regressions, Wilcoxon p = 0.414, sign p = 1.0, one discordant majority
+  pair favouring C0o. Same conclusion as Verified at both tiers. `results/live/report.md`,
+  `results/live/v2-stats.json`, site `results/live/site/` (published under `/live/`); writeup
+  section 3c; README block. Wall-time comparison carries the leaked-container confound from
+  2026-09-13 and is labelled as such. CI now regenerates and diffs the Live site too.

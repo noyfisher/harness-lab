@@ -1,0 +1,41 @@
+diff --git a/conan/internal/model/cpp_info.py b/conan/internal/model/cpp_info.py
+index d33d6c0..0d4fd09 100644
+--- a/conan/internal/model/cpp_info.py
++++ b/conan/internal/model/cpp_info.py
+@@ -514,7 +514,7 @@ class _Component:
+                         ret.add(full_path)
+             return list(ret)
+ 
+-        def _find_matching(dirs, pattern):
++        def _find_matching(dirs, pattern, exts=None):
+             for d in dirs:
+                 if not os.path.exists(d):
+                     continue
+@@ -526,6 +526,13 @@ class _Component:
+                     lib_found = _lib_match_by_regex(d, pattern)
+                 if lib_found:
+                     if len(lib_found) > 1:
++                        if exts:
++                            exact_names = {f"{libname}{e}" for e in exts} | \
++                                          {f"lib{libname}{e}" for e in exts}
++                            exact_matches = [f for f in lib_found
++                                              if os.path.basename(f) in exact_names]
++                            if len(exact_matches) == 1:
++                                return exact_matches[0].replace("\\", "/")
+                         lib_found.sort()
+                         out.warning(f"There were several matches for Lib {libname}: {lib_found}")
+                     return lib_found[0].replace("\\", "/")
+@@ -554,10 +561,10 @@ class _Component:
+             regex_static = re.compile(rf"(?:lib)?{lib_sanitized}(?:[._-].+)?\.(?:a|lib)")
+             regex_shared = re.compile(rf"(?:lib)?{lib_sanitized}(?:[._-].+)?\.(?:so|dylib)")
+             regex_dll = re.compile(rf".*(?:{lib_sanitized}|{component_sanitized}).*\.dll")
+-            static_location = _find_matching(libdirs, regex_static)
+-            shared_location = _find_matching(libdirs, regex_shared)
++            static_location = _find_matching(libdirs, regex_static, exts=(".a", ".lib"))
++            shared_location = _find_matching(libdirs, regex_shared, exts=(".so", ".dylib"))
+             if static_location or not shared_location:
+-                dll_location = _find_matching(bindirs, regex_dll)
++                dll_location = _find_matching(bindirs, regex_dll, exts=(".dll",))
+ 
+         if static_location:
+             if shared_location:

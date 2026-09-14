@@ -1,0 +1,46 @@
+diff --git a/haystack/utils/type_serialization.py b/haystack/utils/type_serialization.py
+index 8a14a2f..d558b89 100644
+--- a/haystack/utils/type_serialization.py
++++ b/haystack/utils/type_serialization.py
+@@ -120,12 +120,15 @@ def deserialize_type(type_str: str) -> Any:
+ 
+         main_type = deserialize_type(main_type_str)
+         generic_args = tuple(deserialize_type(arg) for arg in parse_generic_args(generics_str))
++        # typing.Optional (and other generics that only accept a single type, e.g. Optional[str])
++        # requires the single argument itself rather than a 1-tuple containing it.
++        subscript_args = generic_args[0] if len(generic_args) == 1 else generic_args
+ 
+         # Reconstruct
+         if sys.version_info >= (3, 9) or repr(main_type).startswith("typing."):
+-            return main_type[generic_args]
++            return main_type[subscript_args]
+         else:
+-            return type_mapping[main_type][generic_args]  # type: ignore
++            return type_mapping[main_type][subscript_args]  # type: ignore
+ 
+     else:
+         # Handle non-generics
+@@ -133,6 +136,9 @@ def deserialize_type(type_str: str) -> Any:
+         module_name = ".".join(parts[:-1]) or "builtins"
+         type_name = parts[-1]
+ 
++        if type_name == "NoneType":
++            return type(None)
++
+         module = sys.modules.get(module_name)
+         if not module:
+             try:
+diff --git a/releasenotes/notes/fix-deserialize-optional-type-223b5423e31e4950.yaml b/releasenotes/notes/fix-deserialize-optional-type-223b5423e31e4950.yaml
+new file mode 100644
+index 0000000..492ef88
+--- /dev/null
++++ b/releasenotes/notes/fix-deserialize-optional-type-223b5423e31e4950.yaml
+@@ -0,0 +1,8 @@
++---
++fixes:
++  - |
++    Fix `deserialize_type` so that types like `typing.Optional[str]` can be deserialized again.
++    Previously, deserializing a single-argument generic such as `Optional[str]` raised a `TypeError`
++    because the argument was passed as a 1-tuple instead of the bare type, and `Optional[Union[int, str]]`
++    (which serializes with a `NoneType` argument) raised a `DeserializationError`. This fixes
++    deserialization of components like `BranchJoiner` when initialized with an `Optional` type.

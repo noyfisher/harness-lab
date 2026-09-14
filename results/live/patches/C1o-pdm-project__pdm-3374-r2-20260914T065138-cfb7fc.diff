@@ -1,0 +1,56 @@
+diff --git a/src/pdm/models/auth.py b/src/pdm/models/auth.py
+index 843eedb..8ba906e 100644
+--- a/src/pdm/models/auth.py
++++ b/src/pdm/models/auth.py
+@@ -67,18 +67,28 @@ class Keyring:
+     def __init__(self) -> None:
+         self.provider = get_keyring_provider()
+         self.enabled = self.provider is not None
++        self._auth_info_cache: dict[tuple[str, str | None], tuple[str, str] | None] = {}
++        self._cache_provider = self.provider
+ 
+     def get_auth_info(self, url: str, username: str | None) -> tuple[str, str] | None:
+         """Return the password for the given url and username.
+         The username can be None.
+         """
++        if self._cache_provider is not self.provider:
++            self._auth_info_cache.clear()
++            self._cache_provider = self.provider
++        cache_key = (url, username)
++        if cache_key in self._auth_info_cache:
++            return self._auth_info_cache[cache_key]
+         if self.provider is None or not self.enabled:
+             return None
+         try:
+-            return self.provider.get_auth_info(url, username)
++            result = self.provider.get_auth_info(url, username)
+         except Exception:
+             self.enabled = False
+             return None
++        self._auth_info_cache[cache_key] = result
++        return result
+ 
+     def save_auth_info(self, url: str, username: str, password: str) -> bool:
+         """Set the password for the given url and username.
+@@ -92,6 +102,8 @@ class Keyring:
+         except Exception:
+             self.enabled = False
+             return False
++        finally:
++            self._invalidate_cache(url)
+ 
+     def delete_auth_info(self, url: str, username: str) -> bool:
+         """Delete the password for the given url and username.
+@@ -105,6 +117,12 @@ class Keyring:
+         except Exception:
+             self.enabled = False
+             return False
++        finally:
++            self._invalidate_cache(url)
++
++    def _invalidate_cache(self, url: str) -> None:
++        for key in [key for key in self._auth_info_cache if key[0] == url]:
++            del self._auth_info_cache[key]
+ 
+ 
+ keyring = Keyring()

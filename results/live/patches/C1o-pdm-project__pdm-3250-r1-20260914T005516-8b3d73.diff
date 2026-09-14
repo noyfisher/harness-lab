@@ -1,0 +1,113 @@
+diff --git a/news/3243.bug.md b/news/3243.bug.md
+new file mode 100644
+index 0000000..be6061c
+--- /dev/null
++++ b/news/3243.bug.md
+@@ -0,0 +1 @@
++Normalize dependency-group names before matching them against `-G`/`--group` CLI selections so unnormalized group names (e.g. `a_b`) are recognized per PEP 735.
+diff --git a/src/pdm/cli/filters.py b/src/pdm/cli/filters.py
+index b8e6f21..265a3b8 100644
+--- a/src/pdm/cli/filters.py
++++ b/src/pdm/cli/filters.py
+@@ -5,6 +5,7 @@ from functools import cached_property
+ from typing import TYPE_CHECKING
+ 
+ from pdm.exceptions import PdmUsageError
++from pdm.utils import normalize_name
+ 
+ if TYPE_CHECKING:
+     from typing import Iterator, Sequence
+@@ -46,11 +47,24 @@ class GroupSelection:
+ 
+     def one(self) -> str:
+         if self.group:
+-            return self.group
++            return self._fold_group_name(self.group)
+         if len(self.groups) == 1:
+-            return self.groups[0]
++            return self._fold_group_name(self.groups[0])
+         return "dev" if self.dev else "default"
+ 
++    def _fold_group_name(self, name: str) -> str:
++        """Fold a raw group name to its normalized spelling if it refers to an
++        existing dev-dependencies group, leaving known groups (``default``,
++        optional-dependencies keys, ``:all``) and unknown names untouched."""
++        project = self.project
++        optional_groups = set(project.pyproject.metadata.get("optional-dependencies", {}))
++        dev_groups = set(project.pyproject.dev_dependencies)
++        known_groups = optional_groups | dev_groups | {"default", ":all"}
++        if name in known_groups:
++            return name
++        normalized = normalize_name(name)
++        return normalized if normalized in dev_groups else name
++
+     @property
+     def is_unset(self) -> bool:
+         return self.default and self.dev is None and not self.groups
+@@ -80,7 +94,8 @@ class GroupSelection:
+         project = self.project
+         optional_groups = set(project.pyproject.metadata.get("optional-dependencies", {}))
+         dev_groups = set(project.pyproject.dev_dependencies)
+-        groups_set = set(groups)
++        groups_set = {self._fold_group_name(g) for g in groups}
++        excluded_groups = {self._fold_group_name(g) for g in self.excluded_groups}
+         if groups_set & dev_groups:
+             if not dev:
+                 raise PdmUsageError("--prod is not allowed with dev groups and should be left")
+@@ -91,7 +106,7 @@ class GroupSelection:
+             groups_set.update(optional_groups)
+         if default:
+             groups_set.add("default")
+-        groups_set -= set(self.excluded_groups)
++        groups_set -= excluded_groups
+ 
+         invalid_groups = groups_set - set(project.iter_groups())
+         if invalid_groups:
+diff --git a/src/pdm/project/core.py b/src/pdm/project/core.py
+index 870d82e..fd94cb1 100644
+--- a/src/pdm/project/core.py
++++ b/src/pdm/project/core.py
+@@ -403,6 +403,10 @@ class Project:
+         group = group or "default"
+         optional_dependencies = metadata.get("optional-dependencies", {})
+         dev_dependencies = self.pyproject.dev_dependencies
++        if group not in optional_dependencies and group not in dev_dependencies:
++            normalized_group = normalize_name(group)
++            if normalized_group in dev_dependencies:
++                group = normalized_group
+         in_metadata = group == "default" or group in optional_dependencies
+         referred_groups: dict[str, set[str]] = {}
+         project_name = normalize_name(self.name) if self.name else None
+@@ -637,6 +641,14 @@ class Project:
+         def update_dev_dependencies(deps: list[str]) -> None:
+             from tomlkit.container import OutOfOrderTableProxy
+ 
++            # `group` may be the normalized spelling of a group whose raw key in the
++            # TOML document isn't normalized (e.g. `a_b` vs. `a-b`). Resolve it to that
++            # raw key so we update the existing group instead of creating a duplicate.
++            raw_group = group
++            for key in list(self.pyproject.dependency_groups) + list(settings.get("dev-dependencies", {})):
++                if normalize_name(key) == normalize_name(group):
++                    raw_group = key
++                    break
+             dependency_groups: list[str | dict[str, str]] = []
+             dev_dependencies: list[str] = []
+             for dep in deps:
+@@ -645,13 +657,13 @@ class Project:
+                     continue
+                 dependency_groups.append(dep)
+             if dependency_groups:
+-                self.pyproject.dependency_groups[group] = dependency_groups
++                self.pyproject.dependency_groups[raw_group] = dependency_groups
+             else:
+-                self.pyproject.dependency_groups.pop(group, None)
++                self.pyproject.dependency_groups.pop(raw_group, None)
+             if dev_dependencies:
+-                settings.setdefault("dev-dependencies", {})[group] = dev_dependencies
++                settings.setdefault("dev-dependencies", {})[raw_group] = dev_dependencies
+             else:
+-                settings.setdefault("dev-dependencies", {}).pop(group, None)
++                settings.setdefault("dev-dependencies", {}).pop(raw_group, None)
+             if isinstance(self.pyproject._data["tool"], OutOfOrderTableProxy):
+                 # In case of a separate table, we have to remove and re-add it to make the write correct.
+                 # This may change the order of tables in the TOML file, but it's the best we can do.

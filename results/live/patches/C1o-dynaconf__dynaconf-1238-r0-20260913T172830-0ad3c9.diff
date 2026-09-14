@@ -1,0 +1,36 @@
+diff --git a/dynaconf/base.py b/dynaconf/base.py
+index 759cf42..12717af 100644
+--- a/dynaconf/base.py
++++ b/dynaconf/base.py
+@@ -1469,15 +1469,19 @@ class Settings:
+         merge=False,
+         merge_unique=False,
+         internal=False,
++        raw_dict=False,
+     ):
+         """Given the `obj` populate it using self.store items.
+ 
+         :param obj: An object to be populated, a class instance.
+         :param keys: A list of keys to be included.
+         :param ignore: A list of keys to be excluded.
++        :param raw_dict: If True, values are taken from `self.to_dict()`
++            so dict/list values are plain dict/list instead of boxed.
+         """
+         merge = merge or self.get("MERGE_ENABLED_FOR_DYNACONF")
+         keys = keys or self.keys()
++        raw_data = self.to_dict(internal=internal) if raw_dict else None
+         for key in keys:
+             if not internal:
+                 if key in UPPER_DEFAULT_SETTINGS:
+@@ -1485,7 +1489,10 @@ class Settings:
+             key = upperfy(key)
+             if ignore and key in ignore:
+                 continue
+-            value = self.get(key, empty)
++            if raw_dict and key in raw_data:
++                value = raw_data[key]
++            else:
++                value = self.get(key, empty)
+ 
+             if isinstance(value, (list, dict)):
+                 if isinstance(value, dict):

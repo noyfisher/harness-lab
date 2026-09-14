@@ -1,0 +1,67 @@
+diff --git a/IPython/core/inputtransformer2.py b/IPython/core/inputtransformer2.py
+index 4f9bcfe..f586aa8 100644
+--- a/IPython/core/inputtransformer2.py
++++ b/IPython/core/inputtransformer2.py
+@@ -112,16 +112,48 @@ def __call__(self, lines):
+ )
+ 
+ 
++# Matches a simple `name = ` prefix (no dotted/subscript targets, no chained
++# assignment) immediately followed by `%%`, e.g. the `elapsed = ` in
++# `elapsed = %%timeit`. Mirrors the single-target limitation of MagicAssign
++# below ("We don't try to support multiple special assignment").
++_cell_magic_assign_re = re.compile(r'^(?P<target>[A-Za-z_]\w*)[ \t]*=[ \t]*(?=%%)')
++
++
++def _cell_magic_target_and_rest(line):
++    """Check whether `line` starts a cell magic, optionally prefixed by a
++    simple ``name = `` assignment target.
++
++    Returns ``(target, rest)`` where ``rest`` is the part of the line
++    starting at ``%%`` and ``target`` is the assignment target name, or
++    ``None`` if the target is not present. Returns ``None`` (not a tuple) if
++    `line` is not a cell magic line at all.
++    """
++    m = _cell_magic_assign_re.match(line)
++    if m:
++        target, rest = m.group('target'), line[m.end():]
++    else:
++        target, rest = None, line
++    if not rest.startswith('%%'):
++        return None
++    return target, rest
++
++
+ def cell_magic(lines):
+-    if not lines or not lines[0].startswith('%%'):
++    if not lines:
++        return lines
++    parsed = _cell_magic_target_and_rest(lines[0])
++    if parsed is None:
+         return lines
+-    if re.match(r'%%\w+\?', lines[0]):
++    target, first = parsed
++    if re.match(r'%%\w+\?', first):
+         # This case will be handled by help_end
+         return lines
+-    magic_name, _, first_line = lines[0][2:].rstrip().partition(' ')
++    magic_name, _, first_line = first[2:].rstrip().partition(' ')
+     body = ''.join(lines[1:])
+-    return ['get_ipython().run_cell_magic(%r, %r, %r)\n'
+-            % (magic_name, first_line, body)]
++    call = 'get_ipython().run_cell_magic(%r, %r, %r)\n' % (magic_name, first_line, body)
++    if target:
++        return ['%s = %s' % (target, call)]
++    return [call]
+ 
+ 
+ def _find_assign_op(token_line) -> Optional[int]:
+@@ -696,7 +728,7 @@ def check_complete(self, cell: str):
+         except SyntaxError:
+             return 'invalid', None
+ 
+-        if lines[0].startswith('%%'):
++        if _cell_magic_target_and_rest(lines[0]) is not None:
+             # Special case for cell magics - completion marked by blank line
+             if lines[-1].strip():
+                 return 'incomplete', find_last_indent(lines)

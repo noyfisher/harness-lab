@@ -1,0 +1,61 @@
+diff --git a/news/3357.bugfix.md b/news/3357.bugfix.md
+new file mode 100644
+index 0000000..5a07019
+--- /dev/null
++++ b/news/3357.bugfix.md
+@@ -0,0 +1 @@
++Cache keyring lookups per `(url, username)` so PDM queries the keyring only once per repository instead of on every access.
+diff --git a/src/pdm/models/auth.py b/src/pdm/models/auth.py
+index 843eedb..2f8a34f 100644
+--- a/src/pdm/models/auth.py
++++ b/src/pdm/models/auth.py
+@@ -67,6 +67,8 @@ class Keyring:
+     def __init__(self) -> None:
+         self.provider = get_keyring_provider()
+         self.enabled = self.provider is not None
++        self._cache: dict[tuple[str, str | None], tuple[str, str] | None] = {}
++        self._cache_provider = self.provider
+ 
+     def get_auth_info(self, url: str, username: str | None) -> tuple[str, str] | None:
+         """Return the password for the given url and username.
+@@ -74,11 +76,23 @@ class Keyring:
+         """
+         if self.provider is None or not self.enabled:
+             return None
++        if self.provider is not self._cache_provider:
++            self._cache.clear()
++            self._cache_provider = self.provider
++        key = (url, username)
++        if key in self._cache:
++            return self._cache[key]
+         try:
+-            return self.provider.get_auth_info(url, username)
++            result = self.provider.get_auth_info(url, username)
+         except Exception:
+             self.enabled = False
+             return None
++        self._cache[key] = result
++        return result
++
++    def _invalidate_cache(self, url: str) -> None:
++        for key in [key for key in self._cache if key[0] == url]:
++            del self._cache[key]
+ 
+     def save_auth_info(self, url: str, username: str, password: str) -> bool:
+         """Set the password for the given url and username.
+@@ -88,6 +102,7 @@ class Keyring:
+             return False
+         try:
+             self.provider.save_auth_info(url, username, password)
++            self._invalidate_cache(url)
+             return True
+         except Exception:
+             self.enabled = False
+@@ -101,6 +116,7 @@ class Keyring:
+             return False
+         try:
+             self.provider.delete_auth_info(url, username)
++            self._invalidate_cache(url)
+             return True
+         except Exception:
+             self.enabled = False

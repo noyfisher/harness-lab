@@ -1,0 +1,51 @@
+diff --git a/news/3396.bugfix.md b/news/3396.bugfix.md
+new file mode 100644
+index 0000000..4153a51
+--- /dev/null
++++ b/news/3396.bugfix.md
+@@ -0,0 +1 @@
++Don't remove the group metadata of packages belonging to a dependency group via `include-group` when running `pdm update`.
+diff --git a/src/pdm/project/core.py b/src/pdm/project/core.py
+index 0c5b6fd..5cfa07d 100644
+--- a/src/pdm/project/core.py
++++ b/src/pdm/project/core.py
+@@ -136,6 +136,18 @@ def _resolve_dependency_group(
+     return realized_group, referred_groups
+ 
+ 
++def _iter_included_groups(
++    dependency_groups: dict[str, list[Any]], group: str, past_groups: tuple[str, ...] = ()
++) -> Iterable[str]:
++    for item in dependency_groups.get(group, []):
++        if isinstance(item, dict) and tuple(item.keys()) == ("include-group",):
++            included = normalize_name(next(iter(item.values())))
++            if included in past_groups or included == group:
++                continue
++            yield included
++            yield from _iter_included_groups(dependency_groups, included, (*past_groups, group))
++
++
+ class Project:
+     """Core project class.
+ 
+@@ -454,7 +466,19 @@ class Project:
+ 
+     @property
+     def all_dependencies(self) -> dict[str, Sequence[Requirement]]:
+-        return {group: self.get_dependencies(group, resolve_include=False) for group in self.iter_groups()}
++        result = {group: self.get_dependencies(group, resolve_include=False) for group in self.iter_groups()}
++        # `include-group` items are not expanded above, so the requirements of an included group
++        # must inherit the name of the group including them, otherwise the group metadata would be
++        # lost when the result is fed to the locking process.
++        normalized = {normalize_name(group): deps for group, deps in result.items()}
++        dev_dependencies = self.pyproject.dev_dependencies
++        for group in result:
++            group_name = normalize_name(group)
++            for included in _iter_included_groups(dev_dependencies, group_name):
++                for req in normalized.get(included, ()):
++                    if group_name not in req.groups:
++                        req.groups.append(group_name)
++        return result
+ 
+     @property
+     def default_source(self) -> RepositoryConfig:

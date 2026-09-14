@@ -1,0 +1,180 @@
+diff --git a/docs/changelog/3408.feature.rst b/docs/changelog/3408.feature.rst
+new file mode 100644
+index 0000000..57276dc
+--- /dev/null
++++ b/docs/changelog/3408.feature.rst
+@@ -0,0 +1,3 @@
++Add support for `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups via the new ``dependency_groups``
++configuration key, which resolves and installs the requested groups from the ``[dependency-groups]`` table in
++``pyproject.toml``
+diff --git a/docs/config.rst b/docs/config.rst
+index 3c8083f..bd1ce3d 100644
+--- a/docs/config.rst
++++ b/docs/config.rst
+@@ -901,6 +901,14 @@ Python run
+    A list of "extras" from the package to be installed. For example, ``extras = testing`` is equivalent to ``[testing]``
+    in a ``pip install`` command.
+ 
++.. conf::
++   :keys: dependency_groups, dependency-groups
++   :version_added: 4.22
++   :default: <empty list>
++
++   A list of `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups to install, resolved from the
++   ``[dependency-groups]`` table of the ``pyproject.toml`` found at :ref:`package_root`.
++
+ .. _external-package-builder:
+ 
+ External package builder
+diff --git a/src/tox/tox_env/python/dependency_groups.py b/src/tox/tox_env/python/dependency_groups.py
+new file mode 100644
+index 0000000..5491cd2
+--- /dev/null
++++ b/src/tox/tox_env/python/dependency_groups.py
+@@ -0,0 +1,95 @@
++"""Resolve `PEP 735 <https://peps.python.org/pep-0735/>`_ dependency groups from ``pyproject.toml``."""
++
++from __future__ import annotations
++
++import sys
++from typing import TYPE_CHECKING, Any
++
++from packaging.requirements import InvalidRequirement, Requirement
++from packaging.utils import canonicalize_name
++
++from tox.report import HandledError
++
++if TYPE_CHECKING:
++    from pathlib import Path
++
++    from packaging.utils import NormalizedName
++
++if sys.version_info >= (3, 11):  # pragma: no cover (py311+)
++    import tomllib
++else:  # pragma: no cover (py311+)
++    import tomli as tomllib
++
++
++def resolve(root: Path, groups: set[str]) -> tuple[Requirement, ...]:
++    """
++    Resolve a set of PEP 735 dependency group names to their flattened requirements.
++
++    :param root: the directory containing the ``pyproject.toml`` with the ``[dependency-groups]`` table
++    :param groups: the dependency group names to resolve
++    :return: the flattened tuple of requirements (declaration order, duplicates allowed)
++    """
++    pyproject_file = root / "pyproject.toml"
++    if not pyproject_file.exists():
++        msg = f"{pyproject_file} does not exist, cannot resolve dependency groups {sorted(groups)}"
++        raise HandledError(msg)
++    with pyproject_file.open("rb") as file_handler:
++        pyproject = tomllib.load(file_handler)
++    raw_dependency_groups = pyproject.get("dependency-groups")
++    if not isinstance(raw_dependency_groups, dict):
++        msg = f"{pyproject_file} does not contain a [dependency-groups] table"
++        raise HandledError(msg)
++    dependency_groups: dict[NormalizedName, Any] = {}
++    raw_names_by_normalized: dict[NormalizedName, str] = {}
++    for key, value in raw_dependency_groups.items():
++        normalized_key = canonicalize_name(key)
++        if normalized_key in dependency_groups:
++            msg = (
++                f"{pyproject_file} has duplicate dependency group {normalized_key!r} "
++                f"(from {raw_names_by_normalized[normalized_key]!r} and {key!r})"
++            )
++            raise HandledError(msg)
++        dependency_groups[normalized_key] = value
++        raw_names_by_normalized[normalized_key] = key
++    result: list[Requirement] = []
++    for group in groups:
++        result.extend(_resolve_group(canonicalize_name(group), dependency_groups, ()))
++    return tuple(result)
++
++
++def _resolve_group(
++    group: NormalizedName,
++    dependency_groups: dict[NormalizedName, Any],
++    past_groups: tuple[NormalizedName, ...],
++) -> list[Requirement]:
++    if group in past_groups:
++        chain = " -> ".join([*past_groups, group])
++        msg = f"cyclic dependency group include: {chain}"
++        raise HandledError(msg)
++    if group not in dependency_groups:
++        msg = f"dependency group {group!r} not found"
++        raise HandledError(msg)
++    raw_group = dependency_groups[group]
++    if not isinstance(raw_group, list):
++        msg = f"dependency group {group!r} is not a list"
++        raise HandledError(msg)
++    result: list[Requirement] = []
++    for item in raw_group:
++        if isinstance(item, str):
++            try:
++                result.append(Requirement(item))
++            except InvalidRequirement as exc:
++                msg = f"dependency group {group!r} contains invalid requirement {item!r}: {exc}"
++                raise HandledError(msg) from exc
++        elif isinstance(item, dict) and set(item.keys()) == {"include-group"}:
++            include_group = canonicalize_name(item["include-group"])
++            result.extend(_resolve_group(include_group, dependency_groups, (*past_groups, group)))
++        else:
++            msg = f"Invalid dependency group item: {item!r}"
++            raise HandledError(msg)
++    return result
++
++
++__all__ = [
++    "resolve",
++]
+diff --git a/src/tox/tox_env/python/runner.py b/src/tox/tox_env/python/runner.py
+index 336476e..f63f3ab 100644
+--- a/src/tox/tox_env/python/runner.py
++++ b/src/tox/tox_env/python/runner.py
+@@ -15,6 +15,7 @@ from tox.tox_env.python.pip.req_file import PythonDeps
+ from tox.tox_env.runner import RunToxEnv
+ 
+ from .api import Python
++from .dependency_groups import resolve as resolve_dependency_groups
+ 
+ if TYPE_CHECKING:
+     from tox.config.cli.parser import Parsed
+@@ -37,6 +38,19 @@ class PythonRun(Python, RunToxEnv, ABC):
+             default=PythonDeps("", root),
+             desc="Name of the python dependencies as specified by PEP-440",
+         )
++
++        def _normalize_dependency_groups(values: set[str]) -> set[str]:
++            # although _ and . is allowed this will be normalized during packaging to -
++            # https://packaging.python.org/en/latest/specifications/dependency-specifiers/#grammar
++            return {canonicalize_name(v) for v in values}
++
++        self.conf.add_config(
++            keys=["dependency_groups", "dependency-groups"],
++            of_type=Set[str],
++            default=set(),
++            desc="dependency groups to install of the target package",
++            post_process=_normalize_dependency_groups,
++        )
+         add_skip_missing_interpreters_to_core(self.core, self.options)
+ 
+     @property
+@@ -87,11 +101,18 @@ class PythonRun(Python, RunToxEnv, ABC):
+     def _setup_env(self) -> None:
+         super()._setup_env()
+         self._install_deps()
++        self._install_dependency_groups()
+ 
+     def _install_deps(self) -> None:
+         requirements_file: PythonDeps = self.conf["deps"]
+         self._install(requirements_file, PythonRun.__name__, "deps")
+ 
++    def _install_dependency_groups(self) -> None:
++        groups: set[str] = self.conf["dependency_groups"]
++        if groups:
++            root = self.core["package_root"] if "package_root" in self.core else self.core["tox_root"]
++            self._install(list(resolve_dependency_groups(root, groups)), PythonRun.__name__, "dependency-groups")
++
+     def _build_packages(self) -> list[Package]:
+         package_env = self.package_env
+         assert package_env is not None  # noqa: S101

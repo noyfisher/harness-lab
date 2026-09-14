@@ -1,0 +1,121 @@
+diff --git a/conan/internal/model/cpp_info.py b/conan/internal/model/cpp_info.py
+index 7967b75..337400c 100644
+--- a/conan/internal/model/cpp_info.py
++++ b/conan/internal/model/cpp_info.py
+@@ -100,6 +100,7 @@ class _Component:
+         self._type = None
+         self._location = None
+         self._link_location = None
++        self._package_framework = None
+ 
+     def serialize(self):
+         return {
+@@ -126,7 +127,8 @@ class _Component:
+             "type": self._type,
+             "location": self._location,
+             "link_location": self._link_location,
+-            "languages": self._languages
++            "languages": self._languages,
++            "package_framework": self._package_framework
+         }
+ 
+     @staticmethod
+@@ -295,6 +297,14 @@ class _Component:
+     def location(self, value):
+         self._location = value
+ 
++    @property
++    def package_framework(self):
++        return self._package_framework
++
++    @package_framework.setter
++    def package_framework(self, value):
++        self._package_framework = value
++
+     @property
+     def link_location(self):
+         return self._link_location
+diff --git a/conan/tools/cmake/cmakedeps/templates/macros.py b/conan/tools/cmake/cmakedeps/templates/macros.py
+index db804b8..f59c24b 100644
+--- a/conan/tools/cmake/cmakedeps/templates/macros.py
++++ b/conan/tools/cmake/cmakedeps/templates/macros.py
+@@ -29,6 +29,7 @@ class MacrosTemplate(CMakeDepsFileTemplate):
+        macro(conan_find_apple_frameworks FRAMEWORKS_FOUND FRAMEWORKS FRAMEWORKS_DIRS)
+            if(APPLE)
+                foreach(_FRAMEWORK ${FRAMEWORKS})
++                   unset(CONAN_FRAMEWORK_${_FRAMEWORK}_FOUND CACHE)
+                    # https://cmake.org/pipermail/cmake-developers/2017-August/030199.html
+                    find_library(CONAN_FRAMEWORK_${_FRAMEWORK}_FOUND NAMES ${_FRAMEWORK} PATHS ${FRAMEWORKS_DIRS} CMAKE_FIND_ROOT_PATH_BOTH)
+                    if(CONAN_FRAMEWORK_${_FRAMEWORK}_FOUND)
+diff --git a/conan/tools/cmake/cmakedeps2/target_configuration.py b/conan/tools/cmake/cmakedeps2/target_configuration.py
+index e85df76..daf0d67 100644
+--- a/conan/tools/cmake/cmakedeps2/target_configuration.py
++++ b/conan/tools/cmake/cmakedeps2/target_configuration.py
+@@ -4,7 +4,6 @@ import textwrap
+ import jinja2
+ from jinja2 import Template
+ 
+-from conan.api.output import ConanOutput
+ from conan.errors import ConanException
+ from conans.client.graph.graph import CONTEXT_BUILD, CONTEXT_HOST
+ from conan.internal.model.pkg_type import PackageType
+@@ -161,7 +160,8 @@ class TargetConfigurationTemplate2:
+         return libs
+ 
+     def _get_cmake_lib(self, info, components, pkg_folder, pkg_folder_var):
+-        if info.exe or not (info.includedirs or info.libs or info.system_libs):
++        if info.exe or not (info.includedirs or info.libs or info.system_libs
++                             or info.frameworks or info.package_framework):
+             return
+ 
+         includedirs = ";".join(self._path(i, pkg_folder, pkg_folder_var)
+@@ -185,13 +185,16 @@ class TargetConfigurationTemplate2:
+                   "system_libs": system_libs}
+ 
+         if info.frameworks:
+-            ConanOutput(scope=str(self._conanfile)).warning("frameworks not supported yet in new CMakeDeps generator")
++            target["frameworks"] = info.frameworks
+ 
+-        if info.libs:  # TODO: to change to location
+-            if len(info.libs) != 1:
++        if info.libs or info.package_framework:  # TODO: to change to location
++            if info.libs and len(info.libs) != 1:
+                 raise ConanException(f"New CMakeDeps only allows 1 lib per component:\n"
+                                      f"{self._conanfile}: {info.libs}")
+-            assert info.location, "info.location missing for .libs, it should have been deduced"
++            if not info.location:
++                raise ConanException(f"{self._conanfile}: 'cpp_info.package_framework' is "
++                                     f"defined but 'cpp_info.location' is not. Please define "
++                                     f"'cpp_info.location' pointing to the framework binary.")
+             location = self._path(info.location, pkg_folder, pkg_folder_var)
+             link_location = self._path(info.link_location, pkg_folder, pkg_folder_var) \
+                 if info.link_location else None
+@@ -204,6 +207,8 @@ class TargetConfigurationTemplate2:
+             link_languages = info.languages or self._conanfile.languages or []
+             link_languages = ["CXX" if c == "C++" else c for c in link_languages]
+             target["link_languages"] = link_languages
++            if info.package_framework:
++                target["framework"] = True
+ 
+         return target
+ 
+@@ -350,6 +355,9 @@ class TargetConfigurationTemplate2:
+         set_target_properties({{lib}} PROPERTIES IMPORTED_LOCATION_{{config}}
+                               "{{lib_info["location"]}}")
+         {% endif %}
++        {% if lib_info.get("framework") %}
++        set_target_properties({{lib}} PROPERTIES FRAMEWORK TRUE)
++        {% endif %}
+         {% if lib_info.get("link_location") %}
+         set_target_properties({{lib}} PROPERTIES IMPORTED_IMPLIB_{{config}}
+                               "{{lib_info["link_location"]}}")
+@@ -380,6 +388,9 @@ class TargetConfigurationTemplate2:
+         {% if lib_info.get("system_libs") %}
+         target_link_libraries({{lib}} INTERFACE {{lib_info["system_libs"]}})
+         {% endif %}
++        {% if lib_info.get("frameworks") %}
++        target_link_libraries({{lib}} INTERFACE {% for framework in lib_info["frameworks"] %}"-framework {{framework}}" {% endfor %})
++        {% endif %}
+ 
+         {% endfor %}
+ 

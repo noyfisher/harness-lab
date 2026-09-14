@@ -1,0 +1,22 @@
+diff --git a/conan/internal/model/cpp_info.py b/conan/internal/model/cpp_info.py
+index d33d6c0..f29bd6d 100644
+--- a/conan/internal/model/cpp_info.py
++++ b/conan/internal/model/cpp_info.py
+@@ -526,8 +526,15 @@ class _Component:
+                     lib_found = _lib_match_by_regex(d, pattern)
+                 if lib_found:
+                     if len(lib_found) > 1:
+-                        lib_found.sort()
+-                        out.warning(f"There were several matches for Lib {libname}: {lib_found}")
++                        exact_matches = [f for f in lib_found
++                                         if os.path.basename(f).split(".", 1)[0]
++                                         in (libname, f"lib{libname}")]
++                        if exact_matches:
++                            exact_matches.sort()
++                            lib_found = exact_matches
++                        else:
++                            lib_found.sort()
++                            out.warning(f"There were several matches for Lib {libname}: {lib_found}")
+                     return lib_found[0].replace("\\", "/")
+ 
+         out = ConanOutput(scope=str(conanfile))

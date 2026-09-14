@@ -1,0 +1,32 @@
+diff --git a/privacyidea/api/auth.py b/privacyidea/api/auth.py
+index a9daed6..45de52a 100644
+--- a/privacyidea/api/auth.py
++++ b/privacyidea/api/auth.py
+@@ -258,14 +258,21 @@ def get_auth_token():
+         if username is None:
+             raise AuthError(_("Authentication failure. Missing Username"), id=ERROR.AUTHENTICATE_MISSING_USERNAME)
+ 
++        # request.User was prefilled by before_request() from the original request.all_data.
++        # A pre-event handler (e.g. RequestMangler) may have changed username/realm in
++        # request.all_data in the meantime, so re-resolve the user if that is the case.
++        login_name, realm = split_user(username)
++        realm = (realm_param or realm or get_default_realm() or "").lower()
+         user = request.User
+-        if not user:
+-            # The user could not be resolved, but it could still be a local administrator
+-            login_name, realm = split_user(username)
+-            realm = (realm_param or realm or get_default_realm()).lower()
+-            user = User()
++        if not user or user.login != login_name or user.realm != realm:
++            try:
++                user = User(login_name, realm)
++            except Exception as e:
++                log.warning(f"Problem resolving user {login_name} in realm {realm}: {e!s}.")
++                log.debug(f"{traceback.format_exc()!s}")
++                # The user could not be resolved, but it could still be a local administrator
++                user = User()
+         else:
+-            realm = user.realm
+             login_name = user.login
+ 
+     # Failsafe to have the user attempt in the log, whatever happens

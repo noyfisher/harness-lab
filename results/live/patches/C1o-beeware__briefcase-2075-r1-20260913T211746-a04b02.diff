@@ -1,0 +1,35 @@
+diff --git a/changes/2074.bugfix.rst b/changes/2074.bugfix.rst
+new file mode 100644
+index 0000000..a61bf57
+--- /dev/null
++++ b/changes/2074.bugfix.rst
+@@ -0,0 +1 @@
++Flatpaks no longer request access to the entire session DBus; they now only request permission to own their own DBus name.
+diff --git a/docs/reference/platforms/linux/flatpak.rst b/docs/reference/platforms/linux/flatpak.rst
+index eab3c9f..75c04fb 100644
+--- a/docs/reference/platforms/linux/flatpak.rst
++++ b/docs/reference/platforms/linux/flatpak.rst
+@@ -96,7 +96,7 @@ Briefcase adds the following finish arguments by default:
+ * ``filesystem=xdg-config``
+ * ``filesystem=xdg-data``
+ * ``filesystem=xdg-documents``
+-* ``socket=session-bus``
++* ``own-name=<bundle identifier>``
+ 
+ These can be disabled by explicitly setting their value to ``False``; for example, to
+ disable audio access, you would specify::
+diff --git a/src/briefcase/platforms/linux/flatpak.py b/src/briefcase/platforms/linux/flatpak.py
+index 563248b..1b68edc 100644
+--- a/src/briefcase/platforms/linux/flatpak.py
++++ b/src/briefcase/platforms/linux/flatpak.py
+@@ -139,8 +139,8 @@ class LinuxFlatpakCreateCommand(LinuxFlatpakMixin, CreateCommand):
+             "filesystem=xdg-config": True,
+             "filesystem=xdg-data": True,
+             "filesystem=xdg-documents": True,
+-            # DBus access
+-            "socket=session-bus": True,
++            # Allow the app to own its own DBus name
++            f"own-name={app.bundle_identifier}": True,
+         }
+ 
+         finish_args.update(getattr(app, "finish_arg", {}))

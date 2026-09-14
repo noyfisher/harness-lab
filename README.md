@@ -26,6 +26,23 @@ p = 1.0. Six improver hypotheses were proposed and zero were accepted
 Opus-lead harness solves nothing the Opus single agent does not, at 2.8x the cost per solve
 (`docs/c1o.md`).
 
+### Second study: SWE-bench-Live, Opus tier (protocol v2)
+
+Same rig on 40 instances of SWE-bench-Live's frozen lite split (issues filed after the model
+cutoffs), amd64 images under emulation, k = 3, `docs/protocol-v2.md` frozen before the first
+counted run. Source: `results/live/report.md`, generated from `results/live/runs.jsonl`; page
+at [noyfisher.github.io/harness-lab/live/](https://noyfisher.github.io/harness-lab/live/).
+
+| condition | what it is | pass rate (95% CI) | solid_pass / flaky / solid_fail | cost per solve |
+|---|---|---|---:|---:|
+| C0o | single agent, Opus 5 | 0.492 [0.350, 0.633] | 16 / 7 / 17 | $1.77 |
+| C1o | six-agent harness, Opus 5 Lead | 0.508 [0.367, 0.650] | 18 / 6 / 16 | $4.28 |
+
+Paired C0o to C1o on all 40: 0 flips up, 0 regressions, Wilcoxon p = 0.414, sign test p = 1.0.
+The one discordant majority pair favours the single agent. Same answer as Verified, on tasks the
+models could not have seen: the structure adds cost (2.4x per solve), not solves
+(`docs/writeup.md` section 3c).
+
 ## How it works
 
 1. `bench/select.py` draws a stratified subset from the arm64-available instances, splits it

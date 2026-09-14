@@ -1,0 +1,288 @@
+diff --git a/requirements.txt b/requirements.txt
+index b6b7130..ee3295f 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -11,7 +11,7 @@ instructlab-quantize>=0.1.0
+ instructlab-schema>=0.4.0
+ instructlab-sdg>=0.6.2
+ instructlab-training>=0.6.0
+-llama_cpp_python[server]==0.2.79
++llama_cpp_python[server]==0.3.2
+ mlx>=0.5.1,<0.6.0; sys_platform == 'darwin' and platform_machine == 'arm64'
+ numpy>=1.26.4,<2.0.0
+ openai>=1.13.3
+diff --git a/src/instructlab/cli/model/serve.py b/src/instructlab/cli/model/serve.py
+index ad0f266..8fe6a0e 100644
+--- a/src/instructlab/cli/model/serve.py
++++ b/src/instructlab/cli/model/serve.py
+@@ -10,6 +10,8 @@ import click
+ 
+ # First Party
+ from instructlab import clickext
++from instructlab.configuration import write_config
++from instructlab.defaults import DEFAULTS
+ from instructlab.model.backends import backends
+ from instructlab.model.serve_backend import serve_backend, signal_handler
+ 
+@@ -117,6 +119,14 @@ def serve(
+ 
+     warn_for_unsupported_backend_param(ctx)
+ 
++    # we need to keep track of the max_ctx_size being uses in the active server so we don't overflow the context
++    if max_ctx_size != DEFAULTS.MAX_CONTEXT_SIZE:
++        logger.info(
++            f"Setting current_max_ctx_size in the serve config to {max_ctx_size}"
++        )
++        ctx.obj.config.serve.server.current_max_ctx_size = max_ctx_size
++        write_config(ctx.obj.config)
++
+     serve_backend(
+         ctx,
+         model_path,
+diff --git a/src/instructlab/configuration.py b/src/instructlab/configuration.py
+index f265be6..eb5c60d 100644
+--- a/src/instructlab/configuration.py
++++ b/src/instructlab/configuration.py
+@@ -196,7 +196,7 @@ class _serve_llama_cpp(BaseModel):
+         description="Number of model layers to offload to GPU. -1 means all layers.",
+     )
+     max_ctx_size: PositiveInt = Field(
+-        default=4096,
++        default=DEFAULTS.MAX_CONTEXT_SIZE,
+         description="Maximum number of tokens that can be processed by the model.",
+     )
+     llm_family: str = Field(
+@@ -211,6 +211,15 @@ class _serve_server(BaseModel):
+ 
+     host: StrictStr = Field(default="127.0.0.1", description="Host to serve on.")
+     port: StrictInt = Field(default=8000, description="Port to serve on.")
++    backend_type: str = Field(
++        default="",
++        description="Backend Instance Type",
++        examples=["llama-cpp", "vllm"],
++    )
++    current_max_ctx_size: PositiveInt = Field(
++        default=DEFAULTS.MAX_CONTEXT_SIZE,
++        description="Maximum number of tokens that can be processed by the currently served model.",
++    )
+ 
+ 
+ class _serve(BaseModel):
+@@ -947,9 +956,13 @@ def read_config(
+     config_file: str | os.PathLike[str] | None = None,
+ ) -> Config:
+     """Reads configuration from disk."""
++    # Third Party
++    from filelock import FileLock
++
++    lock = FileLock(DEFAULTS.CONFIG_FILE_LOCK, timeout=1)
+     config_file = DEFAULTS.CONFIG_FILE if config_file is None else config_file
+     try:
+-        with open(config_file, "r", encoding="utf-8") as yamlfile:
++        with lock, open(config_file, "r", encoding="utf-8") as yamlfile:
+             content = yaml.load(yamlfile)
+             if not isinstance(content, dict):
+                 raise ConfigException(
+@@ -1147,8 +1160,12 @@ def write_config_to_yaml(cfg: Config, file_path: str):
+         cfg (Config): The Pydantic model to write to YAML.
+         file_path (str): The path to the YAML file to write.
+     """
++    # Third Party
++    from filelock import FileLock
++
++    lock = FileLock(DEFAULTS.CONFIG_FILE_LOCK)
+     commented_map = config_to_commented_map(cfg)
+-    with open(file_path, "w", encoding="utf-8") as yaml_file:
++    with lock, open(file_path, "w", encoding="utf-8") as yaml_file:
+         yaml.dump(commented_map, yaml_file)
+ 
+ 
+diff --git a/src/instructlab/defaults.py b/src/instructlab/defaults.py
+index 4fde1f6..a4be16f 100644
+--- a/src/instructlab/defaults.py
++++ b/src/instructlab/defaults.py
+@@ -8,6 +8,7 @@ import httpx
+ 
+ ILAB_PACKAGE_NAME = "instructlab"
+ CONFIG_FILENAME = "config.yaml"
++CONFIG_LOCK_FILENAME = "config.yaml.lock"
+ CONFIG_VERSION = "1.0.0"
+ 
+ # Model families understood by ilab
+@@ -128,6 +129,10 @@ class _InstructlabDefaults:
+     def CONFIG_FILE(self) -> str:
+         return path.join(self._config_dir, CONFIG_FILENAME)
+ 
++    @property
++    def CONFIG_FILE_LOCK(self) -> str:
++        return path.join(self._config_dir, CONFIG_LOCK_FILENAME)
++
+     @property
+     def MODELS_DIR(self) -> str:
+         return path.join(self._cache_home, STORAGE_DIR_NAMES.MODELS)
+diff --git a/src/instructlab/model/chat.py b/src/instructlab/model/chat.py
+index 0eed4f3..f10646a 100644
+--- a/src/instructlab/model/chat.py
++++ b/src/instructlab/model/chat.py
+@@ -34,6 +34,7 @@ from instructlab.client_utils import HttpClientParams
+ # Local
+ from ..client_utils import http_client
+ from ..utils import get_cli_helper_sysprompt, get_model_arch, get_sysprompt
++from .backends import backends
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -197,6 +198,8 @@ def chat(
+     # First Party
+     from instructlab.model.backends.common import is_temp_server_running
+ 
++    max_ctx_size = None
++    backend_type = ctx.obj.config.serve.server.backend_type
+     serve_server = ctx.obj.config.serve.server
+     users_endpoint_url = cfg.get_api_base(serve_server.host, serve_server.port)
+ 
+@@ -220,10 +223,8 @@ def chat(
+             logger.warning(
+                 "Setting serving log file (--serving-log-file) is not supported when the server is already running"
+             )
++        max_ctx_size = ctx.obj.config.serve.server.current_max_ctx_size
+     else:
+-        # First Party
+-        from instructlab.model.backends import backends
+-
+         # If a log file is specified, write logs to the file
+         root_logger = logging.getLogger()
+         if serving_log_file:
+@@ -235,6 +236,11 @@ def chat(
+             model_path=model,
+             log_file=serving_log_file,
+         )
++        backend_type = backend_instance.get_backend_type()
++        # if max tokens is the default, read from the serve cfg in case that has been overriden
++        # if serve has a different max_ctx_size, that is what we use.
++        if max_ctx_size is None and backend_type == backends.LLAMA_CPP:
++            max_ctx_size = ctx.obj.config.serve.llama_cpp.max_ctx_size
+         try:
+             # Run the llama server
+             api_base = backend_instance.run_detached(http_client(ctx.params))
+@@ -308,7 +314,9 @@ def chat(
+             session=session,
+             qq=quick_question,
+             max_tokens=max_tokens,
++            max_ctx_size=max_ctx_size,
+             temperature=temperature,
++            backend_type=backend_type,
+         )
+     except ChatException as exc:
+         click.secho(f"Executing chat failed with: {exc}", fg="red")
+@@ -338,7 +346,9 @@ class ConsoleChatBot:  # pylint: disable=too-many-instance-attributes
+         loaded=None,
+         log_file=None,
+         max_tokens=None,
++        max_ctx_size=None,
+         temperature=1.0,
++        backend_type="",
+     ):
+         self.client = client
+         self.model = model
+@@ -347,7 +357,9 @@ class ConsoleChatBot:  # pylint: disable=too-many-instance-attributes
+         self.loaded = loaded
+         self.log_file = log_file
+         self.max_tokens = max_tokens
++        self.max_ctx_size = max_ctx_size
+         self.temperature = temperature
++        self.backend_type = backend_type
+ 
+         self.console = Console()
+ 
+@@ -656,6 +668,27 @@ class ConsoleChatBot:  # pylint: disable=too-many-instance-attributes
+         try:
+             while True:
+                 # Loop to catch situations where we need to retry, such as context length exceeded
++                # We need to catch these errors before they hit the server or else it will crash.
++                # as of llama_cpp_python 0.3.z, BadRequestErrors cause the server to become unavailable
++                if self.backend_type == backends.LLAMA_CPP:
++                    total_context_size = 0
++                    # this handling can apply to llama-cpp-python only. The exception handling below should still exist for vLLM.
++                    while True:
++                        # we need to loop this. If we only remove 1 message, but it isn't enough to fit our new message in, we can hit the error
++                        # if you have 3 messages in the list, and the last one is 127 tokens with a 128 context window, you need to drop the first two in order to fit the third
++                        for msg in self.info["messages"]:
++                            total_context_size += len(msg["content"])
++                        if (
++                            self.max_ctx_size is not None
++                            and self.max_ctx_size < total_context_size
++                            and len(self.info["messages"]) > 1
++                        ):
++                            self.info["messages"] = self.info["messages"][1:]
++                            logger.debug(
++                                "Message too large for context size. Dropping from queue."
++                            )
++                        else:
++                            break
+                 try:
+                     response = self.client.chat.completions.create(
+                         model=self.model,
+@@ -664,6 +697,7 @@ class ConsoleChatBot:  # pylint: disable=too-many-instance-attributes
+                         **create_params,
+                     )
+                 except openai.BadRequestError as e:
++                    # we still want to handle this the same for vLLM
+                     logger.debug(f"BadRequestError: {e}")
+                     if e.code == "context_length_exceeded":
+                         if len(self.info["messages"]) > 1:
+@@ -765,7 +799,9 @@ def chat_cli(
+     session,
+     qq,
+     max_tokens,
++    max_ctx_size,
+     temperature,
++    backend_type,
+ ):
+     """Starts a CLI-based chat with the server"""
+     client = OpenAI(
+@@ -832,6 +868,8 @@ def chat_cli(
+         loaded=loaded,
+         temperature=(temperature if temperature is not None else config.temperature),
+         max_tokens=(max_tokens if max_tokens else config.max_tokens),
++        max_ctx_size=max_ctx_size,
++        backend_type=backend_type,
+     )
+ 
+     if not qq and session is None:
+diff --git a/src/instructlab/model/serve_backend.py b/src/instructlab/model/serve_backend.py
+index b311585..381522d 100644
+--- a/src/instructlab/model/serve_backend.py
++++ b/src/instructlab/model/serve_backend.py
+@@ -7,6 +7,7 @@ import sys
+ 
+ # First Party
+ from instructlab import log
++from instructlab.configuration import write_config
+ from instructlab.model.backends import backends
+ from instructlab.model.backends.common import ServerException
+ from instructlab.model.backends.server import BackendServer
+@@ -50,6 +51,10 @@ def serve_backend(
+     except (ValueError, AttributeError) as e:
+         raise ValueError(f"Failed to determine backend: {e}") from e
+ 
++    logger.info(f"Setting current_max_ctx_size in the serve config to {max_ctx_size}")
++    ctx.obj.config.serve.server.backend_type = backend
++    write_config(ctx.obj.config)
++
+     if chat_template is None:
+         chat_template = ctx.obj.config.serve.chat_template
+ 
+diff --git a/src/instructlab/taxonomy/diff.py b/src/instructlab/taxonomy/diff.py
+index 92daeca..465ccf3 100644
+--- a/src/instructlab/taxonomy/diff.py
++++ b/src/instructlab/taxonomy/diff.py
+@@ -77,6 +77,8 @@ def diff(ctx, taxonomy_path, taxonomy_base, yaml_rules, quiet):
+                     )
+                     raise SystemExit(1) from exc
+             for f in taxonomy_files:
++                if f is None:
++                    continue
+                 click.echo(f)
+ 
+     # validate new or changed taxonomy files

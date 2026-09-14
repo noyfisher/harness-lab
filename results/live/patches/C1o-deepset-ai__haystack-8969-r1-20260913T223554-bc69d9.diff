@@ -1,0 +1,24 @@
+diff --git a/haystack/dataclasses/chat_message.py b/haystack/dataclasses/chat_message.py
+index 9252593..8be051d 100644
+--- a/haystack/dataclasses/chat_message.py
++++ b/haystack/dataclasses/chat_message.py
+@@ -370,6 +370,8 @@ class ChatMessage:
+             raise ValueError("A `ChatMessage` can only contain one `TextContent` or one `ToolCallResult`.")
+ 
+         openai_msg: Dict[str, Any] = {"role": self._role.value}
++        if self._name is not None:
++            openai_msg["name"] = self._name
+ 
+         if tool_call_results:
+             result = tool_call_results[0]
+diff --git a/releasenotes/notes/fix-chat-message-to-openai-dict-format-name-af300ff0fe18e41c.yaml b/releasenotes/notes/fix-chat-message-to-openai-dict-format-name-af300ff0fe18e41c.yaml
+new file mode 100644
+index 0000000..9bc273e
+--- /dev/null
++++ b/releasenotes/notes/fix-chat-message-to-openai-dict-format-name-af300ff0fe18e41c.yaml
+@@ -0,0 +1,5 @@
++---
++fixes:
++  - |
++    Fixed `ChatMessage.to_openai_dict_format` so it now includes the `name` field in the
++    returned dictionary when it is set, matching `ChatMessage.from_openai_dict_format`.

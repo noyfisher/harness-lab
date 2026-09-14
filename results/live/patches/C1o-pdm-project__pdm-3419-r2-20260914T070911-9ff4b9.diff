@@ -1,0 +1,31 @@
+diff --git a/news/3410.bugfix.md b/news/3410.bugfix.md
+new file mode 100644
+index 0000000..8c5163d
+--- /dev/null
++++ b/news/3410.bugfix.md
+@@ -0,0 +1 @@
++Fix `pdm update` dropping the `groups` metadata in the lockfile for packages that are only reachable through an `include-group` reference.
+diff --git a/src/pdm/cli/commands/update.py b/src/pdm/cli/commands/update.py
+index 02c49f0..dd031af 100644
+--- a/src/pdm/cli/commands/update.py
++++ b/src/pdm/cli/commands/update.py
+@@ -172,6 +172,19 @@ class Command(BaseCommand):
+                 for dep in deps:
+                     dep.specifier = get_specifier("")
+         reqs = [r for g, deps in all_dependencies.items() for r in deps if locked_groups is None or g in locked_groups]
++        # `all_dependencies` doesn't resolve `include-group` so a requirement's `.groups`
++        # may miss the groups that reach it only via an `include-group` reference.
++        # Patch it in-place (keeping identity so `--unconstrained`/`--prerelease`
++        # mutations above still take effect) using the fully resolved dependencies.
++        group_tags: dict[str, set[str]] = {}
++        for g in all_dependencies:
++            if locked_groups is not None and g not in locked_groups:
++                continue
++            for r in project.get_dependencies(g):
++                group_tags.setdefault(r.identify(), set()).update(r.groups)
++        for r in reqs:
++            if r.identify() in group_tags:
++                r.groups = sorted(group_tags[r.identify()])
+         # Since dry run is always true in the locking,
+         # we need to emit the hook manually with the real dry_run value
+         hooks.try_emit("pre_lock", requirements=reqs, dry_run=dry_run)

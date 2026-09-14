@@ -2,7 +2,7 @@ name: pages
 on:
   push:
     branches: [main]
-    paths: ["results/site/**", ".github/workflows/pages.yml"]
+    paths: ["results/site/**", "results/live/site/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,7 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # Verified study at /, Live study at /live/ (both generated pages, checked by ci.yml).
+      - run: |
+          mkdir -p _site/live
+          cp -R results/site/. _site/
+          cp -R results/live/site/. _site/live/
       - uses: actions/upload-pages-artifact@v3
-        with: { path: results/site }
+        with: { path: _site }
       - id: deployment
         uses: actions/deploy-pages@v4

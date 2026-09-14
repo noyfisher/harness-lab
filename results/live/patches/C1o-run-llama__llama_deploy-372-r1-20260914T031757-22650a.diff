@@ -1,0 +1,181 @@
+diff --git a/llama_deploy/apiserver/routers/deployments.py b/llama_deploy/apiserver/routers/deployments.py
+index eec538f..5b1f725 100644
+--- a/llama_deploy/apiserver/routers/deployments.py
++++ b/llama_deploy/apiserver/routers/deployments.py
+@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
+ 
+ from llama_deploy.apiserver.config_parser import Config
+ from llama_deploy.apiserver.server import manager
+-from llama_deploy.types import TaskDefinition
++from llama_deploy.types import SessionDefinition, TaskDefinition, TaskResult
+ 
+ deployments_router = APIRouter(
+     prefix="/deployments",
+@@ -14,13 +14,9 @@ deployments_router = APIRouter(
+ 
+ 
+ @deployments_router.get("/")
+-async def read_deployments() -> JSONResponse:
++async def read_deployments() -> list[str]:
+     """Returns a list of active deployments."""
+-    return JSONResponse(
+-        {
+-            "deployments": list(manager._deployments.keys()),
+-        }
+-    )
++    return [k for k in manager._deployments.keys()]
+ 
+ 
+ @deployments_router.get("/{deployment_name}")
+@@ -83,7 +79,7 @@ async def create_deployment_task(
+ @deployments_router.post("/{deployment_name}/tasks/create")
+ async def create_deployment_task_nowait(
+     deployment_name: str, task_definition: TaskDefinition, session_id: str | None = None
+-) -> JSONResponse:
++) -> TaskDefinition:
+     """Create a task for the deployment but don't wait for result."""
+     deployment = manager.get_deployment(deployment_name)
+     if deployment is None:
+@@ -99,11 +95,12 @@ async def create_deployment_task_nowait(
+ 
+     session = await deployment.client.get_or_create_session(session_id or "none")
+ 
+-    task_id = await session.run_nowait(
++    task_definition.session_id = session.session_id
++    task_definition.task_id = await session.run_nowait(
+         task_definition.agent_id or "", **json.loads(task_definition.input)
+     )
+ 
+-    return JSONResponse({"session_id": session.session_id, "task_id": task_id})
++    return task_definition
+ 
+ 
+ @deployments_router.get("/{deployment_name}/tasks/{task_id}/events")
+@@ -131,22 +128,20 @@ async def get_events(
+ @deployments_router.get("/{deployment_name}/tasks/{task_id}/results")
+ async def get_task_result(
+     deployment_name: str, session_id: str, task_id: str
+-) -> JSONResponse:
++) -> TaskResult | None:
+     """Get the task result associated with a task and session."""
+     deployment = manager.get_deployment(deployment_name)
+     if deployment is None:
+         raise HTTPException(status_code=404, detail="Deployment not found")
+ 
+     session = await deployment.client.get_session(session_id)
+-    result = await session.get_task_result(task_id)
+-
+-    return JSONResponse(result.result if result else "")
++    return await session.get_task_result(task_id)
+ 
+ 
+ @deployments_router.get("/{deployment_name}/tasks")
+ async def get_tasks(
+     deployment_name: str,
+-) -> JSONResponse:
++) -> list[TaskDefinition]:
+     """Get all the tasks from all the sessions in a given deployment."""
+     deployment = manager.get_deployment(deployment_name)
+     if deployment is None:
+@@ -157,42 +152,41 @@ async def get_tasks(
+         session = await deployment.client.get_session(session_id=session_def.session_id)
+         for task_def in await session.get_tasks():
+             tasks.append(task_def)
+-    return JSONResponse(tasks)
++    return tasks
+ 
+ 
+ @deployments_router.get("/{deployment_name}/sessions")
+ async def get_sessions(
+     deployment_name: str,
+-) -> JSONResponse:
++) -> list[SessionDefinition]:
+     """Get the active sessions in a deployment and service."""
+     deployment = manager.get_deployment(deployment_name)
+     if deployment is None:
+         raise HTTPException(status_code=404, detail="Deployment not found")
+ 
+     sessions = await deployment.client.list_sessions()
+-    return JSONResponse(sessions)
++    return sessions
+ 
+ 
+ @deployments_router.get("/{deployment_name}/sessions/{session_id}")
+-async def get_session(deployment_name: str, session_id: str) -> JSONResponse:
++async def get_session(deployment_name: str, session_id: str) -> SessionDefinition:
+     """Get the definition of a session by ID."""
+     deployment = manager.get_deployment(deployment_name)
+     if deployment is None:
+         raise HTTPException(status_code=404, detail="Deployment not found")
+ 
+-    session = await deployment.client.get_session_definition(session_id)
+-    return JSONResponse(session.model_dump())
++    return await deployment.client.get_session_definition(session_id)
+ 
+ 
+ @deployments_router.post("/{deployment_name}/sessions/create")
+-async def create_session(deployment_name: str) -> JSONResponse:
++async def create_session(deployment_name: str) -> SessionDefinition:
+     """Create a new session for a deployment."""
+     deployment = manager.get_deployment(deployment_name)
+     if deployment is None:
+         raise HTTPException(status_code=404, detail="Deployment not found")
+ 
+     session = await deployment.client.create_session()
+-    return JSONResponse({"session_id": session.session_id})
++    return SessionDefinition(session_id=session.session_id)
+ 
+ 
+ @deployments_router.post("/{deployment_name}/sessions/delete")
+diff --git a/llama_deploy/client/models/apiserver.py b/llama_deploy/client/models/apiserver.py
+index e69a795..2535bff 100644
+--- a/llama_deploy/client/models/apiserver.py
++++ b/llama_deploy/client/models/apiserver.py
+@@ -70,7 +70,7 @@ class SessionCollection(Collection):
+         model_class = self._prepare(Session)
+         items = [
+             model_class(client=self.client, id=session_def.session_id)
+-            for session_def in r.json()
++            for session_def in (SessionDefinition(**s) for s in r.json())
+         ]
+         return items
+ 
+@@ -81,8 +81,8 @@ class Task(Model):
+     deployment_id: str
+     session_id: str
+ 
+-    async def results(self) -> TaskResult:
+-        """Returns the result of a given task."""
++    async def results(self) -> TaskResult | None:
++        """Returns the result of a given task, if any."""
+         results_url = f"{self.client.api_server_url}/deployments/{self.deployment_id}/tasks/{self.id}/results"
+ 
+         r = await self.client.request(
+@@ -92,7 +92,8 @@ class Task(Model):
+             params={"session_id": self.session_id},
+             timeout=self.client.timeout,
+         )
+-        return TaskResult.model_validate_json(r.json())
++        data = r.json()
++        return TaskResult.model_validate(data) if data else None
+ 
+     async def events(self) -> AsyncGenerator[dict[str, Any], None]:  # pragma: no cover
+         """Returns a generator object to consume the events streamed from a service."""
+@@ -184,7 +185,7 @@ class Deployment(Model):
+                 session_id=task_def.session_id,
+                 deployment_id=self.id,
+             )
+-            for task_def in r.json()
++            for task_def in (TaskDefinition(**t) for t in r.json())
+         }
+         model_class = self._prepare(TaskCollection)
+         return model_class(client=self.client, deployment_id=self.id, items=items)
+@@ -201,7 +202,7 @@ class Deployment(Model):
+         model_class = self._prepare(Session)
+         items = {
+             "id": model_class(client=self.client, id=session_def.session_id)
+-            for session_def in r.json()
++            for session_def in (SessionDefinition(**s) for s in r.json())
+         }
+         coll_model_class = self._prepare(SessionCollection)
+         return coll_model_class(client=self.client, deployment_id=self.id, items=items)

@@ -1,0 +1,141 @@
+diff --git a/trimesh/path/exchange/svg_io.py b/trimesh/path/exchange/svg_io.py
+index cdaa99a..ba57e4c 100644
+--- a/trimesh/path/exchange/svg_io.py
++++ b/trimesh/path/exchange/svg_io.py
+@@ -22,6 +22,102 @@ _IDENTITY = np.eye(3)
+ _IDENTITY.flags["WRITEABLE"] = False
+ 
+ 
++def _parse_points(points):
++    """
++    Parse an SVG `points` attribute (used by `polyline`/`polygon`)
++    into a flat list of floats, tolerating comma and/or
++    whitespace separated values.
++
++    Parameters
++    -----------
++    points : str
++      Raw `points` attribute value.
++
++    Returns
++    -----------
++    values : (n,) float
++      Flattened x, y, x, y, ... coordinate values.
++    """
++    return [float(v) for v in points.replace(",", " ").split()]
++
++
++def _shape_to_path(tag, attrib):
++    """
++    Convert the attributes of a basic SVG shape element
++    (i.e. not `path`) into an equivalent SVG path `d` string.
++
++    Parameters
++    -----------
++    tag : str
++      Local tag name of the element, i.e. `rect`.
++    attrib : dict
++      Attributes of the XML element.
++
++    Returns
++    -----------
++    d : None or str
++      Path string equivalent to the shape, or `None` if
++      the shape attributes couldn't be parsed.
++    """
++    try:
++        if tag == "rect":
++            x = float(attrib.get("x", 0.0))
++            y = float(attrib.get("y", 0.0))
++            w = float(attrib["width"])
++            h = float(attrib["height"])
++            # note: `rx`/`ry` corner rounding is not implemented
++            return f"M{x},{y}h{w}v{h}h{-w}Z"
++        elif tag == "circle":
++            cx = float(attrib.get("cx", 0.0))
++            cy = float(attrib.get("cy", 0.0))
++            r = float(attrib["r"])
++            return (
++                f"M{cx - r},{cy}a{r},{r},0,1,0,{2 * r},0"
++                f"a{r},{r},0,1,0,{-2 * r},0Z"
++            )
++        elif tag == "ellipse":
++            cx = float(attrib.get("cx", 0.0))
++            cy = float(attrib.get("cy", 0.0))
++            rx = float(attrib["rx"])
++            ry = float(attrib["ry"])
++            if np.isclose(rx, ry):
++                r = rx
++                return (
++                    f"M{cx - r},{cy}a{r},{r},0,1,0,{2 * r},0"
++                    f"a{r},{r},0,1,0,{-2 * r},0Z"
++                )
++            # approximate the ellipse with four cubic beziers
++            k = 0.5522847498307936
++            return (
++                f"M{cx + rx},{cy}"
++                f"C{cx + rx},{cy + k * ry} {cx + k * rx},{cy + ry} {cx},{cy + ry}"
++                f"C{cx - k * rx},{cy + ry} {cx - rx},{cy + k * ry} {cx - rx},{cy}"
++                f"C{cx - rx},{cy - k * ry} {cx - k * rx},{cy - ry} {cx},{cy - ry}"
++                f"C{cx + k * rx},{cy - ry} {cx + rx},{cy - k * ry} {cx + rx},{cy}"
++                "Z"
++            )
++        elif tag == "line":
++            x1 = float(attrib.get("x1", 0.0))
++            y1 = float(attrib.get("y1", 0.0))
++            x2 = float(attrib.get("x2", 0.0))
++            y2 = float(attrib.get("y2", 0.0))
++            return f"M{x1},{y1}L{x2},{y2}"
++        elif tag in ("polyline", "polygon"):
++            values = _parse_points(attrib["points"])
++            if len(values) < 4 or len(values) % 2 != 0:
++                raise ValueError("not enough points")
++            d = f"M{values[0]},{values[1]}"
++            for i in range(2, len(values), 2):
++                d += f"L{values[i]},{values[i + 1]}"
++            if tag == "polygon":
++                d += "Z"
++            return d
++    except (KeyError, ValueError, IndexError):
++        log.debug(f"failed to parse `{tag}` shape attributes: {attrib}", exc_info=True)
++        return None
++    return None
++
++
+ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+     """
+     Load an SVG file into a Path2D object.
+@@ -74,9 +170,30 @@ def svg_to_path(file_obj=None, file_type=None, path_string=None):
+         # store paths and transforms as
+         # (path string, 3x3 matrix)
+         paths = []
+-        for element in tree.iter("{*}path"):
+-            # store every path element attributes and transform
+-            paths.append((element.attrib, element_transform(element)))
++        for element in tree.iter(
++            "{*}path",
++            "{*}rect",
++            "{*}circle",
++            "{*}ellipse",
++            "{*}line",
++            "{*}polyline",
++            "{*}polygon",
++        ):
++            # local tag name without the namespace
++            tag = etree.QName(element).localname
++            if tag == "path":
++                # store every path element attributes and transform
++                paths.append((element.attrib, element_transform(element)))
++                continue
++            # convert basic shapes into an equivalent path string
++            d = _shape_to_path(tag, element.attrib)
++            if d is None:
++                continue
++            # keep other attributes (i.e. trimesh namespace metadata)
++            # but set `d` to our generated path string
++            attrib = dict(element.attrib)
++            attrib["d"] = d
++            paths.append((attrib, element_transform(element)))
+ 
+         try:
+             # see if the SVG should be reproduced as a scene

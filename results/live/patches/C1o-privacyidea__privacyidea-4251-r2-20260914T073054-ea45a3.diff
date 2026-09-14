@@ -1,0 +1,44 @@
+diff --git a/privacyidea/lib/eventhandler/scripthandler.py b/privacyidea/lib/eventhandler/scripthandler.py
+index ada40e1..f3ab980 100644
+--- a/privacyidea/lib/eventhandler/scripthandler.py
++++ b/privacyidea/lib/eventhandler/scripthandler.py
+@@ -67,6 +67,7 @@ class ScriptEventHandler(BaseEventHandler):
+ 
+         else:
+             self.script_directory = script_directory
++        super(ScriptEventHandler, self).__init__()
+ 
+     @property
+     def allowed_positions(cls):
+@@ -84,8 +85,13 @@ class ScriptEventHandler(BaseEventHandler):
+ 
+         :return: dict with actions
+         """
+-        scripts = os.listdir(cls.script_directory)
+         actions = {}
++        try:
++            scripts = os.listdir(cls.script_directory)
++        except OSError as e:
++            log.warning("Failed to list script directory {0!r}: {1!r}".format(
++                cls.script_directory, e))
++            return actions
+         for script in scripts:
+             actions[script] = {
+                 "background": {
+@@ -210,12 +216,16 @@ class ScriptEventHandler(BaseEventHandler):
+             log.warning(traceback.format_exc())
+             if handler_options.get("background") == SCRIPT_WAIT and is_true(handler_options.get("raise_error")):
+                 raise ServerError("Failed to start script.")
++            self.run_details = "Failed to start script."
++            ret = False
+ 
+         if rcode:
+             log.warning("Script {script!r} failed to execute with error code {error!r}".format(script=script_name,
+                                                                                                error=rcode))
+             if is_true(handler_options.get("raise_error")):
+                 raise ServerError("Error during execution of the script.")
++            self.run_details = "Error during execution of the script."
++            ret = False
+ 
+         return ret
+ 

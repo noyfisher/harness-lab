@@ -1,0 +1,28 @@
+diff --git a/news/3437.bugfix.md b/news/3437.bugfix.md
+new file mode 100644
+index 0000000..5b10968
+--- /dev/null
++++ b/news/3437.bugfix.md
+@@ -0,0 +1 @@
++Fix `pdm remove` raising `Requested groups not in lockfile` when a dev group isn't in the current lockfile.
+diff --git a/src/pdm/cli/commands/remove.py b/src/pdm/cli/commands/remove.py
+index 8785a33..bf1146c 100644
+--- a/src/pdm/cli/commands/remove.py
++++ b/src/pdm/cli/commands/remove.py
+@@ -95,6 +95,7 @@ class Command(BaseCommand):
+         group = selection.one()
+         lock_groups = project.lockfile.groups
+ 
++        is_dev = normalize_name(group) in project.pyproject.dev_dependencies
+         deps, setter = project.use_pyproject_dependencies(group, selection.dev or False)
+         project.core.ui.echo(
+             f"Removing {'[bold]global[/] ' if project.is_global else ''}packages from [primary]{group}[/] "
+@@ -125,7 +126,7 @@ class Command(BaseCommand):
+         if sync:
+             do_sync(
+                 project,
+-                selection=GroupSelection(project, default=False, groups=[group]),
++                selection=GroupSelection(project, default=False, dev=is_dev, groups=[group]),
+                 clean=True,
+                 no_editable=no_editable,
+                 no_self=no_self,

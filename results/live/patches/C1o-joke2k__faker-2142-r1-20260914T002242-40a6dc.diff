@@ -1,0 +1,30 @@
+diff --git a/faker/providers/bank/nl_BE/__init__.py b/faker/providers/bank/nl_BE/__init__.py
+index 92455b9..4f5a9ca 100644
+--- a/faker/providers/bank/nl_BE/__init__.py
++++ b/faker/providers/bank/nl_BE/__init__.py
+@@ -9,7 +9,9 @@ class Provider(BankProvider):
+     https://www.nbb.be/nl/betalingen-en-effecten/betalingsstandaarden/bankidentificatiecodes
+     """
+ 
+-    bban_format = "############"
++    # 10-digit base, followed by a 2-digit national check number computed
++    # in ``bban()`` below (``base % 97``, with 0 mapped to 97).
++    bban_format = "##########"
+     country_code = "BE"
+ 
+     banks = (
+@@ -66,3 +68,14 @@ class Provider(BankProvider):
+     def bank(self) -> str:
+         """Generate a bank name."""
+         return self.random_element(self.banks)
++
++    def bban(self) -> str:
++        """Generate a Belgian Basic Bank Account Number (BBAN).
++
++        A Belgian BBAN is 12 digits: a 10-digit base followed by a 2-digit
++        national check number equal to ``int(base) % 97``, with a remainder
++        of 0 represented as 97.
++        """
++        base = super().bban()
++        check = int(base) % 97 or 97
++        return f"{base}{check:02d}"

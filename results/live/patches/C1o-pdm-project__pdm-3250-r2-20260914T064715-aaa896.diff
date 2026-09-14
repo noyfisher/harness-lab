@@ -1,0 +1,135 @@
+diff --git a/news/3245.bug.md b/news/3245.bug.md
+new file mode 100644
+index 0000000..99592fb
+--- /dev/null
++++ b/news/3245.bug.md
+@@ -0,0 +1 @@
++Normalize dependency group names on lookup so non-normalized names (e.g. `a_b` for a `a-b` group) can be selected with `-G`/`--group` and resolved by `get_dependencies()`.
+diff --git a/src/pdm/cli/filters.py b/src/pdm/cli/filters.py
+index b8e6f21..eb4053d 100644
+--- a/src/pdm/cli/filters.py
++++ b/src/pdm/cli/filters.py
+@@ -5,6 +5,7 @@ from functools import cached_property
+ from typing import TYPE_CHECKING
+ 
+ from pdm.exceptions import PdmUsageError
++from pdm.utils import normalize_name
+ 
+ if TYPE_CHECKING:
+     from typing import Iterator, Sequence
+@@ -46,9 +47,9 @@ class GroupSelection:
+ 
+     def one(self) -> str:
+         if self.group:
+-            return self.group
++            return self.group if self.group.startswith(":") else normalize_name(self.group)
+         if len(self.groups) == 1:
+-            return self.groups[0]
++            return self.groups[0] if self.groups[0].startswith(":") else normalize_name(self.groups[0])
+         return "dev" if self.dev else "default"
+ 
+     @property
+@@ -78,8 +79,10 @@ class GroupSelection:
+         if dev is None:  # --prod is not set, include dev-dependencies
+             dev = True
+         project = self.project
+-        optional_groups = set(project.pyproject.metadata.get("optional-dependencies", {}))
++        optional_groups = {normalize_name(g) for g in project.pyproject.metadata.get("optional-dependencies", {})}
+         dev_groups = set(project.pyproject.dev_dependencies)
++        groups = [g if g.startswith(":") else normalize_name(g) for g in groups]
++        excluded_groups = {g if g.startswith(":") else normalize_name(g) for g in self.excluded_groups}
+         groups_set = set(groups)
+         if groups_set & dev_groups:
+             if not dev:
+@@ -91,7 +94,7 @@ class GroupSelection:
+             groups_set.update(optional_groups)
+         if default:
+             groups_set.add("default")
+-        groups_set -= set(self.excluded_groups)
++        groups_set -= excluded_groups
+ 
+         invalid_groups = groups_set - set(project.iter_groups())
+         if invalid_groups:
+diff --git a/src/pdm/project/core.py b/src/pdm/project/core.py
+index 870d82e..ee069bd 100644
+--- a/src/pdm/project/core.py
++++ b/src/pdm/project/core.py
+@@ -401,7 +401,12 @@ class Project:
+     def get_dependencies(self, group: str | None = None) -> Sequence[Requirement]:
+         metadata = self.pyproject.metadata
+         group = group or "default"
+-        optional_dependencies = metadata.get("optional-dependencies", {})
++        if not group.startswith(":"):
++            group = normalize_name(group)
++        optional_dependencies = {
++            k if k.startswith(":") else normalize_name(k): v
++            for k, v in metadata.get("optional-dependencies", {}).items()
++        }
+         dev_dependencies = self.pyproject.dev_dependencies
+         in_metadata = group == "default" or group in optional_dependencies
+         referred_groups: dict[str, set[str]] = {}
+@@ -441,7 +446,10 @@ class Project:
+     def iter_groups(self) -> Iterable[str]:
+         groups = {"default"}
+         if self.pyproject.metadata.get("optional-dependencies"):
+-            groups.update(self.pyproject.metadata["optional-dependencies"].keys())
++            groups.update(
++                k if k.startswith(":") else normalize_name(k)
++                for k in self.pyproject.metadata["optional-dependencies"].keys()
++            )
+         groups.update(self.pyproject.dev_dependencies.keys())
+         return groups
+ 
+@@ -634,7 +642,7 @@ class Project:
+         """
+         from pdm.formats.base import make_array
+ 
+-        def update_dev_dependencies(deps: list[str]) -> None:
++        def update_dev_dependencies(deps: list[str], group: str) -> None:
+             from tomlkit.container import OutOfOrderTableProxy
+ 
+             dependency_groups: list[str | dict[str, str]] = []
+@@ -662,20 +670,35 @@ class Project:
+         metadata, settings = self.pyproject.metadata, self.pyproject.settings
+         if group == "default":
+             return metadata.get("dependencies", tomlkit.array()), lambda x: metadata.__setitem__("dependencies", x)
++        # Resolve the group to the spelling it already has in pyproject.toml (if any), comparing
++        # normalized names, so e.g. "a-b" and "a_b" refer to the same existing "a_b" table and we
++        # don't create a duplicate sibling group with a different spelling.
++        normalized_group = normalize_name(group)
++        optional_dependencies = metadata.get("optional-dependencies", {})
++        optional_key = next(
++            (key for key in optional_dependencies if normalize_name(key) == normalized_group), group
++        )
++        raw_dev_keys = {**self.pyproject.dependency_groups, **settings.get("dev-dependencies", {})}
++        dev_key = next((key for key in raw_dev_keys if normalize_name(key) == normalized_group), group)
+         deps_setter = [
+             (
+-                metadata.get("optional-dependencies", {}),
+-                lambda x: metadata.setdefault("optional-dependencies", {}).__setitem__(group, x)
++                optional_dependencies,
++                optional_key,
++                lambda x: metadata.setdefault("optional-dependencies", {}).__setitem__(optional_key, x)
+                 if x
+-                else metadata.setdefault("optional-dependencies", {}).pop(group, None),
++                else metadata.setdefault("optional-dependencies", {}).pop(optional_key, None),
++            ),
++            (
++                self.pyproject.dev_dependencies,
++                normalized_group,
++                lambda x: update_dev_dependencies(x, dev_key),
+             ),
+-            (self.pyproject.dev_dependencies, update_dev_dependencies),
+         ]
+-        for deps, setter in deps_setter:
+-            if group in deps:
+-                return make_array(deps[group], True), setter
++        for deps, key, setter in deps_setter:
++            if key in deps:
++                return make_array(deps[key], True), setter
+         # If not found, return an empty list and a setter to add the group
+-        return tomlkit.array(), deps_setter[int(dev)][1]
++        return tomlkit.array(), deps_setter[int(dev)][2]
+ 
+     def add_dependencies(
+         self,

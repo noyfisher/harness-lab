@@ -1,0 +1,26 @@
+diff --git a/src/pdm/project/core.py b/src/pdm/project/core.py
+index 0c5b6fd..f58c433 100644
+--- a/src/pdm/project/core.py
++++ b/src/pdm/project/core.py
+@@ -454,7 +454,20 @@ class Project:
+ 
+     @property
+     def all_dependencies(self) -> dict[str, Sequence[Requirement]]:
+-        return {group: self.get_dependencies(group, resolve_include=False) for group in self.iter_groups()}
++        result = {group: self.get_dependencies(group, resolve_include=False) for group in self.iter_groups()}
++        # `include-group` items are left unexpanded above (so that e.g. `pdm update`/`pdm add`
++        # don't rewrite them into the including group's own list), but that means a requirement
++        # that is only reachable through an `include-group` doesn't know about the group(s) that
++        # include it. Merge that metadata back in from the fully-resolved view, otherwise a
++        # partial lock/update would incorrectly drop the including group from the lockfile.
++        referenced_groups: dict[str, set[str]] = {}
++        for group in result:
++            for req in self.get_dependencies(group):
++                referenced_groups.setdefault(req.identify(), set()).update(req.groups)
++        for deps in result.values():
++            for req in deps:
++                req.groups = sorted(set(req.groups) | referenced_groups.get(req.identify(), set()))
++        return result
+ 
+     @property
+     def default_source(self) -> RepositoryConfig:

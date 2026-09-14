@@ -1,0 +1,85 @@
+diff --git a/src/instructlab/configuration.py b/src/instructlab/configuration.py
+index d2c3412..abc1ce3 100644
+--- a/src/instructlab/configuration.py
++++ b/src/instructlab/configuration.py
+@@ -448,7 +448,7 @@ class _train(BaseModel):
+         default=False, description="Allow CPU offload for FSDP optimizer."
+     )
+     distributed_backend: DistributedBackend = Field(
+-        default=DistributedBackend.DEEPSPEED,
++        default=DistributedBackend.FSDP,
+         description="Pick a distributed training backend framework for GPU accelerated full fine-tuning.",
+         validate_default=True,  # ensures that the 'use_enum_values' flag takes effect on the default value
+     )
+@@ -632,6 +632,7 @@ TWO_GPU_TRAIN_AH = _train(
+     max_seq_len=4096,
+     save_samples=1000,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     num_epochs=8,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),
+@@ -681,6 +682,7 @@ FOUR_L_FORTY_GPU = _train(
+     save_samples=1000,
+     num_epochs=8,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),
+ )
+@@ -706,6 +708,7 @@ EIGHT_L_FOUR_GPU = _train(
+     save_samples=1000,
+     num_epochs=8,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),
+ )
+@@ -730,6 +733,7 @@ SINGLE_SERVER_GPU_TRAIN = _train(
+     max_seq_len=4096,
+     save_samples=1000,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     num_epochs=8,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),
+@@ -755,6 +759,7 @@ SINGLE_CONSUMER_GPU_TRAIN = _train(
+     max_seq_len=4096,
+     save_samples=1000,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     num_epochs=5,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),
+@@ -781,6 +786,7 @@ MULTI_CONSUMER_GPU_TRAIN = _train(
+     max_seq_len=4096,
+     save_samples=1000,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     num_epochs=5,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),
+@@ -807,6 +813,7 @@ SINGLE_L4 = _train(
+     max_seq_len=4096,
+     save_samples=1000,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     num_epochs=5,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),
+@@ -832,6 +839,7 @@ SINGLE_L40 = _train(
+     max_seq_len=4096,
+     save_samples=1000,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     num_epochs=5,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),
+@@ -857,6 +865,7 @@ SINGLE_A100_H100 = _train(
+     max_seq_len=4096,
+     save_samples=1000,
+     deepspeed_cpu_offload_optimizer=True,
++    fsdp_cpu_offload_optimizer=True,
+     is_padding_free=True,
+     num_epochs=8,
+     model_path=os.path.join(DEFAULTS._cache_home, "models/instructlab/granite-7b-lab"),

@@ -1,0 +1,25 @@
+diff --git a/news/3419.bugfix.md b/news/3419.bugfix.md
+new file mode 100644
+index 0000000..fc17c85
+--- /dev/null
++++ b/news/3419.bugfix.md
+@@ -0,0 +1 @@
++Fix `pdm remove` incorrectly requiring dev groups to be present in the lockfile when removing a production dependency.
+diff --git a/src/pdm/cli/commands/remove.py b/src/pdm/cli/commands/remove.py
+index 8785a33..758b71f 100644
+--- a/src/pdm/cli/commands/remove.py
++++ b/src/pdm/cli/commands/remove.py
+@@ -125,7 +125,12 @@ class Command(BaseCommand):
+         if sync:
+             do_sync(
+                 project,
+-                selection=GroupSelection(project, default=False, groups=[group]),
++                selection=GroupSelection(
++                    project,
++                    default=False,
++                    dev=normalize_name(group) in project.pyproject.dev_dependencies,
++                    groups=[group],
++                ),
+                 clean=True,
+                 no_editable=no_editable,
+                 no_self=no_self,

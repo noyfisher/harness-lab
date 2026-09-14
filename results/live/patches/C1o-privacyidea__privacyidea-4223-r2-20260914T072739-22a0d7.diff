@@ -1,0 +1,64 @@
+diff --git a/privacyidea/lib/eventhandler/requestmangler.py b/privacyidea/lib/eventhandler/requestmangler.py
+index 9467939..71d1aa4 100644
+--- a/privacyidea/lib/eventhandler/requestmangler.py
++++ b/privacyidea/lib/eventhandler/requestmangler.py
+@@ -23,11 +23,12 @@ __doc__ = """This is the event handler module modifying request parameters.
+ from privacyidea.lib.eventhandler.base import BaseEventHandler
+ from privacyidea.lib.token import (get_token_types, set_validity_period_end,
+                                    set_validity_period_start)
+-from privacyidea.lib.realm import get_realms
++from privacyidea.lib.realm import get_realms, get_default_realm
+ from privacyidea.lib.token import (set_realms, remove_token, enable_token,
+                                    unassign_token, init_token, set_description,
+                                    set_count_window, add_tokeninfo,
+                                    set_failcounter, delete_tokeninfo)
++from privacyidea.lib.user import User, split_user
+ from privacyidea.lib.utils import (parse_date, is_true,
+                                    parse_time_offset_from_now)
+ from privacyidea.lib.tokenclass import DATE_FORMAT, AUTH_DATE_FORMAT
+@@ -137,11 +138,13 @@ class RequestManglerEventHandler(BaseEventHandler):
+         handler_def = options.get("handler_def")
+         handler_options = handler_def.get("options", {})
+         parameter = handler_options.get("parameter")
++        modified = False
+ 
+         if parameter:
+             if action.lower() == ACTION_TYPE.DELETE:
+                 if parameter in request.all_data:
+                     del(request.all_data[parameter])
++                    modified = True
+             elif action.lower() == ACTION_TYPE.SET:
+                 value = handler_options.get("value")
+                 match_parameter = handler_options.get("match_parameter")
+@@ -151,6 +154,7 @@ class RequestManglerEventHandler(BaseEventHandler):
+                     if not match_parameter:
+                         # simple setting a parameter
+                         request.all_data[parameter] = value
++                        modified = True
+                     elif match_pattern and match_parameter in request.all_data:
+                         # setting a parameter depending on another value,
+                         # but only set it, if match_parameter exists
+@@ -165,8 +169,23 @@ class RequestManglerEventHandler(BaseEventHandler):
+                             # Now we set the new value with the matching tuple
+                             try:
+                                 request.all_data[parameter] = value.format(*m.groups())
++                                modified = True
+                             except IndexError:
+                                 log.warning("The number of found tags ({0!r}) "
+                                             "do not match the required number ({1!r}).".format(m.groups(), value))
+ 
++        if modified and parameter in ["user", "username", "realm", "resolver"]:
++            # request.User was already determined in before_request(), before any
++            # pre-event handler ran. Since we just changed a user-identifying
++            # parameter, we need to recalculate request.User accordingly, the same
++            # way get_user_from_param()/before_request() do it.
++            login_name = request.all_data.get("user") or request.all_data.get("username")
++            if login_name:
++                login_name, realm = split_user(login_name)
++                realm = request.all_data.get("realm") or realm or get_default_realm()
++                try:
++                    request.User = User(login_name, realm, request.all_data.get("resolver"))
++                except Exception as e:
++                    log.warning(f"Problem resolving user {login_name} in realm {realm}: {e!s}.")
++
+         return ret

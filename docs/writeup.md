@@ -150,6 +150,53 @@ That is also cheaper per run than the Sonnet single agent, because Opus 5 finish
 turns at a comparable per-token list price in the CLI's estimate. Both Opus batches ran clean:
 240 runs, no infrastructure failures, no budget hits, $253.50 at list price combined.
 
+## 3c. Second study: SWE-bench-Live at the Opus tier (protocol v2, 2026-09-13 to 14)
+
+SWE-bench Verified was retired by its maintainers in February 2026 and its instances have been
+public for years, so contamination is a live objection to any absolute rate on it (section 6).
+SWE-bench-Live's frozen lite split holds 300 issues filed after the model cutoffs. The second
+study repeats the one comparison that still mattered after section 3b, the Opus single agent
+against the Opus-lead harness, on 40 of those. `docs/protocol-v2.md` was frozen and tagged
+(`protocol-v2`) on 2026-09-13 before the first counted run: 40 instances drawn with seed
+20260912 from the 46 of 60 candidates whose gold patch resolves here (`bench/live-gold-results.json`),
+split 24 train / 16 held-out, stratified by fix size (12 small, 16 medium, 12 large, at most 6
+per repository, 20 repositories), k = 3, $4.00 and 3600 s per run, two workers. Live images are
+amd64-only, so every run and every grading is emulated on this machine; the spike measured the
+slowdown at about 1.9x. The single-agent batch ran 2026-09-13, the harness batch overnight into
+2026-09-14, both on the subscription. Source for every number below: `results/live/report.md`,
+generated from `results/live/runs.jsonl`; machine-readable in `results/live/v2-stats.json`.
+
+| condition | what it is | pass rate (95% CI) | solid_pass / flaky / solid_fail | cost per solve | mean wall (s) |
+|---|---|---|---:|---:|---:|
+| C0o | single agent, Opus 5 | 0.492 [0.350, 0.633] | 16 / 7 / 17 | $1.77 | 853 |
+| C1o | six-agent harness, Opus 5 Lead, Sonnet 5 specialists | 0.508 [0.367, 0.650] | 18 / 6 / 16 | $4.28 | 1028 |
+
+Paired on all 40 instances, C0o to C1o: **0 flips up, 0 regressions**, Wilcoxon p = 0.414, sign
+test p = 1.0. One discordant majority pair, and it favours the single agent
+(`run-llama__llama_deploy-399`). The transition table has 16 solid passes and 15 solid fails
+shared by both conditions; the harness turned two flaky instances solid
+(`instructlab__instructlab-3118`, `reflex-dev__reflex-4563`), lost one flaky instance to solid
+fail (`ipython__ipython-14798`), and moved two solid fails to flaky (`dynaconf__dynaconf-1238`,
+`instructlab__instructlab-2825`). Train: 0.472 against 0.500; held-out: 0.521 against 0.521.
+Fifteen instances were never resolved by either condition in six attempts.
+
+Cost is where the two differ. The harness averaged $2.17 per run against $0.87, 2.5x, for
+$260.95 against $105.39 at list price over the batch, and 2.4x per solve. Two harness runs hit
+the $4.00 cap (`mikedh__trimesh-2354` r0, `pdm-project__pdm-3250` r1), both on instances neither
+condition ever solved; no single-agent run did. Mean turns were comparable (28 against 31), so
+the extra spend is the Lead's Opus context plus the specialists' sessions, not a longer search.
+Wall time is reported with a stated confound: six grader containers leaked by the Live harness
+were running under emulation for the whole single-agent batch (`docs/decisions.md`, 2026-09-13),
+so C0o's 853 s is inflated by contention the harness batch did not face, and the harness was
+still slower. Three single-agent runs are uncounted infrastructure errors (grader timeouts at the
+original 1800 s cap, re-run after the cap was raised; one container that never started).
+
+The absolute rate is roughly half of the same agent's Verified rate. These are harder and less
+familiar tasks, and the emulated environment is slower; the protocol says up front that only the
+paired comparison is interpretable, and the spike had predicted the drop. The paired answer is
+the same one as sections 3 and 3b: at the Opus tier, on tasks the models could not have seen,
+the six-agent structure solves nothing the single agent does not and costs 2.4x per solve.
+
 ## 4. What the improver found
 
 Four of the six hypotheses added process: broader tests, root-layer localization, forced

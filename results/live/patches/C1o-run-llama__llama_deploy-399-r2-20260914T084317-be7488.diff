@@ -1,0 +1,74 @@
+diff --git a/llama_deploy/apiserver/config_parser.py b/llama_deploy/apiserver/config_parser.py
+index 774efa1..003fd37 100644
+--- a/llama_deploy/apiserver/config_parser.py
++++ b/llama_deploy/apiserver/config_parser.py
+@@ -60,6 +60,14 @@ class Service(BaseModel):
+     port: int | None = None
+     python_dependencies: list[str] | None = Field(None, alias="python-dependencies")
+     ts_dependencies: dict[str, str] | None = Field(None, alias="ts-dependencies")
++    env: dict[str, str] | None = Field(
++        None, description="Environment variables to set for the service"
++    )
++    env_files: list[str] | None = Field(
++        None,
++        alias="env-files",
++        description="List of dotenv files to load environment variables from",
++    )
+ 
+ 
+ class Config(BaseModel):
+diff --git a/llama_deploy/apiserver/deployment.py b/llama_deploy/apiserver/deployment.py
+index 80243b0..57126fa 100644
+--- a/llama_deploy/apiserver/deployment.py
++++ b/llama_deploy/apiserver/deployment.py
+@@ -1,11 +1,14 @@
+ import asyncio
+ import importlib
++import os
+ import subprocess
+ import sys
+ from multiprocessing.pool import ThreadPool
+ from pathlib import Path
+ from typing import Any
+ 
++from dotenv import dotenv_values
++
+ from llama_deploy import (
+     Client,
+     ControlPlaneServer,
+@@ -154,6 +157,9 @@ class Deployment:
+             # Install dependencies
+             self._install_dependencies(service_config)
+ 
++            # Set environment variables
++            self._set_environment_variables(service_config, destination)
++
+             # Search for a workflow instance in the service path
+             pythonpath = (destination / service_config.path).parent.resolve()
+             sys.path.append(str(pythonpath))
+@@ -197,6 +203,25 @@ class Deployment:
+             msg = f"Unable to install service dependencies using command '{e.cmd}': {e.stderr}"
+             raise DeploymentError(msg) from None
+ 
++    @staticmethod
++    def _set_environment_variables(
++        service_config: Service, root: Path | None = None
++    ) -> None:
++        """Sets the environment variables for the service, from `env` and `env-files` in the service configuration."""
++        env_vars: dict[str, str | None] = {}
++
++        if service_config.env:
++            env_vars.update(service_config.env)
++
++        if service_config.env_files:
++            for env_file in service_config.env_files:
++                path = Path(root) / env_file if root is not None else Path(env_file)
++                env_vars.update(dotenv_values(path))
++
++        for key, value in env_vars.items():
++            if value:
++                os.environ[key] = value
++
+     def _load_message_queue_client(
+         self, cfg: MessageQueueConfig | None
+     ) -> BaseMessageQueue:

@@ -1,0 +1,34 @@
+diff --git a/haystack/utils/type_serialization.py b/haystack/utils/type_serialization.py
+index 8a14a2f..d1747f6 100644
+--- a/haystack/utils/type_serialization.py
++++ b/haystack/utils/type_serialization.py
+@@ -120,12 +120,15 @@ def deserialize_type(type_str: str) -> Any:
+ 
+         main_type = deserialize_type(main_type_str)
+         generic_args = tuple(deserialize_type(arg) for arg in parse_generic_args(generics_str))
++        # A single argument must be passed on its own (not as a 1-tuple), since some typing
++        # constructs (e.g. typing.Optional) reject a tuple even when there's only one argument.
++        subscript_args = generic_args[0] if len(generic_args) == 1 else generic_args
+ 
+         # Reconstruct
+         if sys.version_info >= (3, 9) or repr(main_type).startswith("typing."):
+-            return main_type[generic_args]
++            return main_type[subscript_args]
+         else:
+-            return type_mapping[main_type][generic_args]  # type: ignore
++            return type_mapping[main_type][subscript_args]  # type: ignore
+ 
+     else:
+         # Handle non-generics
+@@ -133,6 +136,11 @@ def deserialize_type(type_str: str) -> Any:
+         module_name = ".".join(parts[:-1]) or "builtins"
+         type_name = parts[-1]
+ 
++        if type_name == "NoneType":
++            # `NoneType` isn't an attribute of `builtins` (or `types`, before Python 3.10),
++            # so it can't be resolved via the normal module/attribute lookup below.
++            return type(None)
++
+         module = sys.modules.get(module_name)
+         if not module:
+             try:

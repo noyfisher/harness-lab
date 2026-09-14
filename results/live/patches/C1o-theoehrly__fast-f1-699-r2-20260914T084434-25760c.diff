@@ -1,0 +1,41 @@
+diff --git a/fastf1/core.py b/fastf1/core.py
+index 0f364cc..0a8b9c1 100644
+--- a/fastf1/core.py
++++ b/fastf1/core.py
+@@ -2223,8 +2223,25 @@ class Session:
+ 
+         # F1 and Ergast data
+         else:
+-            missing_drivers = list(set(driver_info_ergast['DriverNumber'])
+-                                   .difference(driver_info_f1['DriverNumber']))
++            # the Ergast data only actually belongs to this session if this
++            # is a race-like or quali-like session; for practice sessions,
++            # the Ergast data is the race entry list (see
++            # ``_drivers_results_from_ergast``) and must not be used to add
++            # drivers that did not take part in the practice session
++            is_session_specific_ergast_data = (
++                self.name
++                in self._RACE_LIKE_SESSIONS + self._QUALI_LIKE_SESSIONS
++            )
++
++            if is_session_specific_ergast_data:
++                missing_drivers = list(
++                    set(driver_info_ergast['DriverNumber'])
++                    .difference(driver_info_f1['DriverNumber'])
++                )
++                join_how = 'outer'
++            else:
++                missing_drivers = list()
++                join_how = 'left'
+             # drivers are missing if DNSed (did not start)
+             # in that case, pull more information from Ergast for these drivers
+ 
+@@ -2233,7 +2250,7 @@ class Session:
+ 
+             self._results = SessionResults(
+                 driver_info_f1.join(driver_info_ergast.loc[:, join_cols],
+-                                    how='outer'),
++                                    how=join_how),
+                 _force_default_cols=True
+             )
+ 

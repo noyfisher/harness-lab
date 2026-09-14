@@ -1,0 +1,1217 @@
+{
+  "params": {
+    "n_boot": 10000,
+    "seed": 0,
+    "alpha": 0.05,
+    "counted_outcomes": [
+      "budget",
+      "no_diff",
+      "resolved",
+      "timeout",
+      "unresolved"
+    ],
+    "non_counted_outcomes": [
+      "error",
+      "parse_error",
+      "paused"
+    ]
+  },
+  "conditions": [
+    "C0o",
+    "C1o"
+  ],
+  "n_runs_loaded": 243,
+  "n_runs_counted": 240,
+  "per_condition": {
+    "C0o": {
+      "condition": "C0o",
+      "n_instances": 40,
+      "k_min": 3,
+      "k_max": 3,
+      "n_counted_runs": 120,
+      "pass_rate": 0.4916666666666666,
+      "ci_lo": 0.35,
+      "ci_hi": 0.6333333333333333,
+      "ci_alpha": 0.05,
+      "class_counts": {
+        "solid_pass": 16,
+        "flaky": 7,
+        "solid_fail": 17
+      },
+      "per_instance": {
+        "beeware__briefcase-2075": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "conan-io__conan-17266": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "conan-io__conan-17292": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "conan-io__conan-17300": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "conan-io__conan-17725": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "conan-io__conan-17923": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "deepset-ai__haystack-8525": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "deepset-ai__haystack-8725": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "deepset-ai__haystack-8969": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "deepset-ai__haystack-8992": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "deepset-ai__haystack-8993": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "delgan__loguru-1297": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "dynaconf__dynaconf-1238": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "dynaconf__dynaconf-1241": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "icloud-photos-downloader__icloud_photos_downloader-1060": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "instructlab__instructlab-2526": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "instructlab__instructlab-2540": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "instructlab__instructlab-2825": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "instructlab__instructlab-3118": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "ipython__ipython-14798": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "joke2k__faker-2142": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "kubernetes-client__python-2303": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "mikedh__trimesh-2354": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "mikedh__trimesh-2363": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "patroni__patroni-3198": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pdm-project__pdm-3250": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pdm-project__pdm-3374": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pdm-project__pdm-3419": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pdm-project__pdm-3420": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "privacyidea__privacyidea-4223": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "privacyidea__privacyidea-4251": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pvlib__pvlib-python-2393": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pvlib__pvlib-python-2400": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytorch__torchtune-2139": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "reflex-dev__reflex-4129": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "reflex-dev__reflex-4563": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "run-llama__llama_deploy-372": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "run-llama__llama_deploy-399": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "theoehrly__fast-f1-699": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "tox-dev__tox-3409": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        }
+      },
+      "cost": {
+        "condition": "C0o",
+        "n_counted": 120,
+        "total_cost_usd": 104.71408290000001,
+        "n_cost_reported": 120,
+        "mean_cost_per_run": 0.8726173575,
+        "resolved_count": 59,
+        "cost_per_solve": 1.7748149644067799,
+        "mean_wall_s": 853.3716666666668,
+        "mean_num_turns": 30.916666666666668,
+        "infra_failures": {
+          "error": 3
+        },
+        "infra_failures_total": 3
+      }
+    },
+    "C1o": {
+      "condition": "C1o",
+      "n_instances": 40,
+      "k_min": 3,
+      "k_max": 3,
+      "n_counted_runs": 120,
+      "pass_rate": 0.5083333333333334,
+      "ci_lo": 0.36666666666666664,
+      "ci_hi": 0.65,
+      "ci_alpha": 0.05,
+      "class_counts": {
+        "solid_pass": 18,
+        "flaky": 6,
+        "solid_fail": 16
+      },
+      "per_instance": {
+        "beeware__briefcase-2075": {
+          "passes": 2,
+          "k": 3,
+          "class": "flaky"
+        },
+        "conan-io__conan-17266": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "conan-io__conan-17292": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "conan-io__conan-17300": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "conan-io__conan-17725": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "conan-io__conan-17923": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "deepset-ai__haystack-8525": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "deepset-ai__haystack-8725": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "deepset-ai__haystack-8969": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "deepset-ai__haystack-8992": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "deepset-ai__haystack-8993": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "delgan__loguru-1297": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "dynaconf__dynaconf-1238": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "dynaconf__dynaconf-1241": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "icloud-photos-downloader__icloud_photos_downloader-1060": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "instructlab__instructlab-2526": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "instructlab__instructlab-2540": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "instructlab__instructlab-2825": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "instructlab__instructlab-3118": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "ipython__ipython-14798": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "joke2k__faker-2142": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "kubernetes-client__python-2303": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "mikedh__trimesh-2354": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "mikedh__trimesh-2363": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "patroni__patroni-3198": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pdm-project__pdm-3250": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pdm-project__pdm-3374": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pdm-project__pdm-3419": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pdm-project__pdm-3420": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "privacyidea__privacyidea-4223": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "privacyidea__privacyidea-4251": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        },
+        "pvlib__pvlib-python-2393": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pvlib__pvlib-python-2400": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "pytorch__torchtune-2139": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "reflex-dev__reflex-4129": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "reflex-dev__reflex-4563": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "run-llama__llama_deploy-372": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "run-llama__llama_deploy-399": {
+          "passes": 1,
+          "k": 3,
+          "class": "flaky"
+        },
+        "theoehrly__fast-f1-699": {
+          "passes": 3,
+          "k": 3,
+          "class": "solid_pass"
+        },
+        "tox-dev__tox-3409": {
+          "passes": 0,
+          "k": 3,
+          "class": "solid_fail"
+        }
+      },
+      "cost": {
+        "condition": "C1o",
+        "n_counted": 120,
+        "total_cost_usd": 260.94607484999995,
+        "n_cost_reported": 120,
+        "mean_cost_per_run": 2.1745506237499996,
+        "resolved_count": 61,
+        "cost_per_solve": 4.277804505737704,
+        "mean_wall_s": 1028.021666666667,
+        "mean_num_turns": 27.633333333333333,
+        "infra_failures": {},
+        "infra_failures_total": 0
+      }
+    }
+  },
+  "paired": [
+    {
+      "cond_a": "C0o",
+      "cond_b": "C1o",
+      "n_instances": 40,
+      "n_only_a": 0,
+      "n_only_b": 0,
+      "n_paired": 40,
+      "n_excluded": 0,
+      "k_mismatch_instances": [],
+      "instances": [
+        {
+          "instance_id": "beeware__briefcase-2075",
+          "a_passes": 2,
+          "a_k": 3,
+          "b_passes": 2,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "flaky",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "conan-io__conan-17266",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "conan-io__conan-17292",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "conan-io__conan-17300",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "conan-io__conan-17725",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "conan-io__conan-17923",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "deepset-ai__haystack-8525",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "deepset-ai__haystack-8725",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "deepset-ai__haystack-8969",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "deepset-ai__haystack-8992",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "deepset-ai__haystack-8993",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "delgan__loguru-1297",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "dynaconf__dynaconf-1238",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 1,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "flaky",
+          "diff": 1,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "dynaconf__dynaconf-1241",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "icloud-photos-downloader__icloud_photos_downloader-1060",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "instructlab__instructlab-2526",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "instructlab__instructlab-2540",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "instructlab__instructlab-2825",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 1,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "flaky",
+          "diff": 1,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "instructlab__instructlab-3118",
+          "a_passes": 2,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "solid_pass",
+          "diff": 1,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "ipython__ipython-14798",
+          "a_passes": 1,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "solid_fail",
+          "diff": -1,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "joke2k__faker-2142",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "kubernetes-client__python-2303",
+          "a_passes": 1,
+          "a_k": 3,
+          "b_passes": 1,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "flaky",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "mikedh__trimesh-2354",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "mikedh__trimesh-2363",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "patroni__patroni-3198",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "pdm-project__pdm-3250",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "pdm-project__pdm-3374",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "pdm-project__pdm-3419",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "pdm-project__pdm-3420",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "privacyidea__privacyidea-4223",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "privacyidea__privacyidea-4251",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "pvlib__pvlib-python-2393",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pvlib__pvlib-python-2400",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "pytorch__torchtune-2139",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "reflex-dev__reflex-4129",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "reflex-dev__reflex-4563",
+          "a_passes": 2,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "solid_pass",
+          "diff": 1,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "run-llama__llama_deploy-372",
+          "a_passes": 1,
+          "a_k": 3,
+          "b_passes": 1,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "flaky",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        },
+        {
+          "instance_id": "run-llama__llama_deploy-399",
+          "a_passes": 2,
+          "a_k": 3,
+          "b_passes": 1,
+          "b_k": 3,
+          "a_class": "flaky",
+          "b_class": "flaky",
+          "diff": -1,
+          "a_majority": true,
+          "b_majority": false
+        },
+        {
+          "instance_id": "theoehrly__fast-f1-699",
+          "a_passes": 3,
+          "a_k": 3,
+          "b_passes": 3,
+          "b_k": 3,
+          "a_class": "solid_pass",
+          "b_class": "solid_pass",
+          "diff": 0,
+          "a_majority": true,
+          "b_majority": true
+        },
+        {
+          "instance_id": "tox-dev__tox-3409",
+          "a_passes": 0,
+          "a_k": 3,
+          "b_passes": 0,
+          "b_k": 3,
+          "a_class": "solid_fail",
+          "b_class": "solid_fail",
+          "diff": 0,
+          "a_majority": false,
+          "b_majority": false
+        }
+      ],
+      "pass_counts_a": {
+        "beeware__briefcase-2075": 2,
+        "conan-io__conan-17266": 3,
+        "conan-io__conan-17292": 3,
+        "conan-io__conan-17300": 3,
+        "conan-io__conan-17725": 0,
+        "conan-io__conan-17923": 3,
+        "deepset-ai__haystack-8525": 0,
+        "deepset-ai__haystack-8725": 3,
+        "deepset-ai__haystack-8969": 3,
+        "deepset-ai__haystack-8992": 0,
+        "deepset-ai__haystack-8993": 0,
+        "delgan__loguru-1297": 0,
+        "dynaconf__dynaconf-1238": 0,
+        "dynaconf__dynaconf-1241": 3,
+        "icloud-photos-downloader__icloud_photos_downloader-1060": 3,
+        "instructlab__instructlab-2526": 3,
+        "instructlab__instructlab-2540": 0,
+        "instructlab__instructlab-2825": 0,
+        "instructlab__instructlab-3118": 2,
+        "ipython__ipython-14798": 1,
+        "joke2k__faker-2142": 0,
+        "kubernetes-client__python-2303": 1,
+        "mikedh__trimesh-2354": 0,
+        "mikedh__trimesh-2363": 3,
+        "patroni__patroni-3198": 0,
+        "pdm-project__pdm-3250": 0,
+        "pdm-project__pdm-3374": 0,
+        "pdm-project__pdm-3419": 0,
+        "pdm-project__pdm-3420": 3,
+        "privacyidea__privacyidea-4223": 0,
+        "privacyidea__privacyidea-4251": 0,
+        "pvlib__pvlib-python-2393": 3,
+        "pvlib__pvlib-python-2400": 3,
+        "pytorch__torchtune-2139": 3,
+        "reflex-dev__reflex-4129": 3,
+        "reflex-dev__reflex-4563": 2,
+        "run-llama__llama_deploy-372": 1,
+        "run-llama__llama_deploy-399": 2,
+        "theoehrly__fast-f1-699": 3,
+        "tox-dev__tox-3409": 0
+      },
+      "pass_counts_b": {
+        "beeware__briefcase-2075": 2,
+        "conan-io__conan-17266": 3,
+        "conan-io__conan-17292": 3,
+        "conan-io__conan-17300": 3,
+        "conan-io__conan-17725": 0,
+        "conan-io__conan-17923": 3,
+        "deepset-ai__haystack-8525": 0,
+        "deepset-ai__haystack-8725": 3,
+        "deepset-ai__haystack-8969": 3,
+        "deepset-ai__haystack-8992": 0,
+        "deepset-ai__haystack-8993": 0,
+        "delgan__loguru-1297": 0,
+        "dynaconf__dynaconf-1238": 1,
+        "dynaconf__dynaconf-1241": 3,
+        "icloud-photos-downloader__icloud_photos_downloader-1060": 3,
+        "instructlab__instructlab-2526": 3,
+        "instructlab__instructlab-2540": 0,
+        "instructlab__instructlab-2825": 1,
+        "instructlab__instructlab-3118": 3,
+        "ipython__ipython-14798": 0,
+        "joke2k__faker-2142": 0,
+        "kubernetes-client__python-2303": 1,
+        "mikedh__trimesh-2354": 0,
+        "mikedh__trimesh-2363": 3,
+        "patroni__patroni-3198": 0,
+        "pdm-project__pdm-3250": 0,
+        "pdm-project__pdm-3374": 0,
+        "pdm-project__pdm-3419": 0,
+        "pdm-project__pdm-3420": 3,
+        "privacyidea__privacyidea-4223": 0,
+        "privacyidea__privacyidea-4251": 0,
+        "pvlib__pvlib-python-2393": 3,
+        "pvlib__pvlib-python-2400": 3,
+        "pytorch__torchtune-2139": 3,
+        "reflex-dev__reflex-4129": 3,
+        "reflex-dev__reflex-4563": 3,
+        "run-llama__llama_deploy-372": 1,
+        "run-llama__llama_deploy-399": 1,
+        "theoehrly__fast-f1-699": 3,
+        "tox-dev__tox-3409": 0
+      },
+      "k_a": {
+        "beeware__briefcase-2075": 3,
+        "conan-io__conan-17266": 3,
+        "conan-io__conan-17292": 3,
+        "conan-io__conan-17300": 3,
+        "conan-io__conan-17725": 3,
+        "conan-io__conan-17923": 3,
+        "deepset-ai__haystack-8525": 3,
+        "deepset-ai__haystack-8725": 3,
+        "deepset-ai__haystack-8969": 3,
+        "deepset-ai__haystack-8992": 3,
+        "deepset-ai__haystack-8993": 3,
+        "delgan__loguru-1297": 3,
+        "dynaconf__dynaconf-1238": 3,
+        "dynaconf__dynaconf-1241": 3,
+        "icloud-photos-downloader__icloud_photos_downloader-1060": 3,
+        "instructlab__instructlab-2526": 3,
+        "instructlab__instructlab-2540": 3,
+        "instructlab__instructlab-2825": 3,
+        "instructlab__instructlab-3118": 3,
+        "ipython__ipython-14798": 3,
+        "joke2k__faker-2142": 3,
+        "kubernetes-client__python-2303": 3,
+        "mikedh__trimesh-2354": 3,
+        "mikedh__trimesh-2363": 3,
+        "patroni__patroni-3198": 3,
+        "pdm-project__pdm-3250": 3,
+        "pdm-project__pdm-3374": 3,
+        "pdm-project__pdm-3419": 3,
+        "pdm-project__pdm-3420": 3,
+        "privacyidea__privacyidea-4223": 3,
+        "privacyidea__privacyidea-4251": 3,
+        "pvlib__pvlib-python-2393": 3,
+        "pvlib__pvlib-python-2400": 3,
+        "pytorch__torchtune-2139": 3,
+        "reflex-dev__reflex-4129": 3,
+        "reflex-dev__reflex-4563": 3,
+        "run-llama__llama_deploy-372": 3,
+        "run-llama__llama_deploy-399": 3,
+        "theoehrly__fast-f1-699": 3,
+        "tox-dev__tox-3409": 3
+      },
+      "k_b": {
+        "beeware__briefcase-2075": 3,
+        "conan-io__conan-17266": 3,
+        "conan-io__conan-17292": 3,
+        "conan-io__conan-17300": 3,
+        "conan-io__conan-17725": 3,
+        "conan-io__conan-17923": 3,
+        "deepset-ai__haystack-8525": 3,
+        "deepset-ai__haystack-8725": 3,
+        "deepset-ai__haystack-8969": 3,
+        "deepset-ai__haystack-8992": 3,
+        "deepset-ai__haystack-8993": 3,
+        "delgan__loguru-1297": 3,
+        "dynaconf__dynaconf-1238": 3,
+        "dynaconf__dynaconf-1241": 3,
+        "icloud-photos-downloader__icloud_photos_downloader-1060": 3,
+        "instructlab__instructlab-2526": 3,
+        "instructlab__instructlab-2540": 3,
+        "instructlab__instructlab-2825": 3,
+        "instructlab__instructlab-3118": 3,
+        "ipython__ipython-14798": 3,
+        "joke2k__faker-2142": 3,
+        "kubernetes-client__python-2303": 3,
+        "mikedh__trimesh-2354": 3,
+        "mikedh__trimesh-2363": 3,
+        "patroni__patroni-3198": 3,
+        "pdm-project__pdm-3250": 3,
+        "pdm-project__pdm-3374": 3,
+        "pdm-project__pdm-3419": 3,
+        "pdm-project__pdm-3420": 3,
+        "privacyidea__privacyidea-4223": 3,
+        "privacyidea__privacyidea-4251": 3,
+        "pvlib__pvlib-python-2393": 3,
+        "pvlib__pvlib-python-2400": 3,
+        "pytorch__torchtune-2139": 3,
+        "reflex-dev__reflex-4129": 3,
+        "reflex-dev__reflex-4563": 3,
+        "run-llama__llama_deploy-372": 3,
+        "run-llama__llama_deploy-399": 3,
+        "theoehrly__fast-f1-699": 3,
+        "tox-dev__tox-3409": 3
+      },
+      "flips_up": 0,
+      "regressions": 0,
+      "transition_table": {
+        "classes": [
+          "solid_pass",
+          "flaky",
+          "solid_fail"
+        ],
+        "matrix": [
+          [
+            16,
+            0,
+            0
+          ],
+          [
+            2,
+            4,
+            1
+          ],
+          [
+            0,
+            2,
+            15
+          ]
+        ],
+        "rows": {
+          "solid_pass": {
+            "solid_pass": 16,
+            "flaky": 0,
+            "solid_fail": 0
+          },
+          "flaky": {
+            "solid_pass": 2,
+            "flaky": 4,
+            "solid_fail": 1
+          },
+          "solid_fail": {
+            "solid_pass": 0,
+            "flaky": 2,
+            "solid_fail": 15
+          }
+        },
+        "total": 40
+      },
+      "discordant": {
+        "n_discordant": 1,
+        "b_only": 0,
+        "a_only": 1,
+        "both": 19,
+        "neither": 20
+      },
+      "wilcoxon": {
+        "statistic": 7.0,
+        "p_value": 0.4142161782425253,
+        "zero_method": "wilcox",
+        "n_nonzero": 6,
+        "note": ""
+      },
+      "sign_test": {
+        "p_value": 1.0,
+        "n_discordant": 1,
+        "b_better": 0,
+        "note": ""
+      }
+    }
+  ]
+}

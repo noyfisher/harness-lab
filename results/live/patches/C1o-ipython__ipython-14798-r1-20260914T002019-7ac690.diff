@@ -1,0 +1,57 @@
+diff --git a/IPython/core/inputtransformer2.py b/IPython/core/inputtransformer2.py
+index 4f9bcfe..a96b8d3 100644
+--- a/IPython/core/inputtransformer2.py
++++ b/IPython/core/inputtransformer2.py
+@@ -112,16 +112,38 @@ def __call__(self, lines):
+ )
+ 
+ 
++_cell_magic_assign_re = re.compile(r"^(?P<lhs>\s*[a-zA-Z_]\w*\s*=\s*)(?=%%)")
++
++
++def _find_cell_magic(line):
++    """If *line* is a (possibly assigned) cell magic, return (lhs, rest).
++
++    ``lhs`` is the assignment prefix (empty string if there is none) and
++    ``rest`` is the remainder of the line starting at the ``%%``. Returns
++    None if the line is not a cell magic at all.
++    """
++    m = _cell_magic_assign_re.match(line)
++    if m:
++        return m.group('lhs'), line[m.end():]
++    if line.startswith('%%'):
++        return '', line
++    return None
++
++
+ def cell_magic(lines):
+-    if not lines or not lines[0].startswith('%%'):
++    if not lines:
++        return lines
++    found = _find_cell_magic(lines[0])
++    if found is None:
+         return lines
+-    if re.match(r'%%\w+\?', lines[0]):
++    lhs, first = found
++    if re.match(r'%%\w+\?', first):
+         # This case will be handled by help_end
+         return lines
+-    magic_name, _, first_line = lines[0][2:].rstrip().partition(' ')
++    magic_name, _, first_line = first[2:].rstrip().partition(' ')
+     body = ''.join(lines[1:])
+-    return ['get_ipython().run_cell_magic(%r, %r, %r)\n'
+-            % (magic_name, first_line, body)]
++    return ['%sget_ipython().run_cell_magic(%r, %r, %r)\n'
++            % (lhs, magic_name, first_line, body)]
+ 
+ 
+ def _find_assign_op(token_line) -> Optional[int]:
+@@ -696,7 +718,7 @@ def check_complete(self, cell: str):
+         except SyntaxError:
+             return 'invalid', None
+ 
+-        if lines[0].startswith('%%'):
++        if _find_cell_magic(lines[0]) is not None:
+             # Special case for cell magics - completion marked by blank line
+             if lines[-1].strip():
+                 return 'incomplete', find_last_indent(lines)

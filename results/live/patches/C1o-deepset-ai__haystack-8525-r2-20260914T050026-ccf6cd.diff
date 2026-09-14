@@ -1,0 +1,265 @@
+diff --git a/docs/pydoc/config/preprocessors_api.yml b/docs/pydoc/config/preprocessors_api.yml
+index c27e01b..489dddb 100644
+--- a/docs/pydoc/config/preprocessors_api.yml
++++ b/docs/pydoc/config/preprocessors_api.yml
+@@ -1,7 +1,7 @@
+ loaders:
+   - type: haystack_pydoc_tools.loaders.CustomPythonLoader
+     search_path: [../../../haystack/components/preprocessors]
+-    modules: ["document_cleaner", "document_splitter", "text_cleaner", "nltk_document_splitter"]
++    modules: ["csv_document_splitter", "document_cleaner", "document_splitter", "text_cleaner", "nltk_document_splitter"]
+     ignore_when_discovered: ["__init__"]
+ processors:
+   - type: filter
+diff --git a/haystack/components/preprocessors/__init__.py b/haystack/components/preprocessors/__init__.py
+index f7e1320..b86b77c 100644
+--- a/haystack/components/preprocessors/__init__.py
++++ b/haystack/components/preprocessors/__init__.py
+@@ -2,9 +2,10 @@
+ #
+ # SPDX-License-Identifier: Apache-2.0
+ 
++from .csv_document_splitter import CSVDocumentSplitter
+ from .document_cleaner import DocumentCleaner
+ from .document_splitter import DocumentSplitter
+ from .nltk_document_splitter import NLTKDocumentSplitter
+ from .text_cleaner import TextCleaner
+ 
+-__all__ = ["DocumentSplitter", "DocumentCleaner", "TextCleaner", "NLTKDocumentSplitter"]
++__all__ = ["CSVDocumentSplitter", "DocumentSplitter", "DocumentCleaner", "TextCleaner", "NLTKDocumentSplitter"]
+diff --git a/haystack/components/preprocessors/csv_document_splitter.py b/haystack/components/preprocessors/csv_document_splitter.py
+new file mode 100644
+index 0000000..abcc99b
+--- /dev/null
++++ b/haystack/components/preprocessors/csv_document_splitter.py
+@@ -0,0 +1,218 @@
++# SPDX-FileCopyrightText: 2022-present deepset GmbH <info@deepset.ai>
++#
++# SPDX-License-Identifier: Apache-2.0
++
++from io import StringIO
++from typing import Dict, List, Literal, Optional, Tuple
++
++from haystack import Document, component, logging
++from haystack.lazy_imports import LazyImport
++
++with LazyImport("Run 'pip install pandas'") as pandas_import:
++    import pandas as pd
++
++logger = logging.getLogger(__name__)
++
++
++@component
++class CSVDocumentSplitter:
++    """
++    A component for splitting CSV documents into sub-tables based on split arguments.
++
++    The splitter identifies consecutive empty rows or columns that exceed a given threshold
++    and uses them as delimiters to segment the document into smaller tables.
++    """
++
++    def __init__(self, row_split_threshold: Optional[int] = 2, column_split_threshold: Optional[int] = 2) -> None:
++        """
++        Initializes the CSVDocumentSplitter component.
++
++        :param row_split_threshold: The minimum number of consecutive empty rows required to trigger a split.
++        :param column_split_threshold: The minimum number of consecutive empty columns required to trigger a split.
++        """
++        pandas_import.check()
++
++        if row_split_threshold is not None and row_split_threshold < 1:
++            raise ValueError("row_split_threshold must be greater than 0")
++
++        if column_split_threshold is not None and column_split_threshold < 1:
++            raise ValueError("column_split_threshold must be greater than 0")
++
++        if row_split_threshold is None and column_split_threshold is None:
++            raise ValueError("At least one of row_split_threshold or column_split_threshold must be specified.")
++
++        self.row_split_threshold = row_split_threshold
++        self.column_split_threshold = column_split_threshold
++
++    @component.output_types(documents=List[Document])
++    def run(self, documents: List[Document]) -> Dict[str, List[Document]]:
++        """
++        Processes and splits a list of CSV documents into multiple sub-tables.
++
++        **Splitting Strategy**
++        - If `row_split_threshold` is provided, the CSV is split into sub-tables wherever there are at least
++          that many consecutive empty rows.
++        - If `column_split_threshold` is provided, the CSV is split into sub-tables wherever there are at least
++          that many consecutive empty columns.
++        - If both thresholds are provided, the document is split recursively on rows first and then on columns,
++          ensuring a full decomposition of the original table.
++
++        :param documents: A list of Documents containing CSV-formatted content.
++
++        :returns: A dictionary with a key `"documents"`, mapping to a list of new `Document` objects,
++            each representing a segmented part of the original CSV.
++        """
++        if len(documents) == 0:
++            return {"documents": documents}
++
++        resolved_documents = []
++        for document in documents:
++            try:
++                df = pd.read_csv(  # type: ignore
++                    StringIO(document.content),
++                    header=None,
++                    dtype=object,
++                    skip_blank_lines=False,
++                    keep_default_na=False,
++                    na_values=[""],
++                )
++            except Exception as e:
++                logger.error(
++                    "Error processing document {doc_id}. Keeping it, but skipping splitting. Error: {error}",
++                    doc_id=document.id,
++                    error=e,
++                )
++                resolved_documents.append(document)
++                continue
++
++            if self.row_split_threshold is not None and self.column_split_threshold is None:
++                split_dfs = self._split_dataframe(df=df, split_threshold=self.row_split_threshold, axis="row")
++            elif self.column_split_threshold is not None and self.row_split_threshold is None:
++                split_dfs = self._split_dataframe(df=df, split_threshold=self.column_split_threshold, axis="column")
++            else:
++                split_dfs = self._recursive_split(
++                    df=df,
++                    row_split_threshold=self.row_split_threshold,  # type: ignore
++                    column_split_threshold=self.column_split_threshold,  # type: ignore
++                )
++
++            split_dfs.sort(key=lambda dataframe: (dataframe.index[0], dataframe.columns[0]))
++
++            for split_id, split_df in enumerate(split_dfs):
++                split_document = Document(
++                    content=split_df.to_csv(index=False, header=False, lineterminator="\n"),
++                    meta=document.meta.copy(),
++                )
++                split_document.meta.update(
++                    {
++                        "source_id": document.id,
++                        "row_idx_start": int(split_df.index[0]),
++                        "col_idx_start": int(split_df.columns[0]),
++                        "split_id": split_id,
++                    }
++                )
++                resolved_documents.append(split_document)
++
++        return {"documents": resolved_documents}
++
++    @staticmethod
++    def _find_split_indices(
++        df: "pd.DataFrame", split_threshold: int, axis: Literal["row", "column"]
++    ) -> List[Tuple[int, int]]:
++        """
++        Finds the indices of consecutive empty rows or columns that exceed the split threshold.
++
++        :param df: DataFrame to analyze.
++        :param split_threshold: The minimum number of consecutive empty rows or columns required to trigger a split.
++        :param axis: Whether to look for consecutive empty rows ("row") or columns ("column").
++
++        :returns: A list of (start, end) index tuples representing consecutive empty rows or columns that meet
++            or exceed the split threshold.
++        """
++        if axis == "row":
++            empty_elements = df[df.isnull().all(axis=1)].index.tolist()
++        else:
++            empty_elements = df.columns[df.isnull().all(axis=0)].tolist()
++
++        split_indices = []
++        if not empty_elements:
++            return split_indices
++
++        start_idx = empty_elements[0]
++        prev_idx = empty_elements[0]
++
++        for idx in empty_elements[1:]:
++            if idx == prev_idx + 1:
++                prev_idx = idx
++                continue
++            if prev_idx - start_idx + 1 >= split_threshold:
++                split_indices.append((start_idx, prev_idx))
++            start_idx = idx
++            prev_idx = idx
++
++        if prev_idx - start_idx + 1 >= split_threshold:
++            split_indices.append((start_idx, prev_idx))
++
++        return split_indices
++
++    @staticmethod
++    def _split_dataframe(
++        df: "pd.DataFrame", split_threshold: int, axis: Literal["row", "column"]
++    ) -> List["pd.DataFrame"]:
++        """
++        Splits a DataFrame into multiple sub-tables based on consecutive empty rows or columns.
++
++        :param df: DataFrame to split.
++        :param split_threshold: The minimum number of consecutive empty rows or columns required to trigger a split.
++        :param axis: Whether to split on rows ("row") or columns ("column").
++
++        :returns: A list of split DataFrames.
++        """
++        split_indices = CSVDocumentSplitter._find_split_indices(df=df, split_threshold=split_threshold, axis=axis)
++
++        if not split_indices:
++            return [df]
++
++        sub_tables = []
++        table_start_idx = 0
++        df_length = df.shape[0] if axis == "row" else df.shape[1]
++
++        for empty_start_idx, empty_end_idx in split_indices + [(df_length, df_length)]:
++            if empty_start_idx - table_start_idx >= 1:
++                sub_table = (
++                    df.iloc[table_start_idx:empty_start_idx]
++                    if axis == "row"
++                    else df.iloc[:, table_start_idx:empty_start_idx]
++                )
++                if not sub_table.empty:
++                    sub_tables.append(sub_table)
++            table_start_idx = empty_end_idx + 1
++
++        return sub_tables
++
++    def _recursive_split(
++        self, df: "pd.DataFrame", row_split_threshold: int, column_split_threshold: int
++    ) -> List["pd.DataFrame"]:
++        """
++        Recursively splits a DataFrame first by empty rows, then by empty columns, until no more splits are needed.
++
++        :param df: A Pandas DataFrame representing the CSV data.
++        :param row_split_threshold: The minimum number of consecutive empty rows required to trigger a split.
++        :param column_split_threshold: The minimum number of consecutive empty columns required to trigger a split.
++
++        :returns: A list of DataFrames, each representing a fully segmented table.
++        """
++        new_sub_tables = self._split_dataframe(df=df, split_threshold=row_split_threshold, axis="row")
++
++        final_tables = []
++        for table in new_sub_tables:
++            final_tables.extend(self._split_dataframe(df=table, split_threshold=column_split_threshold, axis="column"))
++
++        if len(final_tables) == 1 and final_tables[0].equals(df):
++            return final_tables
++
++        result = []
++        for table in final_tables:
++            result.extend(self._recursive_split(table, row_split_threshold, column_split_threshold))
++
++        return result
+diff --git a/releasenotes/notes/add-csv-document-splitter-8f1c2b4a6e5d9a3f.yaml b/releasenotes/notes/add-csv-document-splitter-8f1c2b4a6e5d9a3f.yaml
+new file mode 100644
+index 0000000..99b2ee1
+--- /dev/null
++++ b/releasenotes/notes/add-csv-document-splitter-8f1c2b4a6e5d9a3f.yaml
+@@ -0,0 +1,6 @@
++---
++features:
++  - |
++    Added a new `CSVDocumentSplitter` component to the preprocessors module. It splits CSV documents into
++    sub-tables by detecting consecutive empty rows and/or columns that exceed a configurable threshold, making
++    it easier to process CSV files that contain multiple tables.

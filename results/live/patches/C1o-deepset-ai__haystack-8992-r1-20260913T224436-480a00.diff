@@ -1,0 +1,165 @@
+diff --git a/haystack/components/converters/pdfminer.py b/haystack/components/converters/pdfminer.py
+index 6c8fc6c..180674d 100644
+--- a/haystack/components/converters/pdfminer.py
++++ b/haystack/components/converters/pdfminer.py
+@@ -8,7 +8,7 @@ from pathlib import Path
+ from typing import Any, Dict, Iterator, List, Optional, Union
+ 
+ from haystack import Document, component, logging
+-from haystack.components.converters.utils import get_bytestream_from_source, normalize_metadata
++from haystack.components.converters.utils import get_bytestream_from_source, normalize_encoding, normalize_metadata
+ from haystack.dataclasses import ByteStream
+ from haystack.lazy_imports import LazyImport
+ 
+@@ -48,6 +48,7 @@ class PDFMinerToDocument:
+         detect_vertical: bool = True,
+         all_texts: bool = False,
+         store_full_path: bool = False,
++        encoding: str = "utf-8",
+     ) -> None:
+         """
+         Create a PDFMinerToDocument component.
+@@ -83,6 +84,10 @@ class PDFMinerToDocument:
+         :param store_full_path:
+             If True, the full path of the file is stored in the metadata of the document.
+             If False, only the file name is stored.
++        :param encoding:
++            The encoding to use when re-decoding the text extracted from the PDF.
++            Use `"auto"` to automatically detect the encoding of the extracted text.
++            Defaults to `"utf-8"`, which leaves the extracted text unchanged.
+         """
+ 
+         pdfminer_import.check()
+@@ -97,6 +102,7 @@ class PDFMinerToDocument:
+             all_texts=all_texts,
+         )
+         self.store_full_path = store_full_path
++        self.encoding = encoding
+ 
+     @staticmethod
+     def _converter(lt_page_objs: Iterator) -> str:
+@@ -162,6 +168,7 @@ class PDFMinerToDocument:
+             try:
+                 pages = extract_pages(io.BytesIO(bytestream.data), laparams=self.layout_params)
+                 text = self._converter(pages)
++                text = normalize_encoding(text=text, encoding=self.encoding)
+             except Exception as e:
+                 logger.warning(
+                     "Could not read {source} and convert it to Document, skipping. {error}", source=source, error=e
+diff --git a/haystack/components/converters/pypdf.py b/haystack/components/converters/pypdf.py
+index 15bbcc1..e644979 100644
+--- a/haystack/components/converters/pypdf.py
++++ b/haystack/components/converters/pypdf.py
+@@ -9,7 +9,7 @@ from pathlib import Path
+ from typing import Any, Dict, List, Optional, Union
+ 
+ from haystack import Document, component, default_from_dict, default_to_dict, logging
+-from haystack.components.converters.utils import get_bytestream_from_source, normalize_metadata
++from haystack.components.converters.utils import get_bytestream_from_source, normalize_encoding, normalize_metadata
+ from haystack.dataclasses import ByteStream
+ from haystack.lazy_imports import LazyImport
+ 
+@@ -79,6 +79,7 @@ class PyPDFToDocument:
+         layout_mode_strip_rotated: bool = True,
+         layout_mode_font_height_weight: float = 1.0,
+         store_full_path: bool = False,
++        encoding: str = "utf-8",
+     ):
+         """
+         Create an PyPDFToDocument component.
+@@ -108,10 +109,15 @@ class PyPDFToDocument:
+         :param store_full_path:
+             If True, the full path of the file is stored in the metadata of the document.
+             If False, only the file name is stored.
++        :param encoding:
++            The encoding to use when re-decoding the text extracted from the PDF.
++            Use `"auto"` to automatically detect the encoding of the extracted text.
++            Defaults to `"utf-8"`, which leaves the extracted text unchanged.
+         """
+         pypdf_import.check()
+ 
+         self.store_full_path = store_full_path
++        self.encoding = encoding
+ 
+         if isinstance(extraction_mode, str):
+             extraction_mode = PyPDFExtractionMode.from_str(extraction_mode)
+@@ -140,6 +146,7 @@ class PyPDFToDocument:
+             layout_mode_strip_rotated=self.layout_mode_strip_rotated,
+             layout_mode_font_height_weight=self.layout_mode_font_height_weight,
+             store_full_path=self.store_full_path,
++            encoding=self.encoding,
+         )
+ 
+     @classmethod
+@@ -205,6 +212,7 @@ class PyPDFToDocument:
+             try:
+                 pdf_reader = PdfReader(io.BytesIO(bytestream.data))
+                 text = self._default_convert(pdf_reader)
++                text = normalize_encoding(text=text, encoding=self.encoding)
+             except Exception as e:
+                 logger.warning(
+                     "Could not read {source} and convert it to Document, skipping. {error}", source=source, error=e
+diff --git a/haystack/components/converters/utils.py b/haystack/components/converters/utils.py
+index 87cd143..b000242 100644
+--- a/haystack/components/converters/utils.py
++++ b/haystack/components/converters/utils.py
+@@ -6,6 +6,10 @@ from pathlib import Path
+ from typing import Any, Dict, List, Optional, Union
+ 
+ from haystack.dataclasses import ByteStream
++from haystack.lazy_imports import LazyImport
++
++with LazyImport("Run 'pip install chardet'") as chardet_import:
++    import chardet
+ 
+ 
+ def get_bytestream_from_source(source: Union[str, Path, ByteStream]) -> ByteStream:
+@@ -49,3 +53,35 @@ def normalize_metadata(
+             raise ValueError("The length of the metadata list must match the number of sources.")
+         return meta
+     raise ValueError("meta must be either None, a dictionary or a list of dictionaries.")
++
++
++def normalize_encoding(text: str, encoding: str = "utf-8") -> str:
++    """
++    Normalize the encoding of a text extracted from a PDF.
++
++    Some PDF libraries decode text using the wrong single-byte codec, producing mojibake.
++    This function re-decodes such text using the correct codec, either explicitly provided
++    or automatically detected with `chardet`.
++
++    :param text: the text to normalize.
++    :param encoding: the codec to use to re-decode `text`. If `"auto"`, the codec is detected
++        automatically with `chardet`. Defaults to `"utf-8"`, which assumes `text` is already correct
++        and returns it unchanged.
++    :returns: the text, normalized to proper unicode.
++    """
++    if not text or encoding == "utf-8":
++        return text
++
++    if any(ord(c) > 0xFF for c in text):
++        # The text already contains proper unicode characters, so it was not mis-decoded.
++        return text
++
++    raw = text.encode("latin-1")
++
++    codec = encoding
++    if encoding == "auto":
++        chardet_import.check()
++        detected = chardet.detect(raw)["encoding"]
++        codec = detected or "utf-8"
++
++    return raw.decode(codec, errors="replace")
+diff --git a/releasenotes/notes/pdf-converters-explicit-encoding-1bfe1d9e3fcffb83.yaml b/releasenotes/notes/pdf-converters-explicit-encoding-1bfe1d9e3fcffb83.yaml
+new file mode 100644
+index 0000000..e0f059f
+--- /dev/null
++++ b/releasenotes/notes/pdf-converters-explicit-encoding-1bfe1d9e3fcffb83.yaml
+@@ -0,0 +1,7 @@
++---
++features:
++  - |
++    Added an `encoding` init parameter to `PyPDFToDocument` and `PDFMinerToDocument`.
++    It defaults to `"utf-8"`, preserving previous behavior, but can be set to `"auto"`
++    to automatically detect and repair the encoding of the text extracted from a PDF,
++    or to any other codec name to explicitly re-decode it.
