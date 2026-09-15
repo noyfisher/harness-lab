@@ -101,3 +101,13 @@ Usage after the spike (2026-09-13T07:06Z): session 9% (+8 points for ~$24 list-e
 including the orchestration session), weekly_all 54% (+2), weekly_scoped 33% (+2). Consistent
 with ~$12 per weekly point; the C0o batch (~$115) is projected to end the week near 64%, leaving
 the owner headroom until the reset. The C1o batch is scheduled for 2026-09-14T21:10Z.
+
+Batch usage (added 2026-09-15). The C0o batch ran 2026-09-13T07:02Z to 22:05Z ($105.39 list) and
+the owner then started the C1o batch at 23:01Z on remaining headroom, ahead of the planned reset;
+it ended 2026-09-14T16:12Z ($260.95 list). Neither batch produced a `paused` outcome, so both
+fit inside the week that started at 54% with no usage wall hit. No `/usage` reading was taken
+between the end of C1o and the 2026-09-14T21:00Z reset, so the study's exact share of the
+weekly cap is not recorded; the bound is that $366 of list-equivalent runs plus the owner's own
+use fit in the remaining 46 points, consistent with the ~$12 per point estimate above. First
+reading of the new week (2026-09-15T04:28Z): session 8%, weekly_all 8%, weekly_scoped 9%, all
+of it post-study use. The API-key contingency was never triggered.
